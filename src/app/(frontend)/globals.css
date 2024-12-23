@@ -84,6 +84,16 @@
   }
 }
 
+@keyframes blink {
+  50% {
+    opacity: 0;
+  }
+}
+
+.animate-blink {
+  animation: blink 1s steps(1, start) infinite;
+}
+
 @layer base {
   * {
     @apply border-border;
