@@ -52,6 +52,11 @@ const tailwindConfig = {
         'accordion-up': 'accordion-up 0.2s ease-out',
       },
       borderRadius: {
+        '5xl': '2rem',
+        '4xl': '1.75rem',
+        '3xl': '1.5rem',
+        '2xl': '1.25rem',
+        xl: '1rem',
         lg: 'var(--radius)',
         md: 'calc(var(--radius) - 2px)',
         sm: 'calc(var(--radius) - 4px)',
