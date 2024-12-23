@@ -4,12 +4,87 @@ import React, { useEffect, useState } from 'react';
 import type { HomeHeroBlock as HomeHeroProps } from '@/payload-types';
 import { CMSLink } from '@/components/Link';
 import { cn } from '@/utilities/cn';
-import { secretCodes, type SecretData } from './secrets';
+import { secretCodes, type SecretData, type MediaData } from './secrets';
+import { useAchievementStore } from '@/stores/Achievement/useAchievementStore';
+import Image from 'next/image';
+import { EXPANDED_TEXT_OPTIONS } from './expandedText';
 
 type PuzzleState = {
   sequence: string;
   isSubmitted: boolean;
   activeSecret: SecretData | null;
+};
+
+const SecretMedia: React.FC<{ media: MediaData }> = ({ media }) => {
+  if (media.type === 'giphy') {
+    return (
+      <div className="relative h-full w-full pt-[56.25%]">
+        <iframe
+          src={`https://giphy.com/embed/${media.giphyId}`}
+          className="absolute inset-0 h-full w-full rounded-lg"
+          allowFullScreen
+          title={media.alt || 'Giphy embed'}
+        />
+      </div>
+    );
+  }
+
+  return (
+    <div
+      className={cn(
+        'relative',
+        media.type === 'gif'
+          ? 'h-[200px] w-[300px]' // Fixed dimensions for GIFs
+          : 'h-[300px] w-[500px]' // Fixed dimensions for images
+      )}
+    >
+      <Image
+        src={media.url}
+        alt={media.alt || 'Secret content media'}
+        fill
+        className={cn(
+          'rounded-lg',
+          media.type === 'gif' ? 'object-contain' : 'object-cover'
+        )}
+        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+        priority={media.type === 'gif'} // Load GIFs immediately
+      />
+    </div>
+  );
+};
+
+const SecretContent: React.FC<{ secret: SecretData }> = ({ secret }) => {
+  return (
+    <div
+      className={cn(
+        'rounded-lg bg-black/10 p-6 dark:bg-white/10',
+        'duration-300 animate-in fade-in slide-in-from-bottom-4'
+      )}
+    >
+      <h2 className="mb-4 text-center text-xl font-bold text-black dark:text-white">
+        {secret.title}
+      </h2>
+
+      {/* Media Display */}
+      {secret.media && (
+        <div
+          className={cn(
+            'mb-4 flex justify-center',
+            secret.media.type === 'giphy' ? 'mx-auto w-full max-w-md' : ''
+          )}
+        >
+          <SecretMedia media={secret.media} />
+        </div>
+      )}
+
+      {/* Content Text */}
+      {secret.content && (
+        <p className="text-center text-gray-700 dark:text-gray-300">
+          {secret.content}
+        </p>
+      )}
+    </div>
+  );
 };
 
 export const HomeHeroBlock: React.FC<HomeHeroProps> = ({
@@ -29,6 +104,7 @@ export const HomeHeroBlock: React.FC<HomeHeroProps> = ({
     activeSecret: null,
   });
   const [showError, setShowError] = useState(false);
+  const [expandedText, setExpandedText] = useState('');
 
   const handleCharacterClick = (char: string) => {
     setShowError(false);
@@ -41,6 +117,19 @@ export const HomeHeroBlock: React.FC<HomeHeroProps> = ({
       );
 
       if (matchingSecret) {
+        if (puzzleState.sequence.toLowerCase() === 'moreletters') {
+          const randomIndex = Math.floor(
+            Math.random() * EXPANDED_TEXT_OPTIONS.length
+          );
+          setExpandedText(EXPANDED_TEXT_OPTIONS[randomIndex]);
+        }
+
+        if (matchingSecret.achievementId) {
+          useAchievementStore
+            .getState()
+            .unlockAchievement(matchingSecret.achievementId);
+        }
+
         setPuzzleState((prev) => ({
           ...prev,
           isSubmitted: true,
@@ -78,13 +167,16 @@ export const HomeHeroBlock: React.FC<HomeHeroProps> = ({
   };
 
   const renderInteractiveText = () => {
-    return mainText.split('').map((char, index) => (
+    const fullText = `${mainText}${expandedText}`;
+
+    return fullText.split('').map((char, index) => (
       <span
         key={`${char}-${index}`}
         onClick={() => handleCharacterClick(char)}
         className={cn(
           'cursor-pointer transition-colors duration-200',
-          char === '?' ? 'hover:text-red-500' : 'hover:text-blue-300'
+          char === '?' ? 'hover:text-red-500' : 'hover:text-blue-300',
+          index >= mainText.length && 'text-emerald-500 dark:text-emerald-400'
         )}
         role="button"
         tabIndex={0}
@@ -204,19 +296,7 @@ export const HomeHeroBlock: React.FC<HomeHeroProps> = ({
 
         {/* Secret Content */}
         {puzzleState.activeSecret && (
-          <div
-            className={cn(
-              'rounded-lg bg-black/10 p-6 dark:bg-white/10',
-              'duration-300 animate-in fade-in slide-in-from-bottom-4'
-            )}
-          >
-            <h2 className="mb-4 text-center text-xl font-bold text-black dark:text-white">
-              {puzzleState.activeSecret.title}
-            </h2>
-            <p className="text-center text-gray-700 dark:text-gray-300">
-              {puzzleState.activeSecret.content}
-            </p>
-          </div>
+          <SecretContent secret={puzzleState.activeSecret} />
         )}
       </div>
     </div>
