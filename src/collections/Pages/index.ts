@@ -9,6 +9,7 @@ import { FormBlock } from '../../blocks/Form/config';
 import { MediaBlock } from '../../blocks/MediaBlock/config';
 import { HomeHero } from '../../blocks/HomeHero/config';
 import { hero } from '@/heros/config';
+import { AnimateText } from '../../blocks/AnimateText/config';
 import { slugField } from '@/fields/slug';
 import { populatePublishedAt } from '../../hooks/populatePublishedAt';
 import { generatePreviewPath } from '../../utilities/generatePreviewPath';
@@ -83,6 +84,7 @@ export const Pages: CollectionConfig<'pages'> = {
                 Archive,
                 FormBlock,
                 HomeHero,
+                AnimateText,
               ],
               required: true,
               admin: {
