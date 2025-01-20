@@ -1,9 +1,10 @@
+'use client';
+
 //import { cn } from 'src/utilities/cn'
-import React, { Fragment } from 'react';
-
+import React, { Fragment, useRef, useEffect, useState } from 'react';
 import type { Page } from '@/payload-types';
+import { cn } from '@/utilities/cn';
 
-import { ArchiveBlock } from '@/blocks/ArchiveBlock/Component';
 import { CallToActionBlock } from '@/blocks/CallToAction/Component';
 import { ContentBlock } from '@/blocks/Content/Component';
 import { FormBlock } from '@/blocks/Form/Component';
@@ -13,7 +14,6 @@ import { AnimateText } from '@/blocks/AnimateText/Component';
 import { ProjectDisplayBlock } from '@/blocks/ProjectDisplay/Component';
 
 const blockComponents = {
-  archive: ArchiveBlock,
   content: ContentBlock,
   cta: CallToActionBlock,
   formBlock: FormBlock,
@@ -27,6 +27,53 @@ export const RenderBlocks: React.FC<{
   blocks: Page['layout'][0][];
 }> = (props) => {
   const { blocks } = props;
+  const blockRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const [visibleBlocks, setVisibleBlocks] = useState<number[]>([]);
+
+  useEffect(() => {
+    const observerOptions = {
+      root: null,
+      rootMargin: '0px',
+      threshold: 0.1,
+    };
+
+    const observerCallback: IntersectionObserverCallback = (
+      entries,
+      _observer
+    ) => {
+      entries.forEach((entry) => {
+        const index = blockRefs.current.findIndex(
+          (ref) => ref === entry.target
+        );
+
+        if (entry.isIntersecting && !visibleBlocks.includes(index)) {
+          // Add delay based on block position (1.5s for hero + 0.2s per block)
+          const delay = index === 0 ? 0 : 1500 + (index - 1) * 200;
+
+          setTimeout(() => {
+            setVisibleBlocks((prev) => [...prev, index]);
+            _observer.unobserve(entry.target);
+          }, delay);
+        }
+      });
+    };
+
+    const observer = new IntersectionObserver(
+      observerCallback,
+      observerOptions
+    );
+
+    // Observe all blocks
+    blockRefs.current.forEach((ref) => {
+      if (ref) {
+        observer.observe(ref);
+      }
+    });
+
+    return () => {
+      observer.disconnect();
+    };
+  }, [visibleBlocks]);
 
   const hasBlocks = blocks && Array.isArray(blocks) && blocks.length > 0;
 
@@ -42,7 +89,25 @@ export const RenderBlocks: React.FC<{
             if (Block) {
               return (
                 <div
-                  className={blockType === 'homeHero' ? 'my-0' : 'my-16'}
+                  ref={(el) => {
+                    if (el) {
+                      blockRefs.current[index] = el;
+                    }
+                  }}
+                  className={cn(
+                    blockType === 'homeHero' ? 'my-0' : 'my-16',
+                    blockType === 'homeHero'
+                      ? 'animate-pull-down'
+                      : visibleBlocks.includes(index)
+                        ? 'animate-fade-in-up'
+                        : 'opacity-0'
+                  )}
+                  style={{
+                    animationDelay:
+                      blockType === 'homeHero'
+                        ? '0ms'
+                        : `${(index - 1) * 200}ms`,
+                  }}
                   key={index}
                 >
                   {/* @ts-expect-error there may be some mismatch between the expected types here */}
