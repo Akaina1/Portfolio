@@ -7,4 +7,6 @@ export const EXPANDED_TEXT_OPTIONS = [
   " Whether it's quirky bugs, zippy fixes, or jumping between Stack Overflow tabs, I deliver solutions without a single console.log('oops') in sight.",
   ' From writing zippy code to fixing bugs that mysteriously vanish when I console.log, I make sure your project compiles—and sometimes even runs!',
   " I write zesty code, fix quirky bugs, and ensure your app won’t ask 'undefined is not a function'… most of the time.",
+  ' Whether it’s fixing z-index issues, taming quirky bugs, or making AI-generated punchlines actually funny, I’ve got the skills to deliver.',
+  ' From debugging infinite loops to figuring out why AI thinks ‘zesty’ is a tech word, I promise my solutions are 100% human (mostly).',
 ] as const;
