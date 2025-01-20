@@ -8,6 +8,7 @@ import { Content } from '../../blocks/Content/config';
 import { FormBlock } from '../../blocks/Form/config';
 import { MediaBlock } from '../../blocks/MediaBlock/config';
 import { HomeHero } from '../../blocks/HomeHero/config';
+import { ProjectDisplay } from '../../blocks/ProjectDisplay/config';
 import { hero } from '@/heros/config';
 import { AnimateText } from '../../blocks/AnimateText/config';
 import { slugField } from '@/fields/slug';
@@ -85,6 +86,7 @@ export const Pages: CollectionConfig<'pages'> = {
                 FormBlock,
                 HomeHero,
                 AnimateText,
+                ProjectDisplay,
               ],
               required: true,
               admin: {

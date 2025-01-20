@@ -10,6 +10,7 @@ import { FormBlock } from '@/blocks/Form/Component';
 import { MediaBlock } from '@/blocks/MediaBlock/Component';
 import { HomeHeroBlock } from '@/blocks/HomeHero/Component';
 import { AnimateText } from '@/blocks/AnimateText/Component';
+import { ProjectDisplayBlock } from '@/blocks/ProjectDisplay/Component';
 
 const blockComponents = {
   archive: ArchiveBlock,
@@ -19,6 +20,7 @@ const blockComponents = {
   mediaBlock: MediaBlock,
   homeHero: HomeHeroBlock,
   animateText: AnimateText,
+  projectDisplay: ProjectDisplayBlock,
 };
 
 export const RenderBlocks: React.FC<{
