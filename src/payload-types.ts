@@ -124,7 +124,15 @@ export interface Page {
       | null;
     media?: (string | null) | Media;
   };
-  layout: (CallToActionBlock | ContentBlock | MediaBlock | ArchiveBlock | FormBlock | HomeHeroBlock)[];
+  layout: (
+    | CallToActionBlock
+    | ContentBlock
+    | MediaBlock
+    | ArchiveBlock
+    | FormBlock
+    | HomeHeroBlock
+    | AnimateTextBlock
+  )[];
   meta?: {
     title?: string | null;
     image?: (string | null) | Media;
@@ -673,6 +681,18 @@ export interface HomeHeroBlock {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "AnimateTextBlock".
+ */
+export interface AnimateTextBlock {
+  text: string;
+  placement: 'text-left' | 'text-center' | 'text-right';
+  animation: 'fadeIn' | 'typeWriter' | 'slideUp' | 'slideDown' | 'bounceIn' | 'wave';
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'animateText';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "redirects".
  */
 export interface Redirect {
@@ -861,6 +881,7 @@ export interface PagesSelect<T extends boolean = true> {
         archive?: T | ArchiveBlockSelect<T>;
         formBlock?: T | FormBlockSelect<T>;
         homeHero?: T | HomeHeroBlockSelect<T>;
+        animateText?: T | AnimateTextBlockSelect<T>;
       };
   meta?:
     | T
@@ -987,6 +1008,17 @@ export interface HomeHeroBlockSelect<T extends boolean = true> {
             };
         id?: T;
       };
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "AnimateTextBlock_select".
+ */
+export interface AnimateTextBlockSelect<T extends boolean = true> {
+  text?: T;
+  placement?: T;
+  animation?: T;
   id?: T;
   blockName?: T;
 }
