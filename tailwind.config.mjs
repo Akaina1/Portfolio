@@ -146,7 +146,7 @@ const tailwindConfig = {
                 fontSize: '3.5rem',
               },
               h2: {
-                fontSize: '1.5rem',
+                fontSize: '2rem',
               },
             },
           ],
