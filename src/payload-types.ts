@@ -132,6 +132,7 @@ export interface Page {
     | FormBlock
     | HomeHeroBlock
     | AnimateTextBlock
+    | ProjectDisplayBlockType
   )[];
   meta?: {
     title?: string | null;
@@ -693,6 +694,21 @@ export interface AnimateTextBlock {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "ProjectDisplayBlockType".
+ */
+export interface ProjectDisplayBlockType {
+  projects: {
+    displayImage: string | Media;
+    title: string;
+    slug: string;
+    id?: string | null;
+  }[];
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'projectDisplay';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "redirects".
  */
 export interface Redirect {
@@ -882,6 +898,7 @@ export interface PagesSelect<T extends boolean = true> {
         formBlock?: T | FormBlockSelect<T>;
         homeHero?: T | HomeHeroBlockSelect<T>;
         animateText?: T | AnimateTextBlockSelect<T>;
+        projectDisplay?: T | ProjectDisplayBlockTypeSelect<T>;
       };
   meta?:
     | T
@@ -1019,6 +1036,22 @@ export interface AnimateTextBlockSelect<T extends boolean = true> {
   text?: T;
   placement?: T;
   animation?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "ProjectDisplayBlockType_select".
+ */
+export interface ProjectDisplayBlockTypeSelect<T extends boolean = true> {
+  projects?:
+    | T
+    | {
+        displayImage?: T;
+        title?: T;
+        slug?: T;
+        id?: T;
+      };
   id?: T;
   blockName?: T;
 }
