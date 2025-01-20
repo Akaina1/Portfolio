@@ -28,7 +28,7 @@ export const ProjectDisplayBlock: React.FC<ProjectDisplayBlockType> = ({
             className="group relative aspect-square"
           >
             {project.slug ? (
-              <Link href={`/projects/${project.slug}`}>
+              <Link href={`/projects/${project.slug}`} className="block h-full">
                 <ProjectSquare project={project} />
               </Link>
             ) : (
@@ -59,7 +59,7 @@ const ProjectSquare: React.FC<{
   project: ProjectDisplayBlockType['projects'][0];
 }> = ({ project }) => {
   return (
-    <div className="h-full w-full overflow-hidden rounded-xl transition-transform duration-300 group-hover:scale-90">
+    <div className="relative h-full w-full overflow-hidden rounded-xl transition-transform duration-300 group-hover:scale-95">
       {/* Project Image */}
       {project.displayImage && (
         <Media
@@ -78,7 +78,7 @@ const ProjectSquare: React.FC<{
       >
         <h3
           className={cn(
-            'text-xl font-bold text-white opacity-0 transition-opacity',
+            'text-lg font-bold text-white opacity-0 transition-opacity',
             'duration-300 group-hover:opacity-100'
           )}
         >
@@ -95,7 +95,7 @@ const ProjectSquare: React.FC<{
  */
 const PlaceholderSquare: React.FC = () => {
   return (
-    <div className="relative h-full w-full overflow-hidden rounded-xl bg-gradient-to-tr from-gray-400 to-gray-300 transition-transform duration-300 group-hover:scale-90 dark:from-gray-500 dark:to-gray-700">
+    <div className="relative h-full w-full overflow-hidden rounded-xl bg-gradient-to-tr from-gray-400 to-gray-300 transition-transform duration-300 group-hover:scale-95 dark:from-gray-500 dark:to-gray-700">
       {/* Hover Overlay with Title */}
       <div
         className={cn(
@@ -106,7 +106,7 @@ const PlaceholderSquare: React.FC = () => {
       >
         <h3
           className={cn(
-            'text-xl font-bold text-white opacity-0 transition-opacity',
+            'text-lg font-bold text-white opacity-0 transition-opacity',
             'duration-300 group-hover:opacity-100'
           )}
         >
