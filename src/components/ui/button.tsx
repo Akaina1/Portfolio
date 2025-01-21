@@ -20,7 +20,7 @@ const buttonVariants = cva(
       },
       variant: {
         default:
-          'bg-primary text-primary-foreground hover:bg-pink-200 hover:scale-105',
+          'bg-primary text-primary-foreground hover:bg-pink-200 hover:text-black hover:scale-105',
         destructive:
           'bg-destructive text-destructive-foreground hover:bg-destructive/90',
         ghost: 'hover:bg-card hover:text-accent-foreground',
