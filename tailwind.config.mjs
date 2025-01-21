@@ -50,6 +50,7 @@ const tailwindConfig = {
       animation: {
         'accordion-down': 'accordion-down 0.2s ease-out',
         'accordion-up': 'accordion-up 0.2s ease-out',
+        dividerGlow: 'dividerGlow 2s linear infinite',
       },
       borderRadius: {
         '5xl': '2rem',
@@ -111,6 +112,10 @@ const tailwindConfig = {
         'accordion-up': {
           from: { height: 'var(--radix-accordion-content-height)' },
           to: { height: '0' },
+        },
+        dividerGlow: {
+          '0%': { transform: 'translateX(-100%)' },
+          '100%': { transform: 'translateX(100%)' },
         },
       },
       typography: ({ _theme }) => ({
