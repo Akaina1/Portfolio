@@ -8,18 +8,56 @@ import { cn } from '@/utilities/cn';
 import { AnimatedDivider } from '@/components/AnimatedDivider';
 
 /**
- * Array of Tailwind background color classes
+ * Define the color object type
  */
-const PUZZLE_SQUARE_COLOURS = [
-  'linear-gradient(to top right, rgb(220 38 38), rgb(254 202 202))', // red-600 to red-200
-  'linear-gradient(to top right, rgb(37 99 235), rgb(191 219 254))', // blue-600 to blue-200
-  'linear-gradient(to top right, rgb(22 163 74), rgb(187 247 208))', // green-600 to green-200
-  'linear-gradient(to top right, rgb(202 138 4), rgb(254 240 138))', // yellow-600 to yellow-200
-  'linear-gradient(to top right, rgb(147 51 234), rgb(233 213 255))', // purple-600 to purple-200
-  'linear-gradient(to top right, rgb(219 39 119), rgb(251 207 232))', // pink-600 to pink-200
-  'linear-gradient(to top right, rgb(234 88 12), rgb(254 215 170))', // orange-600 to orange-200
-  'linear-gradient(to top right, rgb(13 148 136), rgb(153 246 228))', // teal-600 to teal-200
-  'linear-gradient(to top right, rgb(79 70 229), rgb(199 210 254))', // indigo-600 to indigo-200
+type PuzzleSquareColourData = {
+  id: string;
+  gradient: string;
+};
+
+/**
+ * Update color constants to include identifiers
+ */
+const PUZZLE_SQUARE_COLOURS: PuzzleSquareColourData[] = [
+  {
+    id: 'RED',
+    gradient: 'linear-gradient(to top right, rgb(220 38 38), rgb(254 202 202))', // red-600 to red-200
+  },
+  {
+    id: 'BLUE',
+    gradient: 'linear-gradient(to top right, rgb(37 99 235), rgb(191 219 254))', // blue-600 to blue-200
+  },
+  {
+    id: 'GREEN',
+    gradient: 'linear-gradient(to top right, rgb(22 163 74), rgb(187 247 208))', // green-600 to green-200
+  },
+  {
+    id: 'YELLOW',
+    gradient: 'linear-gradient(to top right, rgb(202 138 4), rgb(254 240 138))', // yellow-600 to yellow-200
+  },
+  {
+    id: 'PURPLE',
+    gradient:
+      'linear-gradient(to top right, rgb(147 51 234), rgb(233 213 255))', // purple-600 to purple-200
+  },
+  {
+    id: 'PINK',
+    gradient:
+      'linear-gradient(to top right, rgb(219 39 119), rgb(251 207 232))', // pink-600 to pink-200
+  },
+  {
+    id: 'ORANGE',
+    gradient: 'linear-gradient(to top right, rgb(234 88 12), rgb(254 215 170))', // orange-600 to orange-200
+  },
+  {
+    id: 'TEAL',
+    gradient:
+      'linear-gradient(to top right, rgb(13 148 136), rgb(153 246 228))', // teal-600 to teal-200
+  },
+  {
+    id: 'INDIGO',
+    gradient: 'linear-gradient(to top right, rgb(79 70 229), rgb(199 210 254))', // indigo-600 to indigo-200
+  },
 ] as const;
 
 type PuzzleSquareColour = (typeof PUZZLE_SQUARE_COLOURS)[number];
@@ -163,7 +201,7 @@ const ProjectSquare: React.FC<{
         style={
           {
             '--hover-color':
-              hoverColor ||
+              hoverColor?.gradient ||
               'linear-gradient(to top right, rgb(0 0 0), rgb(0 0 0))',
             backgroundImage: 'none',
             ['--tw-bg-opacity']: '0',
@@ -208,7 +246,7 @@ const PlaceholderSquare: React.FC<{
         style={
           {
             '--hover-color':
-              hoverColor ||
+              hoverColor?.gradient ||
               'linear-gradient(to top right, rgb(0 0 0), rgb(0 0 0))',
             backgroundImage: 'none',
             ['--tw-bg-opacity']: '0',
