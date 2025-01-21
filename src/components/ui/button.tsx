@@ -30,7 +30,7 @@ const buttonVariants = cva(
         secondary:
           'bg-secondary text-secondary-foreground hover:bg-secondary/80',
         'nav-link':
-          'text-black/80 dark:text-white/80 hover:text-black dark:hover:text-white transition-all duration-200 after:absolute after:inset-0 after:pointer-events-none after:content-[""] after:bg-[radial-gradient(circle,theme(colors.pink.200/30%)_0%,transparent_100%)] after:opacity-0 after:scale-0 after:origin-center hover:after:opacity-100 dark:hover:after:opacity-65 hover:after:scale-95 after:transition-all after:duration-500 active:after:opacity-100 active:after:scale-150 active:after:bg-[radial-gradient(circle,theme(colors.pink.200/50%)_0%,transparent_100%)] active:text-pink-200 dark:active:text-pink-200 hover:scale-125 hover:font-bold',
+          'text-black/80 dark:text-white/80 hover:text-black dark:hover:text-white transition-all duration-200 relative hover:scale-125 hover:font-bold active:text-pink-200/90 dark:active:text-pink-200/90 active:scale-110 dark:active:scale-110',
       },
     },
   }
