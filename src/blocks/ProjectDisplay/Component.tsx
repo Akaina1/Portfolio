@@ -147,16 +147,7 @@ export const ProjectDisplayBlock: React.FC<ProjectDisplayBlockType> = ({
 
           return (
             <div key={squareId} className="group relative aspect-square">
-              {project.slug ? (
-                <Link
-                  href={`/projects/${project.slug}`}
-                  className="block h-full"
-                >
-                  <ProjectSquare project={project} hoverColor={bgColor} />
-                </Link>
-              ) : (
-                <ProjectSquare project={project} hoverColor={bgColor} />
-              )}
+              <ProjectSquare project={project} hoverColor={bgColor} />
             </div>
           );
         })}
@@ -185,9 +176,19 @@ const ProjectSquare: React.FC<{
   project: ProjectDisplayBlockType['projects'][0];
   hoverColor?: PuzzleSquareColour;
 }> = ({ project, hoverColor }) => {
+  const [isPressed, setIsPressed] = useState(false);
+
   return (
-    <div className="relative h-full w-full overflow-hidden rounded-xl transition-transform duration-300 group-hover:scale-95">
-      {/* Project Image */}
+    <div
+      className={cn(
+        'relative h-full w-full overflow-hidden rounded-xl transition-transform duration-300',
+        isPressed ? 'scale-95' : '',
+        'hover:scale-95'
+      )}
+      onClick={() => setIsPressed(!isPressed)}
+      role="button"
+      tabIndex={0}
+    >
       {project.displayImage && (
         <Media
           resource={project.displayImage}
@@ -195,37 +196,56 @@ const ProjectSquare: React.FC<{
         />
       )}
 
-      {/* Hover Overlay with Title */}
       <div
-        className="absolute inset-0 flex items-center justify-center bg-transparent p-4 text-center transition-all duration-300 group-hover:bg-opacity-90"
+        className="absolute inset-0 flex flex-col items-center justify-center bg-transparent p-4 text-center transition-all duration-300 group-hover:bg-opacity-90"
         style={
           {
             '--hover-color':
               hoverColor?.gradient ||
               'linear-gradient(to top right, rgb(0 0 0), rgb(0 0 0))',
-            backgroundImage: 'none',
-            ['--tw-bg-opacity']: '0',
+            backgroundImage: isPressed ? 'var(--hover-color)' : 'none',
+            ['--tw-bg-opacity']: isPressed ? '0.9' : '0',
           } as React.CSSProperties
         }
         onMouseEnter={(e) => {
-          const target = e.currentTarget;
-          target.style.backgroundImage = 'var(--hover-color)';
-          target.style['--tw-bg-opacity'] = '0.9';
+          if (!isPressed) {
+            const target = e.currentTarget;
+            target.style.backgroundImage = 'var(--hover-color)';
+            target.style['--tw-bg-opacity'] = '0.9';
+          }
         }}
         onMouseLeave={(e) => {
-          const target = e.currentTarget;
-          target.style.backgroundImage = 'none';
-          target.style['--tw-bg-opacity'] = '0';
+          if (!isPressed) {
+            const target = e.currentTarget;
+            target.style.backgroundImage = 'none';
+            target.style['--tw-bg-opacity'] = '0';
+          }
         }}
       >
         <h3
           className={cn(
-            'text-lg font-bold text-white opacity-0 transition-opacity',
-            'duration-300 group-hover:opacity-100'
+            'mb-4 text-lg font-bold text-white transition-opacity',
+            isPressed || 'group-hover:opacity-100',
+            isPressed ? 'opacity-100' : 'opacity-0'
           )}
         >
           {project.title}
         </h3>
+
+        {project.slug && (
+          <Link
+            href={`/projects/${project.slug}`}
+            className={cn(
+              'rounded-lg bg-white/20 px-4 py-2 text-white transition-all',
+              'backdrop-blur-sm hover:bg-white/30',
+              isPressed || 'group-hover:opacity-100',
+              isPressed ? 'opacity-100' : 'opacity-0'
+            )}
+            onClick={(e) => e.stopPropagation()} // Prevent triggering square press
+          >
+            View Project
+          </Link>
+        )}
       </div>
     </div>
   );
@@ -238,35 +258,51 @@ const ProjectSquare: React.FC<{
 const PlaceholderSquare: React.FC<{
   hoverColor?: PuzzleSquareColour;
 }> = ({ hoverColor }) => {
+  const [isPressed, setIsPressed] = useState(false);
+
   return (
-    <div className="relative h-full w-full overflow-hidden rounded-xl bg-gradient-to-tr from-gray-400 to-gray-300 transition-transform duration-300 hover:cursor-pointer group-hover:scale-95 dark:from-gray-500 dark:to-gray-700">
-      {/* Hover Overlay with Title */}
+    <div
+      className={cn(
+        'relative h-full w-full overflow-hidden rounded-xl transition-transform duration-300',
+        'bg-gradient-to-tr from-gray-400 to-gray-300 dark:from-gray-500 dark:to-gray-700',
+        isPressed ? 'scale-95' : '',
+        'hover:scale-95'
+      )}
+      onClick={() => setIsPressed(!isPressed)}
+      role="button"
+      tabIndex={0}
+    >
       <div
-        className="absolute inset-0 flex items-center justify-center bg-transparent p-4 text-center transition-all duration-300 group-hover:bg-opacity-90"
+        className="absolute inset-0 flex items-center justify-center bg-transparent p-4 text-center transition-all duration-300"
         style={
           {
             '--hover-color':
               hoverColor?.gradient ||
               'linear-gradient(to top right, rgb(0 0 0), rgb(0 0 0))',
-            backgroundImage: 'none',
-            ['--tw-bg-opacity']: '0',
+            backgroundImage: isPressed ? 'var(--hover-color)' : 'none',
+            ['--tw-bg-opacity']: isPressed ? '0.9' : '0',
           } as React.CSSProperties
         }
         onMouseEnter={(e) => {
-          const target = e.currentTarget;
-          target.style.backgroundImage = 'var(--hover-color)';
-          target.style['--tw-bg-opacity'] = '0.9';
+          if (!isPressed) {
+            const target = e.currentTarget;
+            target.style.backgroundImage = 'var(--hover-color)';
+            target.style['--tw-bg-opacity'] = '0.9';
+          }
         }}
         onMouseLeave={(e) => {
-          const target = e.currentTarget;
-          target.style.backgroundImage = 'none';
-          target.style['--tw-bg-opacity'] = '0';
+          if (!isPressed) {
+            const target = e.currentTarget;
+            target.style.backgroundImage = 'none';
+            target.style['--tw-bg-opacity'] = '0';
+          }
         }}
       >
         <h3
           className={cn(
-            'text-lg font-bold text-white opacity-0 transition-opacity',
-            'duration-300 group-hover:opacity-100'
+            'text-lg font-bold text-white transition-opacity',
+            isPressed || 'group-hover:opacity-100',
+            isPressed ? 'opacity-100' : 'opacity-0'
           )}
         >
           Coming Soon
