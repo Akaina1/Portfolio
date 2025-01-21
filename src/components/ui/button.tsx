@@ -29,6 +29,8 @@ const buttonVariants = cva(
           'border border-border bg-background hover:bg-card hover:text-accent-foreground',
         secondary:
           'bg-secondary text-secondary-foreground hover:bg-secondary/80',
+        'nav-link':
+          'text-primary hover:text-primary/80 transition-colors duration-200',
       },
     },
   }

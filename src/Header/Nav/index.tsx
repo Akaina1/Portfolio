@@ -8,9 +8,29 @@ import { CMSLink } from '@/components/Link';
 
 export const HeaderNav: React.FC<{ data: HeaderType }> = ({ data }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [activeIndex, setActiveIndex] = useState<number | null>(null);
+  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
   const menuRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
+  const navItemRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const underlineRef = useRef<HTMLDivElement>(null);
   const navItems = data?.navItems || [];
+
+  // Update underline position
+  useEffect(() => {
+    const currentIndex = hoveredIndex ?? activeIndex;
+    if (currentIndex === null || !underlineRef.current) return;
+
+    const currentElement = navItemRefs.current[currentIndex];
+    if (!currentElement) return;
+
+    const { width, left } = currentElement.getBoundingClientRect();
+    const parentLeft =
+      currentElement.parentElement?.getBoundingClientRect().left || 0;
+
+    underlineRef.current.style.width = `${width}px`;
+    underlineRef.current.style.transform = `translateX(${left - parentLeft}px)`;
+  }, [hoveredIndex, activeIndex]);
 
   // Handle clicks outside the menu
   useEffect(() => {
@@ -40,10 +60,30 @@ export const HeaderNav: React.FC<{ data: HeaderType }> = ({ data }) => {
   return (
     <nav className="relative">
       {/* Desktop Navigation */}
-      <div className="hidden items-center gap-10 md:flex">
+      <div className="relative hidden items-center gap-10 md:flex">
         {navItems.map(({ link }, i) => {
-          return <CMSLink key={i} {...link} appearance="link" />;
+          return (
+            <div
+              key={i}
+              ref={(el) => {
+                if (el) {
+                  navItemRefs.current[i] = el;
+                }
+              }}
+              className="relative py-2"
+              onMouseEnter={() => setHoveredIndex(i)}
+              onMouseLeave={() => setHoveredIndex(null)}
+              onClick={() => setActiveIndex(i)}
+            >
+              <CMSLink {...link} appearance="nav-link" />
+            </div>
+          );
         })}
+        <div
+          ref={underlineRef}
+          className="absolute bottom-0 h-0.5 bg-primary transition-all duration-300 ease-in-out"
+          style={{ width: 0 }}
+        />
       </div>
 
       {/* Mobile Hamburger Button */}
