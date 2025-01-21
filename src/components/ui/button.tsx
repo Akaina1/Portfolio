@@ -30,7 +30,7 @@ const buttonVariants = cva(
         secondary:
           'bg-secondary text-secondary-foreground hover:bg-secondary/80',
         'nav-link':
-          'text-black/80 dark:text-white/80 hover:text-black dark:hover:text-white transition-all duration-200 relative hover:scale-125 hover:font-bold active:text-pink-200/90 dark:active:text-pink-200/90 active:scale-110 dark:active:scale-110',
+          'text-gray-600 dark:text-gray-400 hover:text-black dark:hover:text-white transition-all duration-200 relative font-bold active:text-pink-200/90 dark:active:text-pink-200/90 active:scale-110 dark:active:scale-110',
       },
     },
   }
