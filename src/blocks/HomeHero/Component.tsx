@@ -8,7 +8,7 @@ import { secretCodes, type SecretData, type MediaData } from './secrets';
 import { useAchievementStore } from '@/stores/Achievement/useAchievementStore';
 import Image from 'next/image';
 import { EXPANDED_TEXT_OPTIONS } from './expandedText';
-
+import { AnimatedDivider } from '@/components/AnimatedDivider';
 type PuzzleState = {
   sequence: string;
   isSubmitted: boolean;
@@ -239,9 +239,7 @@ export const HomeHeroBlock: React.FC<HomeHeroProps> = ({
       </div>
 
       {/* Divider Line */}
-      <div className="mt-8 w-full max-w-2xl">
-        <hr className="border-t border-gray-300 dark:border-gray-700" />
-      </div>
+      <AnimatedDivider className="mb-8 mt-3" />
 
       {/* Secret Content Area */}
       <div className="mt-4 w-full max-w-2xl">
