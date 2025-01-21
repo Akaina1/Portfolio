@@ -51,6 +51,7 @@ const tailwindConfig = {
         'accordion-down': 'accordion-down 0.2s ease-out',
         'accordion-up': 'accordion-up 0.2s ease-out',
         dividerGlow: 'dividerGlow 2s linear infinite',
+        clickExpand: 'clickExpand 1s ease-out forwards',
       },
       borderRadius: {
         '5xl': '2rem',
@@ -116,6 +117,16 @@ const tailwindConfig = {
         dividerGlow: {
           '0%': { transform: 'translateX(-100%)' },
           '100%': { transform: 'translateX(100%)' },
+        },
+        clickExpand: {
+          '0%': {
+            transform: 'scale(0)',
+            opacity: '1',
+          },
+          '100%': {
+            transform: 'scale(4)',
+            opacity: '0',
+          },
         },
       },
       typography: ({ _theme }) => ({
