@@ -8,7 +8,7 @@ import { CMSLink } from '@/components/Link';
 
 export const HeaderNav: React.FC<{ data: HeaderType }> = ({ data }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [activeIndex, setActiveIndex] = useState<number | null>(null);
+  const [activeIndex, setActiveIndex] = useState<number>(0);
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
   const menuRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
@@ -19,7 +19,7 @@ export const HeaderNav: React.FC<{ data: HeaderType }> = ({ data }) => {
 
   // Update underline position
   useEffect(() => {
-    const currentIndex = hoveredIndex ?? activeIndex;
+    const currentIndex = hoveredIndex !== null ? hoveredIndex : activeIndex;
     if (currentIndex === null || !underlineRef.current) return;
 
     const currentElement = navItemRefs.current[currentIndex];
@@ -86,7 +86,20 @@ export const HeaderNav: React.FC<{ data: HeaderType }> = ({ data }) => {
         ref={navContainerRef}
         className="relative hidden items-center gap-20 md:flex"
         onMouseMove={handleMouseMove}
-        onMouseLeave={() => setHoveredIndex(null)}
+        onMouseLeave={() => {
+          setHoveredIndex(null);
+          if (underlineRef.current) {
+            const currentElement = navItemRefs.current[activeIndex];
+            if (!currentElement) return;
+
+            const { width, left } = currentElement.getBoundingClientRect();
+            const parentElement = currentElement.parentElement as HTMLElement;
+            const parentLeft = parentElement?.getBoundingClientRect().left || 0;
+
+            underlineRef.current.style.width = `${width}px`;
+            underlineRef.current.style.transform = `translateX(${left - parentLeft}px)`;
+          }
+        }}
       >
         {navItems.map(({ link }, i) => (
           <div
