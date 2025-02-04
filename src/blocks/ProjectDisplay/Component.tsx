@@ -132,8 +132,10 @@ export const ProjectDisplayBlock: React.FC<ProjectDisplayBlockType> = ({
   };
 
   return (
-    <section className="container w-full rounded-xl bg-black/5 p-4 shadow-lg shadow-black/35 md:p-10 dark:bg-white/5">
-      <h2 className="text-center text-4xl font-bold">View My Projects</h2>
+    <section className="container w-full rounded-xl bg-white/50 p-4 shadow-lg shadow-black/35 md:p-10 dark:bg-white/5">
+      <h2 className="text-center text-4xl font-bold text-black dark:text-white">
+        View My Projects
+      </h2>
 
       {/* Divider Line */}
       <AnimatedDivider className="mb-8 mt-2" />
@@ -224,7 +226,7 @@ const ProjectSquare: React.FC<{
       >
         <h3
           className={cn(
-            'mb-4 text-lg font-bold text-white transition-opacity',
+            'mb-4 text-sm font-bold text-white transition-opacity lg:text-lg',
             isPressed || 'group-hover:opacity-100',
             isPressed ? 'opacity-100' : 'opacity-0'
           )}
@@ -236,7 +238,7 @@ const ProjectSquare: React.FC<{
           <Link
             href={`/projects/${project.slug}`}
             className={cn(
-              'rounded-lg bg-white/20 px-4 py-2 text-white transition-all',
+              'rounded-lg bg-white/20 px-4 py-2 text-xs text-white transition-all lg:text-lg',
               'backdrop-blur-sm hover:bg-white/30',
               isPressed || 'group-hover:opacity-100',
               isPressed ? 'opacity-100' : 'opacity-0'

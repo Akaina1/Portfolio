@@ -216,13 +216,13 @@ export const HomeHeroBlock: React.FC<HomeHeroProps> = ({
   }, [displayText, isDeleting, dynamicText, currentTextIndex]);
 
   return (
-    <div className="animate-pull-down container relative z-0 -mt-1 flex h-full flex-col items-center justify-center rounded-b-xl bg-black/5 p-4 pt-8 shadow-lg shadow-black/35 lg:pt-28 dark:bg-white/5">
+    <div className="animate-pull-down container relative z-0 -mt-1 flex h-full flex-col items-center justify-center rounded-b-xl bg-white/50 p-4 pt-8 shadow-lg shadow-black/35 lg:pt-28 dark:bg-white/5">
       <h1 className="mb-6 text-start text-2xl font-bold text-black sm:text-4xl dark:text-white">
         {renderInteractiveText()}
       </h1>
 
       {/* Dynamic Typing Animation */}
-      <div className="flex items-start text-lg font-semibold text-black sm:text-2xl dark:text-white">
+      <div className="flex items-start text-lg font-semibold text-foreground sm:text-2xl">
         <span>{displayText}</span>
         <span className="animate-blink ml-0 text-gray-500">|</span>
       </div>
@@ -230,11 +230,7 @@ export const HomeHeroBlock: React.FC<HomeHeroProps> = ({
       {/* Call-to-Action Buttons */}
       <div className="mt-8 flex flex-wrap justify-center gap-4">
         {links?.map((cta, index) => (
-          <CMSLink
-            key={cta.id || index}
-            {...cta.link}
-            appearance={cta.link.appearance}
-          />
+          <CMSLink key={cta.id || index} {...cta.link} appearance="home-hero" />
         ))}
       </div>
 
