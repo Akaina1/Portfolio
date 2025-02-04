@@ -29,7 +29,7 @@ export const HeaderClient: React.FC<HeaderClientProps> = ({ data }) => {
 
   return (
     <header
-      className="sticky top-0 z-40 w-full bg-background shadow-lg"
+      className="lg:w-8xl sticky top-0 z-40 w-full self-center rounded-b-xl bg-background shadow-lg"
       {...(theme ? { 'data-theme': theme } : {})}
     >
       <div className="container mx-auto px-4">
