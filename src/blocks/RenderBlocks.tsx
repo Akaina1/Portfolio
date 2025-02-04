@@ -12,6 +12,7 @@ import { MediaBlock } from '@/blocks/MediaBlock/Component';
 import { HomeHeroBlock } from '@/blocks/HomeHero/Component';
 import { AnimateText } from '@/blocks/AnimateText/Component';
 import { ProjectDisplayBlock } from '@/blocks/ProjectDisplay/Component';
+import { HighlightTextBlock } from '@/blocks/HighlightText/Component';
 
 const blockComponents = {
   content: ContentBlock,
@@ -21,6 +22,7 @@ const blockComponents = {
   homeHero: HomeHeroBlock,
   animateText: AnimateText,
   projectDisplay: ProjectDisplayBlock,
+  highlightText: HighlightTextBlock,
 };
 
 export const RenderBlocks: React.FC<{
@@ -47,8 +49,14 @@ export const RenderBlocks: React.FC<{
         );
 
         if (entry.isIntersecting && !visibleBlocks.includes(index)) {
-          // Add delay based on block position (1.5s for hero + 0.2s per block)
-          const delay = index === 0 ? 0 : 1500 + (index - 1) * 200;
+          // Get the block type to check if it's a highlightText block
+          const blockType = blocks[index]?.blockType;
+
+          // No delay for homeHero or highlightText blocks, standard delay for others
+          const delay =
+            blockType === 'homeHero' || blockType === 'highlightText'
+              ? 0
+              : 1500 + (index - 1) * 200;
 
           setTimeout(() => {
             setVisibleBlocks((prev) => [...prev, index]);
@@ -73,7 +81,7 @@ export const RenderBlocks: React.FC<{
     return () => {
       observer.disconnect();
     };
-  }, [visibleBlocks]);
+  }, [visibleBlocks, blocks]);
 
   const hasBlocks = blocks && Array.isArray(blocks) && blocks.length > 0;
 
@@ -102,12 +110,6 @@ export const RenderBlocks: React.FC<{
                         ? 'animate-fade-in-up'
                         : 'opacity-0'
                   )}
-                  style={{
-                    animationDelay:
-                      blockType === 'homeHero'
-                        ? '0ms'
-                        : `${(index - 1) * 200}ms`,
-                  }}
                   key={index}
                 >
                   {/* @ts-expect-error there may be some mismatch between the expected types here */}
