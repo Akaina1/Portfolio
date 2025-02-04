@@ -10,6 +10,7 @@ import { HomeHero } from '../../blocks/HomeHero/config';
 import { ProjectDisplay } from '../../blocks/ProjectDisplay/config';
 import { hero } from '@/heros/config';
 import { AnimateText } from '../../blocks/AnimateText/config';
+import { HighlightText } from '../../blocks/HighlightText/config';
 import { slugField } from '@/fields/slug';
 import { populatePublishedAt } from '../../hooks/populatePublishedAt';
 import { generatePreviewPath } from '../../utilities/generatePreviewPath';
@@ -85,6 +86,7 @@ export const Pages: CollectionConfig<'pages'> = {
                 HomeHero,
                 AnimateText,
                 ProjectDisplay,
+                HighlightText,
               ],
               required: true,
               admin: {
