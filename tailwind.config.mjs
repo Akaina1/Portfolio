@@ -1,19 +1,40 @@
-// Import plugins using ES modules
-import tailwindAnimate from 'tailwindcss-animate';
+/**
+ * Tailwind configuration file.
+ * Combines all safelist items so dynamically fetched classes are preserved.
+ */
 import tailwindTypography from '@tailwindcss/typography';
+import tailwindAnimated from 'tailwindcss-animated';
 
 /** @type {import('tailwindcss').Config} */
 const tailwindConfig = {
   content: [
-    './pages/**/*.{ts,tsx}',
-    './components/**/*.{ts,tsx}',
-    './app/**/*.{ts,tsx}',
-    './src/**/*.{ts,tsx}',
+    './pages/**/*.{js,jsx,ts,tsx,mdx}',
+    './components/**/*.{js,jsx,ts,tsx,mdx}',
+    './app/**/*.{js,jsx,ts,tsx,mdx}',
+    './src/**/*.{js,jsx,ts,tsx,mdx}',
   ],
-  darkMode: ['selector', '[data-theme="dark"]'],
-  plugins: [tailwindAnimate, tailwindTypography],
-  prefix: '',
+  // IMPORTANT: Ensure you have a single `safelist` combining all needed patterns and classes.
   safelist: [
+    // Patterns with variants for color and gradients:
+    {
+      pattern:
+        /^text-(black|gray|blue|red|white|slate-background|dark-background|neutral-400|neutral-500|neutral-700|rose-200|rose-500|transparent)$/,
+      variants: ['dark'],
+    },
+    {
+      pattern:
+        /^(from|via|to)-(neutral-400|neutral-500|neutral-700|rose-200|rose-500|white)$/,
+      variants: ['dark'],
+    },
+    {
+      pattern: /^bg-(gradient-to-[trbl]|clip-text)$/,
+    },
+    {
+      pattern:
+        /^text-(gray|blue|red|white)-(100|200|300|400|500|600|700|800|900)$/,
+      variants: ['dark'],
+    },
+    // Additional utility classes from your config:
     'lg:col-span-4',
     'lg:col-span-6',
     'lg:col-span-8',
@@ -27,6 +48,33 @@ const tailwindConfig = {
     'border-warning',
     'bg-warning/30',
   ],
+  darkMode: ['selector', '[data-theme="dark"]'],
+  plugins: [
+    tailwindAnimated,
+    tailwindTypography,
+    function ({ addUtilities, theme }) {
+      const gradients = theme('textGradient', {});
+      const utilities = Object.entries(gradients).reduce(
+        (acc, [name, value]) => {
+          return {
+            ...acc,
+            [`.text-gradient-${name}`]: {
+              'background-image': value,
+              'background-clip': 'text',
+              '-webkit-background-clip': 'text',
+              color: 'transparent',
+              '--tw-gradient-from': '#a3a3a3', // neutral-400
+              '--tw-gradient-via': '#737373', // neutral-500
+              '--tw-gradient-to': '#404040', // neutral-700
+            },
+          };
+        },
+        {}
+      );
+      addUtilities(utilities);
+    },
+  ],
+  prefix: '',
   theme: {
     container: {
       center: true,
@@ -53,6 +101,11 @@ const tailwindConfig = {
         dividerGlow: 'dividerGlow 2s linear infinite',
         clickExpand: 'clickExpand 1s ease-out forwards',
       },
+      width: {
+        '8xl': '90rem',
+        '9xl': '100rem',
+        '10xl': '110rem',
+      },
       borderRadius: {
         '5xl': '2rem',
         '4xl': '1.75rem',
@@ -63,7 +116,36 @@ const tailwindConfig = {
         md: 'calc(var(--radius) - 2px)',
         sm: 'calc(var(--radius) - 4px)',
       },
+      dropShadow: {
+        light: [
+          '0 2px 1px rgba(0, 0, 0, 0.18)',
+          '0 1px 2px rgba(0, 0, 0, 0.12)',
+          '0 4px 8px rgba(0, 0, 0, 0.09)',
+          '0 8px 16px rgba(0, 0, 0, 0.06)',
+        ],
+        dark: [
+          '0 2px 1px rgba(0, 0, 0, 0.45)',
+          '0 -1px 2px rgba(0, 0, 0, 0.35)',
+          '0 1px 3px rgba(18, 18, 18, 0.25)',
+          '0 4px 8px rgba(24, 24, 24, 0.15)',
+        ],
+        'dark-soft': [
+          '0 2px 1px rgba(0, 0, 0, 0.25)',
+          '0 -1px 2px rgba(0, 0, 0, 0.2)',
+          '0 1px 3px rgba(18, 18, 18, 0.15)',
+          '0 4px 8px rgba(24, 24, 24, 0.1)',
+        ],
+        'dark-outline': [
+          '0 0 1px rgba(15, 15, 15, 0.65)',
+          '0 0 1px rgba(15, 15, 15, 0.65)',
+        ],
+      },
+      textGradient: {
+        'neutral-fade':
+          'linear-gradient(to bottom, var(--tw-gradient-from), var(--tw-gradient-via), var(--tw-gradient-to))',
+      },
       colors: {
+        'dark-text': '#A3A3A3', // A muted gray that's easier on the eyes than white
         accent: {
           DEFAULT: 'hsl(var(--accent))',
           foreground: 'hsl(var(--accent-foreground))',
@@ -100,6 +182,8 @@ const tailwindConfig = {
         success: 'hsl(var(--success))',
         error: 'hsl(var(--error))',
         warning: 'hsl(var(--warning))',
+        'dark-background': 'rgb(32, 37, 43)',
+        'slate-background': 'rgb(38, 50, 56)',
       },
       fontFamily: {
         mono: ['var(--font-geist-mono)'],
