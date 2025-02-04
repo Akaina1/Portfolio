@@ -132,6 +132,7 @@ export interface Page {
     | HomeHeroBlock
     | AnimateTextBlock
     | ProjectDisplayBlockType
+    | HighlightTextBlock
   )[];
   meta?: {
     title?: string | null;
@@ -674,6 +675,20 @@ export interface ProjectDisplayBlockType {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "HighlightTextBlock".
+ */
+export interface HighlightTextBlock {
+  text: string;
+  baseColorLight: string;
+  baseColorDark: string;
+  highlightStyleLight: string;
+  highlightStyleDark: string;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'highlightText';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "redirects".
  */
 export interface Redirect {
@@ -863,6 +878,7 @@ export interface PagesSelect<T extends boolean = true> {
         homeHero?: T | HomeHeroBlockSelect<T>;
         animateText?: T | AnimateTextBlockSelect<T>;
         projectDisplay?: T | ProjectDisplayBlockTypeSelect<T>;
+        highlightText?: T | HighlightTextBlockSelect<T>;
       };
   meta?:
     | T
@@ -1002,6 +1018,19 @@ export interface ProjectDisplayBlockTypeSelect<T extends boolean = true> {
         slug?: T;
         id?: T;
       };
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "HighlightTextBlock_select".
+ */
+export interface HighlightTextBlockSelect<T extends boolean = true> {
+  text?: T;
+  baseColorLight?: T;
+  baseColorDark?: T;
+  highlightStyleLight?: T;
+  highlightStyleDark?: T;
   id?: T;
   blockName?: T;
 }
