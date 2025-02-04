@@ -20,7 +20,7 @@ const buttonVariants = cva(
       },
       variant: {
         default:
-          'bg-primary text-primary-foreground hover:bg-pink-200 hover:text-black hover:scale-105',
+          'bg-foreground text-background hover:bg-primary hover:text-black hover:scale-105',
         destructive:
           'bg-destructive text-destructive-foreground hover:bg-destructive/90',
         ghost: 'hover:bg-card hover:text-accent-foreground',
@@ -31,6 +31,8 @@ const buttonVariants = cva(
           'bg-secondary text-secondary-foreground hover:bg-secondary/80',
         'nav-link':
           'text-gray-600 dark:text-gray-400 hover:text-black dark:hover:text-white transition-all duration-200 relative font-bold active:text-pink-200/90 dark:active:text-pink-200/90 active:scale-110 dark:active:scale-110',
+        'home-hero':
+          'hover:animate-jump hover:animate-once hover:animate-duration-1000 hover:animate-delay-50 hover:scale-105 hover:animate-ease-in-out bg-foreground/20 dark:bg-background text-black dark:text-white',
       },
     },
   }
