@@ -9,7 +9,7 @@ import type { HighlightTextBlock as HighlightTextBlockType } from '@/payload-typ
  */
 const CONSTANTS = {
   HIGHLIGHT_SPEED_MULTIPLIER: 1,
-  VIEWPORT_TRIGGER_POINT: 0.82,
+  VIEWPORT_TRIGGER_POINT: 0.85,
   SCROLL_RANGE_MULTIPLIER: 1.18,
   SMOOTHING_FACTOR: 0.1,
   SCROLL_THROTTLE_MS: 16, // ~60fps
@@ -187,7 +187,7 @@ export const HighlightTextBlock: React.FC<HighlightTextBlockType> = (props) => {
   }, [nonEmptyWordIndices.length]);
 
   return (
-    <div className="relative mx-auto max-w-7xl px-6 py-24 sm:py-32 lg:px-8 lg:py-40">
+    <div className="relative mx-auto max-w-7xl px-6 py-24 sm:py-32 lg:px-8 lg:py-48">
       <div
         ref={containerRef}
         className="text-center text-3xl font-light lg:text-6xl"
