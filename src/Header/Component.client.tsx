@@ -29,13 +29,11 @@ export const HeaderClient: React.FC<HeaderClientProps> = ({ data }) => {
 
   return (
     <header
-      className="lg:w-8xl sticky top-0 z-40 w-full self-center rounded-b-xl bg-background shadow-lg"
+      className="lg:w-8xl fixed bottom-0 z-40 w-full self-center rounded-t-xl bg-background shadow-lg lg:sticky lg:top-0 lg:rounded-b-xl"
       {...(theme ? { 'data-theme': theme } : {})}
     >
       <div className="container mx-auto px-4">
         <nav className="flex h-16 items-center justify-between">
-          <HeaderNav data={data} />
-
           {/* Profile icon placeholder */}
           <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-200">
             <svg
@@ -52,6 +50,11 @@ export const HeaderClient: React.FC<HeaderClientProps> = ({ data }) => {
                 d="M13 10V3L4 14h7v7l9-11h-7z"
               />
             </svg>
+          </div>
+
+          {/* HeaderNav - on mobile it appears after profile icon */}
+          <div className="order-last lg:order-first">
+            <HeaderNav data={data} />
           </div>
         </nav>
       </div>
