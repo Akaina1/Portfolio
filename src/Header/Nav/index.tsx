@@ -151,7 +151,7 @@ export const HeaderNav: React.FC<{ data: HeaderType }> = ({ data }) => {
                 <div className="absolute inset-0 bg-primary/40" />
                 {/* Animated glow effect */}
                 <div
-                  className="animate-dividerGlow absolute h-full w-full bg-gradient-to-r from-transparent via-primary/60 to-transparent"
+                  className="absolute h-full w-full animate-dividerGlow bg-gradient-to-r from-transparent via-primary/60 to-transparent"
                   style={{
                     animationDelay: `-${index * 0.5}s`,
                   }}
@@ -176,11 +176,11 @@ export const HeaderNav: React.FC<{ data: HeaderType }> = ({ data }) => {
         )}
       </button>
 
-      {/* Mobile Menu Dropdown */}
+      {/* Mobile Menu Pullup */}
       {isMobileMenuOpen && (
         <div
           ref={menuRef}
-          className="absolute left-0 top-full w-48 rounded-lg bg-background py-2 shadow-lg md:hidden"
+          className="animate-fade-up animate-once animate-duration-800 animate-delay-0 animate-ease-in-out absolute bottom-full right-0 w-48 rounded-xl bg-background py-2 text-center shadow-lg md:hidden"
         >
           {navItems.map(({ link }, i) => (
             <div key={i} className="px-4 py-2" onClick={handleMenuItemClick}>
