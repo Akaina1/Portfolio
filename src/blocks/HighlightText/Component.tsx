@@ -9,7 +9,7 @@ import type { HighlightTextBlock as HighlightTextBlockType } from '@/payload-typ
  */
 const CONSTANTS = {
   HIGHLIGHT_SPEED_MULTIPLIER: 1,
-  VIEWPORT_TRIGGER_POINT: 0.85,
+  VIEWPORT_TRIGGER_POINT: 0.8,
   SCROLL_RANGE_MULTIPLIER: 1.18,
   SMOOTHING_FACTOR: 0.1,
   SCROLL_THROTTLE_MS: 16, // ~60fps
@@ -37,7 +37,7 @@ const Word = React.memo(
     const isSimpleColor = (style: string) => !style.includes(' ');
 
     return (
-      <span className="relative inline-block leading-loose tracking-wide">
+      <span className="relative mb-0 inline-block leading-loose tracking-wide lg:mb-3">
         <span
           className={cn(
             'will-change-opacity absolute inset-0 transition-opacity duration-1000',
@@ -87,7 +87,27 @@ const Word = React.memo(
 Word.displayName = 'Word';
 
 /**
- * Optimized HighlightTextBlock component
+ * A text block component that highlights words sequentially as the user scrolls.
+ * Uses intersection observer and requestAnimationFrame for smooth scroll-based animations.
+ *
+ * @component
+ * @param {HighlightTextBlockType} props - Component props
+ * @param {string} props.text - The text content to be displayed and highlighted
+ * @param {string} props.baseColorLight - Base text color in light mode
+ * @param {string} props.baseColorDark - Base text color in dark mode
+ * @param {string} props.highlightStyleLight - Highlight style/color in light mode
+ * @param {string} props.highlightStyleDark - Highlight style/color in dark mode
+ *
+ * @example
+ * ```tsx
+ * <HighlightTextBlock
+ *   text="Sample highlight text"
+ *   baseColorLight="gray-600"
+ *   baseColorDark="gray-400"
+ *   highlightStyleLight="blue-500"
+ *   highlightStyleDark="blue-300"
+ * />
+ * ```
  */
 export const HighlightTextBlock: React.FC<HighlightTextBlockType> = (props) => {
   const {
