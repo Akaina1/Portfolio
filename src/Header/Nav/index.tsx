@@ -84,7 +84,7 @@ export const HeaderNav: React.FC<{ data: HeaderType }> = ({ data }) => {
       {/* Desktop Navigation */}
       <div
         ref={navContainerRef}
-        className="relative hidden items-center gap-20 md:flex"
+        className="relative hidden items-center gap-20 md:flex md:gap-10"
         onMouseMove={handleMouseMove}
         onMouseLeave={() => {
           setHoveredIndex(null);
@@ -180,7 +180,7 @@ export const HeaderNav: React.FC<{ data: HeaderType }> = ({ data }) => {
       {isMobileMenuOpen && (
         <div
           ref={menuRef}
-          className="animate-fade-up animate-once animate-duration-800 animate-delay-0 animate-ease-in-out absolute bottom-full right-0 w-48 rounded-xl bg-background py-2 text-center shadow-lg md:hidden"
+          className="animate-duration-800 absolute bottom-full right-0 w-48 animate-fade-up rounded-xl bg-background py-2 text-center shadow-lg animate-delay-0 animate-once animate-ease-in-out md:hidden"
         >
           {navItems.map(({ link }, i) => (
             <div key={i} className="px-4 py-2" onClick={handleMenuItemClick}>
