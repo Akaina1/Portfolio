@@ -12,7 +12,13 @@ export default function TestPage() {
       <h1 className="mb-8 text-3xl font-bold">Test Page</h1>
       <div className="rounded-lg border border-black p-6 dark:border-white">
         {/* Add test components below */}
-        <p className="dark:drop-shadow-dark-outline-white text-6xl text-white/70 drop-shadow-light dark:text-gray-950">
+        <p className="dark:drop-shadow-dark-outline-white font-mono text-6xl text-white/70 drop-shadow-light dark:text-gray-950">
+          Test Text
+        </p>
+      </div>
+      <br />
+      <div className="rounded-lg border border-black p-6 dark:border-white">
+        <p className="font-mono text-6xl text-white/70 drop-shadow-light">
           Test Text
         </p>
       </div>
