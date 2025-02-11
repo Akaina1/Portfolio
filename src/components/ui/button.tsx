@@ -31,7 +31,7 @@ const buttonVariants = cva(
         'nav-link':
           'text-gray-600 dark:text-gray-400 hover:text-black dark:hover:text-white transition-all duration-200 relative font-bold active:text-pink-200/90 dark:active:text-pink-200/90 active:scale-110 dark:active:scale-110',
         'home-hero':
-          'hover:scale-105 hover:shadow-lg hover:shadow-primary/20 dark:hover:shadow-primary/10 transition-all duration-700 ease-out bg-foreground/20 dark:bg-background text-black dark:text-white before:absolute before:h-32 before:inset-0 before:-z-10 before:translate-x-[100%] before:translate-y-[100%] before:rotate-45 before:bg-gradient-to-r before:from-primary/40 before:via-primary/30 before:to-transparent before:transition-transform hover:before:translate-x-[-60%] hover:before:translate-y-[-50%] before:duration-1000',
+          'border border-gray-400 dark:border-gray-800 hover:scale-105 hover:shadow-lg hover:shadow-primary/20 dark:hover:shadow-primary/10 transition-all duration-700 ease-out bg-foreground/20 dark:bg-background text-black dark:text-white before:absolute before:h-64 before:w-64 before:inset-0 before:-z-10 before:translate-x-[-100%] before:translate-y-[100%] before:rotate-45 before:bg-gradient-to-r before:from-primary/40 before:via-primary/30 before:to-transparent before:transition-transform hover:before:translate-x-[-60%] hover:before:translate-y-[-50%] before:duration-1000',
       },
     },
   }
