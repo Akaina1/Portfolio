@@ -144,6 +144,12 @@ const tailwindConfig = {
           '0 0 1px rgba(15, 15, 15, 0.65)',
           '0 0 1px rgba(15, 15, 15, 0.65)',
         ],
+        'dark-outline-white': [
+          '0 2px 1px rgba(255, 255, 255, 0.18)',
+          '0 1px 2px rgba(255, 255, 255, 0.12)',
+          '0 4px 8px rgba(255, 255, 255, 0.09)',
+          '0 8px 16px rgba(255, 255, 255, 0.06)',
+        ],
       },
       textGradient: {
         'neutral-fade':
