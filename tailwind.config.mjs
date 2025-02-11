@@ -106,6 +106,11 @@ const tailwindConfig = {
         '9xl': '100rem',
         '10xl': '110rem',
       },
+      maxWidth: {
+        '8xl': '90rem',
+        '9xl': '100rem',
+        '10xl': '110rem',
+      },
       borderRadius: {
         '5xl': '2rem',
         '4xl': '1.75rem',
