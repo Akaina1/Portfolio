@@ -1,22 +1,22 @@
-import type { StaticImageData } from 'next/image'
+import type { StaticImageData } from 'next/image';
 
-import { cn } from 'src/utilities/cn'
-import React from 'react'
-import RichText from '@/components/RichText'
+import { cn } from 'src/utilities/cn';
+import React from 'react';
+import RichText from '@/components/RichText';
 
-import type { MediaBlock as MediaBlockProps } from '@/payload-types'
+import type { MediaBlock as MediaBlockProps } from '@/payload-types';
 
-import { Media } from '../../components/Media'
+import { Media } from '../../components/Media';
 
 type Props = MediaBlockProps & {
-  breakout?: boolean
-  captionClassName?: string
-  className?: string
-  enableGutter?: boolean
-  imgClassName?: string
-  staticImage?: StaticImageData
-  disableInnerContainer?: boolean
-}
+  breakout?: boolean;
+  captionClassName?: string;
+  className?: string;
+  enableGutter?: boolean;
+  imgClassName?: string;
+  staticImage?: StaticImageData;
+  disableInnerContainer?: boolean;
+};
 
 export const MediaBlock: React.FC<Props> = (props) => {
   const {
@@ -27,19 +27,20 @@ export const MediaBlock: React.FC<Props> = (props) => {
     media,
     staticImage,
     disableInnerContainer,
-  } = props
+    position,
+  } = props;
 
-  let caption
-  if (media && typeof media === 'object') caption = media.caption
+  let caption;
+  if (media && typeof media === 'object') caption = media.caption;
 
   return (
     <div
       className={cn(
-        '',
+        `flex justify-${position}`,
         {
           container: enableGutter,
         },
-        className,
+        className
       )}
     >
       <Media
@@ -54,12 +55,12 @@ export const MediaBlock: React.FC<Props> = (props) => {
             {
               container: !disableInnerContainer,
             },
-            captionClassName,
+            captionClassName
           )}
         >
           <RichText data={caption} enableGutter={false} />
         </div>
       )}
     </div>
-  )
-}
+  );
+};
