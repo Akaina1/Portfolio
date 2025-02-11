@@ -117,7 +117,7 @@ export interface Page {
                 } | null);
             url?: string | null;
             label: string;
-            appearance?: ('default' | 'outline') | null;
+            appearance?: ('default' | 'outline' | 'home-hero') | null;
           };
           id?: string | null;
         }[]
@@ -355,7 +355,7 @@ export interface CallToActionBlock {
               } | null);
           url?: string | null;
           label: string;
-          appearance?: ('default' | 'outline') | null;
+          appearance?: ('default' | 'outline' | 'home-hero') | null;
         };
         id?: string | null;
       }[]
@@ -402,7 +402,7 @@ export interface ContentBlock {
               } | null);
           url?: string | null;
           label: string;
-          appearance?: ('default' | 'outline') | null;
+          appearance?: ('default' | 'outline' | 'home-hero') | null;
         };
         id?: string | null;
       }[]
@@ -417,6 +417,7 @@ export interface ContentBlock {
  */
 export interface MediaBlock {
   media: string | Media;
+  position: 'start' | 'end' | 'center';
   id?: string | null;
   blockName?: string | null;
   blockType: 'mediaBlock';
@@ -663,12 +664,14 @@ export interface AnimateTextBlock {
  * via the `definition` "ProjectDisplayBlockType".
  */
 export interface ProjectDisplayBlockType {
-  projects: {
-    displayImage: string | Media;
-    title: string;
-    slug: string;
-    id?: string | null;
-  }[];
+  projects?:
+    | {
+        displayImage: string | Media;
+        title: string;
+        slug: string;
+        id?: string | null;
+      }[]
+    | null;
   id?: string | null;
   blockName?: string | null;
   blockType: 'projectDisplay';
@@ -679,8 +682,6 @@ export interface ProjectDisplayBlockType {
  */
 export interface HighlightTextBlock {
   text: string;
-  baseColorLight: string;
-  baseColorDark: string;
   highlightStyleLight: string;
   highlightStyleDark: string;
   id?: string | null;
@@ -950,6 +951,7 @@ export interface ContentBlockSelect<T extends boolean = true> {
  */
 export interface MediaBlockSelect<T extends boolean = true> {
   media?: T;
+  position?: T;
   id?: T;
   blockName?: T;
 }
@@ -1027,8 +1029,6 @@ export interface ProjectDisplayBlockTypeSelect<T extends boolean = true> {
  */
 export interface HighlightTextBlockSelect<T extends boolean = true> {
   text?: T;
-  baseColorLight?: T;
-  baseColorDark?: T;
   highlightStyleLight?: T;
   highlightStyleDark?: T;
   id?: T;
