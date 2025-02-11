@@ -1,6 +1,6 @@
 'use client';
 import { useHeaderTheme } from '@/providers/HeaderTheme';
-import { usePathname } from 'next/navigation';
+import { useTheme } from '@/providers/Theme';
 import React, { useEffect, useState } from 'react';
 
 import type { Header } from '@/payload-types';
@@ -15,21 +15,20 @@ export const HeaderClient: React.FC<HeaderClientProps> = ({ data }) => {
   /* Storing the value in a useState to avoid hydration errors */
   const [theme, setTheme] = useState<string | null>(null);
   const { headerTheme, setHeaderTheme } = useHeaderTheme();
-  const pathname = usePathname();
-
+  const { theme: globalTheme } = useTheme();
+  // Handle theme synchronization
   useEffect(() => {
-    setHeaderTheme(null);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pathname]);
+    setHeaderTheme(globalTheme ?? null);
+  }, [globalTheme, setHeaderTheme]);
 
+  // Handle theme updates
   useEffect(() => {
     if (headerTheme && headerTheme !== theme) setTheme(headerTheme);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [headerTheme]);
+  }, [headerTheme, theme]);
 
   return (
     <header
-      className="lg:max-w-8xl fixed bottom-0 z-40 w-full self-center rounded-t-xl bg-background shadow-lg md:sticky md:top-0 md:rounded-b-xl"
+      className="lg:max-w-8xl fixed bottom-0 z-40 w-full self-center rounded-b-xl bg-background shadow-lg md:sticky md:top-0 md:rounded-b-xl"
       {...(theme ? { 'data-theme': theme } : {})}
     >
       <div className="container mx-auto px-4">
