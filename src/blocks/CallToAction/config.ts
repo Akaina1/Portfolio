@@ -1,13 +1,13 @@
-import type { Block } from 'payload'
+import type { Block } from 'payload';
 
 import {
   FixedToolbarFeature,
   HeadingFeature,
   InlineToolbarFeature,
   lexicalEditor,
-} from '@payloadcms/richtext-lexical'
+} from '@payloadcms/richtext-lexical';
 
-import { linkGroup } from '../../fields/linkGroup'
+import { linkGroup } from '../../fields/linkGroup';
 
 export const CallToAction: Block = {
   slug: 'cta',
@@ -23,13 +23,13 @@ export const CallToAction: Block = {
             HeadingFeature({ enabledHeadingSizes: ['h1', 'h2', 'h3', 'h4'] }),
             FixedToolbarFeature(),
             InlineToolbarFeature(),
-          ]
+          ];
         },
       }),
       label: false,
     },
     linkGroup({
-      appearances: ['default', 'outline'],
+      appearances: ['default', 'outline', 'home-hero'],
       overrides: {
         maxRows: 2,
       },
@@ -39,4 +39,4 @@ export const CallToAction: Block = {
     plural: 'Calls to Action',
     singular: 'Call to Action',
   },
-}
+};
