@@ -50,7 +50,7 @@ const Word: React.FC<WordProps> = React.memo(
   ({ word, highlighted, highlightStyleLight, highlightStyleDark }) => {
     return (
       <span
-        className="mb-4 inline-block leading-loose tracking-wide transition-opacity duration-1000 ease-in-out lg:mb-2"
+        className="inline-block font-mono leading-relaxed tracking-wide transition-opacity duration-1000 ease-in-out lg:mb-2"
         style={{ opacity: highlighted ? 1 : 0 }}
       >
         {/* Render for light mode */}
