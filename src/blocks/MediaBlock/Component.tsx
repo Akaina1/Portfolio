@@ -36,7 +36,7 @@ export const MediaBlock: React.FC<Props> = (props) => {
   return (
     <div
       className={cn(
-        `flex justify-${position}`,
+        `flex justify-${position} drop-shadow-light dark:drop-shadow-dark-outline-white`,
         {
           container: enableGutter,
         },
