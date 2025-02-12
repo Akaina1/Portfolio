@@ -2,11 +2,31 @@
 import { Media } from '@/components/Media';
 import Image from 'next/image';
 import type { MarqueeBlockType } from '@/payload-types';
+import { cn } from '@/utilities/cn';
 
-// Default logos to display when no images are provided
-const DEFAULT_LOGOS = [
-  { src: '/media/react-svgrepo-com.svg', alt: 'Default Logo 1' },
-  // Add more default logos as needed
+// Define a type for the logo object
+type DefaultLogo = {
+  src: string;
+  alt: string;
+  width: number;
+  height: number;
+};
+
+// Default logos with specific dimensions
+const DEFAULT_LOGOS: DefaultLogo[] = [
+  {
+    src: '/media/react-svgrepo-com.svg',
+    alt: 'Default Logo 1',
+    width: 90,
+    height: 90,
+  },
+  {
+    src: '/media/test.svg',
+    alt: 'Default Logo 2',
+    width: 150, // Larger logo
+    height: 150,
+  },
+  // Add more logos with custom dimensions
 ];
 
 /**
@@ -23,16 +43,22 @@ const DEFAULT_LOGOS = [
 
 export const MarqueeBlock: React.FC<MarqueeBlockType> = ({ images }) => {
   const renderContent = (isClone = false) => {
-    // If no images provided, use default logos
     if (!images || images.length === 0) {
       return DEFAULT_LOGOS.map((logo, index) => (
         <Image
           key={`${isClone ? 'clone-' : ''}${index}`}
           src={logo.src}
           alt={logo.alt}
-          width={100}
-          height={100}
+          width={logo.width}
+          height={logo.height}
           className={`marquee__item marquee__item--${index + 1} object-contain`}
+          style={
+            {
+              // Set custom properties for each logo
+              '--logo-width': `${logo.width}px`,
+              '--logo-height': `${logo.height}px`,
+            } as React.CSSProperties
+          }
         />
       ));
     }
@@ -52,7 +78,12 @@ export const MarqueeBlock: React.FC<MarqueeBlockType> = ({ images }) => {
   };
 
   return (
-    <div className="marquee marquee--8 relative left-1/2 right-1/2 my-14 -ml-[50vw] -mr-[50vw] h-full w-screen bg-gray-100 py-2 dark:bg-gray-800">
+    <div
+      className={cn(
+        'marquee marquee--8 relative left-1/2 right-1/2 my-14 -ml-[50vw] -mr-[50vw] max-h-[110px] w-screen bg-white/50 dark:bg-white/5',
+        images && images.length > 0 ? 'py-3' : ''
+      )}
+    >
       <div className="marquee__content">{renderContent()}</div>
       <div className="marquee__content" aria-hidden="true">
         {renderContent(true)}
