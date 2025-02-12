@@ -13,6 +13,7 @@ import { HomeHeroBlock } from '@/blocks/HomeHero/Component';
 import { AnimateText } from '@/blocks/AnimateText/Component';
 import { ProjectDisplayBlock } from '@/blocks/ProjectDisplay/Component';
 import { HighlightTextBlock } from '@/blocks/HighlightText/Component';
+import { MarqueeBlock } from '@/blocks/Marquee/Component';
 
 const blockComponents = {
   content: ContentBlock,
@@ -23,6 +24,7 @@ const blockComponents = {
   animateText: AnimateText,
   projectDisplay: ProjectDisplayBlock,
   highlightText: HighlightTextBlock,
+  marquee: MarqueeBlock,
 };
 
 export const RenderBlocks: React.FC<{
