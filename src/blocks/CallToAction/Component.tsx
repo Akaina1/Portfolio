@@ -11,7 +11,7 @@ export const CallToActionBlock: React.FC<CTABlockProps> = ({
 }) => {
   return (
     <div className="container">
-      <div className="container flex w-full flex-col gap-8 rounded-xl border border-border bg-white/50 p-4 shadow-lg shadow-black/35 md:flex-row md:items-center md:justify-between md:p-10 dark:bg-white/5">
+      <div className="container flex w-full flex-col gap-8 rounded-xl border border-border bg-white/50 p-4 shadow-lg shadow-black/35 md:flex-row md:items-center md:justify-between md:p-10 dark:bg-white/5 dark:shadow-white/15 dark:drop-shadow-sm">
         <div className="flex max-w-[48rem] items-center">
           {richText && (
             <RichText className="mb-0" data={richText} enableGutter={false} />
