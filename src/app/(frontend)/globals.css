@@ -188,6 +188,7 @@ html[data-theme='light'] {
   flex-shrink: 0;
   display: flex;
   justify-content: space-around;
+  align-items: center;
   min-width: 100%;
   gap: var(--marquee-gap);
   animation: scroll var(--marquee-duration) linear infinite;
@@ -204,9 +205,11 @@ html[data-theme='light'] {
 
 /* SVG items (from public folder) */
 .marquee__item[src*='.svg'] {
-  width: 80px;
-  height: 80px;
+  width: var(--logo-width, 80px); /* Default fallback of 80px */
+  height: var(--logo-height, 80px);
   object-fit: contain;
+  display: flex;
+  align-self: center;
 }
 
 /* Regular image items (from CMS through Media component) */
@@ -233,4 +236,14 @@ html[data-theme='light'] {
   .marquee__content {
     animation-play-state: paused !important;
   }
+}
+
+/* Target specific SVG */
+.marquee__item[src*='test.svg'] {
+  filter: brightness(0); /* Force black in light mode */
+  transition: filter 0.3s ease;
+}
+
+[data-theme='dark'] .marquee__item[src*='test.svg'] {
+  filter: brightness(0) invert(1); /* Force white in dark mode */
 }
