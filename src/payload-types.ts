@@ -133,6 +133,7 @@ export interface Page {
     | AnimateTextBlock
     | ProjectDisplayBlockType
     | HighlightTextBlock
+    | MarqueeBlockType
   )[];
   meta?: {
     title?: string | null;
@@ -690,6 +691,21 @@ export interface HighlightTextBlock {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "MarqueeBlockType".
+ */
+export interface MarqueeBlockType {
+  images?:
+    | {
+        image?: (string | null) | Media;
+        id?: string | null;
+      }[]
+    | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'marquee';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "redirects".
  */
 export interface Redirect {
@@ -880,6 +896,7 @@ export interface PagesSelect<T extends boolean = true> {
         animateText?: T | AnimateTextBlockSelect<T>;
         projectDisplay?: T | ProjectDisplayBlockTypeSelect<T>;
         highlightText?: T | HighlightTextBlockSelect<T>;
+        marquee?: T | MarqueeBlockTypeSelect<T>;
       };
   meta?:
     | T
@@ -1031,6 +1048,20 @@ export interface HighlightTextBlockSelect<T extends boolean = true> {
   text?: T;
   highlightStyleLight?: T;
   highlightStyleDark?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "MarqueeBlockType_select".
+ */
+export interface MarqueeBlockTypeSelect<T extends boolean = true> {
+  images?:
+    | T
+    | {
+        image?: T;
+        id?: T;
+      };
   id?: T;
   blockName?: T;
 }
