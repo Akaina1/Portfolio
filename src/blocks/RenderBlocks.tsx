@@ -58,7 +58,7 @@ export const RenderBlocks: React.FC<{
           const delay =
             blockType === 'homeHero' || blockType === 'highlightText'
               ? 0
-              : 1500 + (index - 1) * 200;
+              : (index - 1) * 100;
 
           setTimeout(() => {
             setVisibleBlocks((prev) => [...prev, index]);
