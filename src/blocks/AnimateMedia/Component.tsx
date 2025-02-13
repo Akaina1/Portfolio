@@ -44,11 +44,11 @@ export const AnimateMedia: React.FC<Props> = (props) => {
   }, [hasBeenVisible]);
 
   return (
-    <div className="relative w-full overflow-hidden">
+    <div className="relative w-full">
       <div
         ref={ref}
         className={cn(
-          'flex w-full opacity-0',
+          'flex w-full border-black/30 dark:drop-shadow-dark-outline-white',
           position === 'start' ? 'justify-start' : 'justify-end',
           {
             'animate-slide-from-left': isVisible && position === 'start',
@@ -59,8 +59,7 @@ export const AnimateMedia: React.FC<Props> = (props) => {
       >
         <Media
           imgClassName={cn(
-            'shadow-lg shadow-black/50 border-b-2 border-r-2 border-l border-t',
-            'border-black/30 dark:border-white/15',
+            'border-b-2 border-r-2 border-l border-t',
             {
               'rounded-r-2xl': position === 'start',
               'rounded-l-2xl': position === 'end',
