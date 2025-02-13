@@ -199,7 +199,11 @@ const ProjectSquare: React.FC<{
       )}
 
       <div
-        className="absolute inset-0 flex flex-col items-center justify-center bg-transparent p-4 text-center transition-all duration-300 group-hover:bg-opacity-90"
+        className={cn(
+          'absolute inset-0 flex flex-col items-center justify-center',
+          'bg-transparent p-4 text-center',
+          'transition-all duration-300 group-hover:bg-opacity-90'
+        )}
         style={
           {
             '--hover-color':
