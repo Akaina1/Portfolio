@@ -1,6 +1,5 @@
 'use client';
 
-//import { cn } from 'src/utilities/cn'
 import React, { Fragment, useRef, useEffect, useState } from 'react';
 import type { Page } from '@/payload-types';
 import { cn } from '@/utilities/cn';
@@ -14,6 +13,7 @@ import { AnimateText } from '@/blocks/AnimateText/Component';
 import { ProjectDisplayBlock } from '@/blocks/ProjectDisplay/Component';
 import { HighlightTextBlock } from '@/blocks/HighlightText/Component';
 import { MarqueeBlock } from '@/blocks/Marquee/Component';
+import { AnimateMedia } from '@/blocks/AnimateMedia/Component';
 
 const blockComponents = {
   content: ContentBlock,
@@ -25,6 +25,7 @@ const blockComponents = {
   projectDisplay: ProjectDisplayBlock,
   highlightText: HighlightTextBlock,
   marquee: MarqueeBlock,
+  animateMedia: AnimateMedia,
 };
 
 export const RenderBlocks: React.FC<{
@@ -36,9 +37,14 @@ export const RenderBlocks: React.FC<{
 
   useEffect(() => {
     const observerOptions = {
+      // root: null means use the viewport as the root (scrolling container)
       root: null,
+      // rootMargin: adds margin around the root, '0px' means no extra margin
+      // Positive values expand the root's bounding box, negative values shrink it
       rootMargin: '0px',
-      threshold: 0.1,
+      // threshold: percentage of target element that must be visible
+      // 0.5 means element is considered visible when 50% is in view
+      threshold: 0.4,
     };
 
     const observerCallback: IntersectionObserverCallback = (
@@ -56,9 +62,11 @@ export const RenderBlocks: React.FC<{
 
           // No delay for homeHero or highlightText blocks, standard delay for others
           const delay =
-            blockType === 'homeHero' || blockType === 'highlightText'
+            blockType === 'homeHero' ||
+            blockType === 'highlightText' ||
+            blockType === 'animateMedia'
               ? 0
-              : (index - 1) * 100;
+              : (index - 1) * 200;
 
           setTimeout(() => {
             setVisibleBlocks((prev) => [...prev, index]);
