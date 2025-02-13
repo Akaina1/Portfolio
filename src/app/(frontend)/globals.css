@@ -146,7 +146,7 @@
 }
 
 .animate-fade-in-up {
-  animation: fadeInUp 1s cubic-bezier(0.215, 0.61, 0.355, 1) both;
+  animation: fadeInUp 2s cubic-bezier(0.215, 0.61, 0.355, 1) both;
 }
 
 @layer base {
@@ -246,4 +246,66 @@ html[data-theme='light'] {
 
 [data-theme='dark'] .marquee__item[src*='test.svg'] {
   filter: brightness(0) invert(1); /* Force white in dark mode */
+}
+
+@keyframes slideFromLeft {
+  0% {
+    transform: translateX(-110%);
+    opacity: 0;
+  }
+  100% {
+    transform: translateX(-5%);
+    opacity: 1;
+  }
+}
+
+@keyframes slideFromRight {
+  0% {
+    transform: translateX(110%);
+    opacity: 0;
+  }
+  100% {
+    transform: translateX(5%);
+    opacity: 1;
+  }
+}
+
+@keyframes slideToLeft {
+  0% {
+    transform: translateX(-5%);
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(-110%);
+    opacity: 0;
+  }
+}
+
+@keyframes slideToRight {
+  0% {
+    transform: translateX(5%);
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(110%);
+    opacity: 0;
+  }
+}
+
+@layer utilities {
+  .animate-slide-from-left {
+    animation: slideFromLeft 1s cubic-bezier(0.215, 0.61, 0.355, 1) forwards;
+  }
+
+  .animate-slide-from-right {
+    animation: slideFromRight 1s cubic-bezier(0.215, 0.61, 0.355, 1) forwards;
+  }
+
+  .animate-slide-to-left {
+    animation: slideToLeft 1s cubic-bezier(0.215, 0.61, 0.355, 1) forwards;
+  }
+
+  .animate-slide-to-right {
+    animation: slideToRight 1s cubic-bezier(0.215, 0.61, 0.355, 1) forwards;
+  }
 }
