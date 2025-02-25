@@ -14,6 +14,7 @@ import { ProjectDisplayBlock } from '@/blocks/ProjectDisplay/Component';
 import { HighlightTextBlock } from '@/blocks/HighlightText/Component';
 import { MarqueeBlock } from '@/blocks/Marquee/Component';
 import { AnimateMedia } from '@/blocks/AnimateMedia/Component';
+import { ProjectCardsBlock } from '@/blocks/ProjectCards/Component';
 
 const blockComponents = {
   content: ContentBlock,
@@ -26,6 +27,7 @@ const blockComponents = {
   highlightText: HighlightTextBlock,
   marquee: MarqueeBlock,
   animateMedia: AnimateMedia,
+  projectCards: ProjectCardsBlock,
 };
 
 export const RenderBlocks: React.FC<{
@@ -113,7 +115,9 @@ export const RenderBlocks: React.FC<{
                     }
                   }}
                   className={cn(
-                    blockType === 'homeHero' ? 'my-0' : 'my-16',
+                    blockType === 'homeHero' || blockType === 'projectCards'
+                      ? 'my-0'
+                      : 'my-16',
                     blockType === 'homeHero'
                       ? 'animate-pull-down'
                       : visibleBlocks.includes(index)
