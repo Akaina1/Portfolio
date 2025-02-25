@@ -44,7 +44,7 @@ export const RenderBlocks: React.FC<{
       rootMargin: '0px',
       // threshold: percentage of target element that must be visible
       // 0.5 means element is considered visible when 50% is in view
-      threshold: 0.4,
+      threshold: 0.5,
     };
 
     const observerCallback: IntersectionObserverCallback = (
