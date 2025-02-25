@@ -16,6 +16,7 @@ export interface Config {
     media: Media;
     categories: Category;
     users: User;
+    projects: Project;
     redirects: Redirect;
     forms: Form;
     'form-submissions': FormSubmission;
@@ -31,6 +32,7 @@ export interface Config {
     media: MediaSelect<false> | MediaSelect<true>;
     categories: CategoriesSelect<false> | CategoriesSelect<true>;
     users: UsersSelect<false> | UsersSelect<true>;
+    projects: ProjectsSelect<false> | ProjectsSelect<true>;
     redirects: RedirectsSelect<false> | RedirectsSelect<true>;
     forms: FormsSelect<false> | FormsSelect<true>;
     'form-submissions': FormSubmissionsSelect<false> | FormSubmissionsSelect<true>;
@@ -135,6 +137,7 @@ export interface Page {
     | HighlightTextBlock
     | MarqueeBlockType
     | AnimateMedia
+    | ProjectCardsBlockType
   )[];
   meta?: {
     title?: string | null;
@@ -660,6 +663,30 @@ export interface AnimateMedia {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "ProjectCardsBlockType".
+ */
+export interface ProjectCardsBlockType {
+  limit?: number | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'projectCards';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "projects".
+ */
+export interface Project {
+  id: string;
+  title?: string | null;
+  description?: string | null;
+  media?: (string | null) | Media;
+  liveLink?: string | null;
+  githubLink?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "redirects".
  */
 export interface Redirect {
@@ -752,6 +779,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'users';
         value: string | User;
+      } | null)
+    | ({
+        relationTo: 'projects';
+        value: string | Project;
       } | null)
     | ({
         relationTo: 'redirects';
@@ -852,6 +883,7 @@ export interface PagesSelect<T extends boolean = true> {
         highlightText?: T | HighlightTextBlockSelect<T>;
         marquee?: T | MarqueeBlockTypeSelect<T>;
         animateMedia?: T | AnimateMediaSelect<T>;
+        projectCards?: T | ProjectCardsBlockTypeSelect<T>;
       };
   meta?:
     | T
@@ -1032,6 +1064,15 @@ export interface AnimateMediaSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "ProjectCardsBlockType_select".
+ */
+export interface ProjectCardsBlockTypeSelect<T extends boolean = true> {
+  limit?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "posts_select".
  */
 export interface PostsSelect<T extends boolean = true> {
@@ -1113,6 +1154,19 @@ export interface UsersSelect<T extends boolean = true> {
   hash?: T;
   loginAttempts?: T;
   lockUntil?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "projects_select".
+ */
+export interface ProjectsSelect<T extends boolean = true> {
+  title?: T;
+  description?: T;
+  media?: T;
+  liveLink?: T;
+  githubLink?: T;
+  updatedAt?: T;
+  createdAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
