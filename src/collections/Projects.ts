@@ -4,6 +4,9 @@ import type { CollectionConfig } from 'payload';
 
 export const Projects: CollectionConfig = {
   slug: 'projects',
+  admin: {
+    useAsTitle: 'title',
+  },
   access: {
     create: authenticated,
     delete: authenticated,
@@ -17,7 +20,7 @@ export const Projects: CollectionConfig = {
     },
     {
       name: 'description',
-      type: 'text',
+      type: 'textarea',
     },
     {
       name: 'media',
@@ -25,7 +28,11 @@ export const Projects: CollectionConfig = {
       relationTo: 'media',
     },
     {
-      name: 'link',
+      name: 'liveLink',
+      type: 'text',
+    },
+    {
+      name: 'githubLink',
       type: 'text',
     },
   ],
