@@ -19,28 +19,6 @@ export const HighlightText: Block = {
       },
     },
     {
-      name: 'baseColorLight',
-      type: 'text',
-      label: 'Light Mode Base Color',
-      required: true,
-      admin: {
-        description:
-          'Enter the Tailwind color class for light mode (e.g., gray-600)',
-        placeholder: 'gray-600',
-      },
-    },
-    {
-      name: 'baseColorDark',
-      type: 'text',
-      label: 'Dark Mode Base Color',
-      required: true,
-      admin: {
-        description:
-          'Enter the Tailwind color class for dark mode (e.g., gray-400)',
-        placeholder: 'gray-400',
-      },
-    },
-    {
       name: 'highlightStyleLight',
       type: 'text',
       label: 'Light Mode Highlight Style',

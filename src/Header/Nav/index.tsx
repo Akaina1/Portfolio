@@ -1,12 +1,14 @@
 'use client';
 
-import React, { useState, useRef, useEffect } from 'react';
-
+import React, { useState, useRef, useEffect, useMemo } from 'react';
 import type { Header as HeaderType } from '@/payload-types';
+import type { Page, Post } from '@/payload-types';
 import { Menu, X } from 'lucide-react';
 import { CMSLink } from '@/components/Link';
+import { usePathname } from 'next/navigation';
 
 export const HeaderNav: React.FC<{ data: HeaderType }> = ({ data }) => {
+  const pathname = usePathname();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [activeIndex, setActiveIndex] = useState<number>(0);
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
@@ -15,7 +17,63 @@ export const HeaderNav: React.FC<{ data: HeaderType }> = ({ data }) => {
   const navItemRefs = useRef<(HTMLDivElement | null)[]>([]);
   const underlineRef = useRef<HTMLDivElement>(null);
   const navContainerRef = useRef<HTMLDivElement>(null);
-  const navItems = data?.navItems || [];
+
+  // Memoize navItems to prevent unnecessary re-renders
+  const navItems = useMemo(() => data?.navItems || [], [data?.navItems]);
+
+  // Determine active nav item based on current pathname
+  useEffect(() => {
+    const normalizedCurrentPath = pathname.replace(/^\/|\/$/g, ''); // Remove leading and trailing slashes
+
+    const currentIndex = navItems.findIndex((item) => {
+      // Get the path based on link type
+      let itemPath = '';
+
+      if (item.link.type === 'custom') {
+        itemPath = item.link.url || '';
+      } else if (item.link.type === 'reference' && item.link.reference) {
+        const reference = item.link.reference;
+        // Handle both string and object references
+        if (typeof reference.value === 'string') {
+          itemPath = reference.value;
+        } else {
+          // Handle Page or Post types
+          const value = reference.value as Page | Post;
+          itemPath = value.slug || '';
+        }
+      }
+
+      // Normalize the item path
+      const normalizedItemPath = itemPath.replace(/^\/|\/$/g, '');
+
+      // Special case for home page
+      if (
+        normalizedCurrentPath === '' &&
+        (normalizedItemPath === '' || normalizedItemPath === 'home')
+      ) {
+        return true;
+      }
+
+      // Check for exact match first
+      if (normalizedCurrentPath === normalizedItemPath) {
+        return true;
+      }
+
+      // Check for nested routes
+      if (
+        normalizedItemPath &&
+        normalizedCurrentPath.startsWith(`${normalizedItemPath}/`)
+      ) {
+        return true;
+      }
+
+      return false;
+    });
+
+    if (currentIndex !== -1) {
+      setActiveIndex(currentIndex);
+    }
+  }, [pathname, navItems]);
 
   // Update underline position
   useEffect(() => {
@@ -84,7 +142,7 @@ export const HeaderNav: React.FC<{ data: HeaderType }> = ({ data }) => {
       {/* Desktop Navigation */}
       <div
         ref={navContainerRef}
-        className="relative hidden items-center gap-20 md:flex"
+        className="relative hidden items-center gap-20 md:flex md:gap-10"
         onMouseMove={handleMouseMove}
         onMouseLeave={() => {
           setHoveredIndex(null);
@@ -180,7 +238,7 @@ export const HeaderNav: React.FC<{ data: HeaderType }> = ({ data }) => {
       {isMobileMenuOpen && (
         <div
           ref={menuRef}
-          className="animate-fade-up animate-once animate-duration-800 animate-delay-0 animate-ease-in-out absolute bottom-full right-0 w-48 rounded-xl bg-background py-2 text-center shadow-lg md:hidden"
+          className="animate-duration-800 absolute bottom-full right-0 w-48 animate-fade-up rounded-xl bg-background py-2 text-center shadow-lg animate-delay-0 animate-once animate-ease-in-out md:hidden"
         >
           {navItems.map(({ link }, i) => (
             <div key={i} className="px-4 py-2" onClick={handleMenuItemClick}>

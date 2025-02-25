@@ -11,6 +11,8 @@ import { ProjectDisplay } from '../../blocks/ProjectDisplay/config';
 import { hero } from '@/heros/config';
 import { AnimateText } from '../../blocks/AnimateText/config';
 import { HighlightText } from '../../blocks/HighlightText/config';
+import { AnimateMedia } from '../../blocks/AnimateMedia/config';
+import { Marquee } from '../../blocks/Marquee/config';
 import { slugField } from '@/fields/slug';
 import { populatePublishedAt } from '../../hooks/populatePublishedAt';
 import { generatePreviewPath } from '../../utilities/generatePreviewPath';
@@ -87,6 +89,8 @@ export const Pages: CollectionConfig<'pages'> = {
                 AnimateText,
                 ProjectDisplay,
                 HighlightText,
+                Marquee,
+                AnimateMedia,
               ],
               required: true,
               admin: {

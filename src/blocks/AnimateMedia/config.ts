@@ -1,8 +1,8 @@
 import type { Block } from 'payload';
 
-export const MediaBlock: Block = {
-  slug: 'mediaBlock',
-  interfaceName: 'MediaBlock',
+export const AnimateMedia: Block = {
+  slug: 'animateMedia',
+  interfaceName: 'AnimateMedia',
   fields: [
     {
       name: 'media',
@@ -13,8 +13,8 @@ export const MediaBlock: Block = {
     {
       name: 'position',
       type: 'select',
-      options: ['start', 'end', 'center'],
-      defaultValue: 'center',
+      options: ['start', 'end'],
+      defaultValue: 'start',
       required: true,
     },
   ],

@@ -117,7 +117,7 @@ export interface Page {
                 } | null);
             url?: string | null;
             label: string;
-            appearance?: ('default' | 'outline') | null;
+            appearance?: ('default' | 'outline' | 'home-hero') | null;
           };
           id?: string | null;
         }[]
@@ -133,6 +133,8 @@ export interface Page {
     | AnimateTextBlock
     | ProjectDisplayBlockType
     | HighlightTextBlock
+    | MarqueeBlockType
+    | AnimateMedia
   )[];
   meta?: {
     title?: string | null;
@@ -223,64 +225,6 @@ export interface Media {
   height?: number | null;
   focalX?: number | null;
   focalY?: number | null;
-  sizes?: {
-    thumbnail?: {
-      url?: string | null;
-      width?: number | null;
-      height?: number | null;
-      mimeType?: string | null;
-      filesize?: number | null;
-      filename?: string | null;
-    };
-    square?: {
-      url?: string | null;
-      width?: number | null;
-      height?: number | null;
-      mimeType?: string | null;
-      filesize?: number | null;
-      filename?: string | null;
-    };
-    small?: {
-      url?: string | null;
-      width?: number | null;
-      height?: number | null;
-      mimeType?: string | null;
-      filesize?: number | null;
-      filename?: string | null;
-    };
-    medium?: {
-      url?: string | null;
-      width?: number | null;
-      height?: number | null;
-      mimeType?: string | null;
-      filesize?: number | null;
-      filename?: string | null;
-    };
-    large?: {
-      url?: string | null;
-      width?: number | null;
-      height?: number | null;
-      mimeType?: string | null;
-      filesize?: number | null;
-      filename?: string | null;
-    };
-    xlarge?: {
-      url?: string | null;
-      width?: number | null;
-      height?: number | null;
-      mimeType?: string | null;
-      filesize?: number | null;
-      filename?: string | null;
-    };
-    og?: {
-      url?: string | null;
-      width?: number | null;
-      height?: number | null;
-      mimeType?: string | null;
-      filesize?: number | null;
-      filename?: string | null;
-    };
-  };
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -355,7 +299,7 @@ export interface CallToActionBlock {
               } | null);
           url?: string | null;
           label: string;
-          appearance?: ('default' | 'outline') | null;
+          appearance?: ('default' | 'outline' | 'home-hero') | null;
         };
         id?: string | null;
       }[]
@@ -402,7 +346,7 @@ export interface ContentBlock {
               } | null);
           url?: string | null;
           label: string;
-          appearance?: ('default' | 'outline') | null;
+          appearance?: ('default' | 'outline' | 'home-hero') | null;
         };
         id?: string | null;
       }[]
@@ -417,6 +361,7 @@ export interface ContentBlock {
  */
 export interface MediaBlock {
   media: string | Media;
+  position: 'start' | 'end' | 'center';
   id?: string | null;
   blockName?: string | null;
   blockType: 'mediaBlock';
@@ -663,12 +608,14 @@ export interface AnimateTextBlock {
  * via the `definition` "ProjectDisplayBlockType".
  */
 export interface ProjectDisplayBlockType {
-  projects: {
-    displayImage: string | Media;
-    title: string;
-    slug: string;
-    id?: string | null;
-  }[];
+  projects?:
+    | {
+        displayImage: string | Media;
+        title: string;
+        slug: string;
+        id?: string | null;
+      }[]
+    | null;
   id?: string | null;
   blockName?: string | null;
   blockType: 'projectDisplay';
@@ -679,13 +626,37 @@ export interface ProjectDisplayBlockType {
  */
 export interface HighlightTextBlock {
   text: string;
-  baseColorLight: string;
-  baseColorDark: string;
   highlightStyleLight: string;
   highlightStyleDark: string;
   id?: string | null;
   blockName?: string | null;
   blockType: 'highlightText';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "MarqueeBlockType".
+ */
+export interface MarqueeBlockType {
+  images?:
+    | {
+        image?: (string | null) | Media;
+        id?: string | null;
+      }[]
+    | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'marquee';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "AnimateMedia".
+ */
+export interface AnimateMedia {
+  media: string | Media;
+  position: 'start' | 'end';
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'animateMedia';
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -879,6 +850,8 @@ export interface PagesSelect<T extends boolean = true> {
         animateText?: T | AnimateTextBlockSelect<T>;
         projectDisplay?: T | ProjectDisplayBlockTypeSelect<T>;
         highlightText?: T | HighlightTextBlockSelect<T>;
+        marquee?: T | MarqueeBlockTypeSelect<T>;
+        animateMedia?: T | AnimateMediaSelect<T>;
       };
   meta?:
     | T
@@ -950,6 +923,7 @@ export interface ContentBlockSelect<T extends boolean = true> {
  */
 export interface MediaBlockSelect<T extends boolean = true> {
   media?: T;
+  position?: T;
   id?: T;
   blockName?: T;
 }
@@ -1027,10 +1001,32 @@ export interface ProjectDisplayBlockTypeSelect<T extends boolean = true> {
  */
 export interface HighlightTextBlockSelect<T extends boolean = true> {
   text?: T;
-  baseColorLight?: T;
-  baseColorDark?: T;
   highlightStyleLight?: T;
   highlightStyleDark?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "MarqueeBlockType_select".
+ */
+export interface MarqueeBlockTypeSelect<T extends boolean = true> {
+  images?:
+    | T
+    | {
+        image?: T;
+        id?: T;
+      };
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "AnimateMedia_select".
+ */
+export interface AnimateMediaSelect<T extends boolean = true> {
+  media?: T;
+  position?: T;
   id?: T;
   blockName?: T;
 }
@@ -1083,80 +1079,6 @@ export interface MediaSelect<T extends boolean = true> {
   height?: T;
   focalX?: T;
   focalY?: T;
-  sizes?:
-    | T
-    | {
-        thumbnail?:
-          | T
-          | {
-              url?: T;
-              width?: T;
-              height?: T;
-              mimeType?: T;
-              filesize?: T;
-              filename?: T;
-            };
-        square?:
-          | T
-          | {
-              url?: T;
-              width?: T;
-              height?: T;
-              mimeType?: T;
-              filesize?: T;
-              filename?: T;
-            };
-        small?:
-          | T
-          | {
-              url?: T;
-              width?: T;
-              height?: T;
-              mimeType?: T;
-              filesize?: T;
-              filename?: T;
-            };
-        medium?:
-          | T
-          | {
-              url?: T;
-              width?: T;
-              height?: T;
-              mimeType?: T;
-              filesize?: T;
-              filename?: T;
-            };
-        large?:
-          | T
-          | {
-              url?: T;
-              width?: T;
-              height?: T;
-              mimeType?: T;
-              filesize?: T;
-              filename?: T;
-            };
-        xlarge?:
-          | T
-          | {
-              url?: T;
-              width?: T;
-              height?: T;
-              mimeType?: T;
-              filesize?: T;
-              filename?: T;
-            };
-        og?:
-          | T
-          | {
-              url?: T;
-              width?: T;
-              height?: T;
-              mimeType?: T;
-              filesize?: T;
-              filename?: T;
-            };
-      };
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

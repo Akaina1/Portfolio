@@ -106,6 +106,11 @@ const tailwindConfig = {
         '9xl': '100rem',
         '10xl': '110rem',
       },
+      maxWidth: {
+        '8xl': '90rem',
+        '9xl': '100rem',
+        '10xl': '110rem',
+      },
       borderRadius: {
         '5xl': '2rem',
         '4xl': '1.75rem',
@@ -115,6 +120,7 @@ const tailwindConfig = {
         lg: 'var(--radius)',
         md: 'calc(var(--radius) - 2px)',
         sm: 'calc(var(--radius) - 4px)',
+        button: '0.6rem',
       },
       dropShadow: {
         light: [
@@ -138,6 +144,12 @@ const tailwindConfig = {
         'dark-outline': [
           '0 0 1px rgba(15, 15, 15, 0.65)',
           '0 0 1px rgba(15, 15, 15, 0.65)',
+        ],
+        'dark-outline-white': [
+          '0 2px 1px rgba(255, 255, 255, 0.18)',
+          '0 1px 2px rgba(255, 255, 255, 0.12)',
+          '0 4px 8px rgba(255, 255, 255, 0.09)',
+          '0 8px 16px rgba(255, 255, 255, 0.06)',
         ],
       },
       textGradient: {

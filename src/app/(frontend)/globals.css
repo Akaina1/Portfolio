@@ -106,11 +106,12 @@
 }
 
 .animate-pull-down {
-  animation: pullDown 1.5s cubic-bezier(0.215, 0.610, 0.355, 1) forwards;
+  animation: pullDown 1.5s cubic-bezier(0.215, 0.61, 0.355, 1) forwards;
 }
 
 @keyframes wave {
-  0%, 100% {
+  0%,
+  100% {
     transform: scale(1);
   }
   50% {
@@ -145,7 +146,7 @@
 }
 
 .animate-fade-in-up {
-  animation: fadeInUp 1s cubic-bezier(0.215, 0.610, 0.355, 1) both;
+  animation: fadeInUp 2s cubic-bezier(0.215, 0.61, 0.355, 1) both;
 }
 
 @layer base {
@@ -153,7 +154,7 @@
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground min-h-[100vh] flex flex-col;
+    @apply flex min-h-[100vh] flex-col bg-background text-foreground;
   }
 }
 
@@ -164,4 +165,147 @@ html {
 html[data-theme='dark'],
 html[data-theme='light'] {
   opacity: initial;
+}
+
+.marquee {
+  --marquee-duration: 30s;
+  --marquee-gap: 10px;
+
+  display: flex;
+  overflow: hidden;
+  user-select: none;
+  gap: var(--marquee-gap);
+  mask-image: linear-gradient(
+    to right,
+    hsl(0 0% 0% / 0),
+    hsl(0 0% 0% / 1) 20%,
+    hsl(0 0% 0% / 1) 80%,
+    hsl(0 0% 0% / 0)
+  );
+}
+
+.marquee__content {
+  flex-shrink: 0;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  min-width: 100%;
+  gap: var(--marquee-gap);
+  animation: scroll var(--marquee-duration) linear infinite;
+}
+
+@keyframes scroll {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(calc(-100% - var(--marquee-gap)));
+  }
+}
+
+/* SVG items (from public folder) */
+.marquee__item[src*='.svg'] {
+  width: var(--logo-width, 80px); /* Default fallback of 80px */
+  height: var(--logo-height, 80px);
+  object-fit: contain;
+  display: flex;
+  align-self: center;
+}
+
+/* Regular image items (from CMS through Media component) */
+.marquee__item:not([src*='.svg']) {
+  width: 150px;
+  height: 100px;
+  object-fit: contain;
+}
+
+/* Handle nested images from Media component */
+.marquee__item img {
+  width: 150px;
+  height: 100px;
+  object-fit: contain;
+}
+
+/* Pause animation on hover for debugging */
+.marquee:hover .marquee__content {
+  animation-play-state: paused;
+}
+
+/* Pause animation when reduced-motion is set */
+@media (prefers-reduced-motion: reduce) {
+  .marquee__content {
+    animation-play-state: paused !important;
+  }
+}
+
+/* Target specific SVG */
+.marquee__item[src*='test.svg'] {
+  filter: brightness(0); /* Force black in light mode */
+  transition: filter 0.3s ease;
+}
+
+[data-theme='dark'] .marquee__item[src*='test.svg'] {
+  filter: brightness(0) invert(1); /* Force white in dark mode */
+}
+
+@keyframes slideFromLeft {
+  0% {
+    transform: translateX(-110%);
+    opacity: 0;
+  }
+  100% {
+    transform: translateX(-5%);
+    opacity: 1;
+  }
+}
+
+@keyframes slideFromRight {
+  0% {
+    transform: translateX(110%);
+    opacity: 0;
+  }
+  100% {
+    transform: translateX(5%);
+    opacity: 1;
+  }
+}
+
+@keyframes slideToLeft {
+  0% {
+    transform: translateX(-5%);
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(-110%);
+    opacity: 0;
+  }
+}
+
+@keyframes slideToRight {
+  0% {
+    transform: translateX(5%);
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(110%);
+    opacity: 0;
+  }
+}
+
+@layer utilities {
+  .animate-slide-from-left {
+    animation: slideFromLeft 1s cubic-bezier(0.215, 0.61, 0.355, 1) forwards;
+  }
+
+  .animate-slide-from-right {
+    animation: slideFromRight 1s cubic-bezier(0.215, 0.61, 0.355, 1) forwards;
+  }
+
+  .animate-slide-to-left {
+    animation: slideToLeft 1s cubic-bezier(0.215, 0.61, 0.355, 1) forwards;
+  }
+
+  .animate-slide-to-right {
+    animation: slideToRight 1s cubic-bezier(0.215, 0.61, 0.355, 1) forwards;
+  }
 }

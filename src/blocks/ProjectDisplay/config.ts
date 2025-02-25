@@ -34,7 +34,6 @@ export const ProjectDisplay: Block = {
       name: 'projects',
       type: 'array',
       label: 'Projects',
-      required: true,
       admin: {
         initCollapsed: true,
       },

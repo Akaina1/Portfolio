@@ -102,14 +102,14 @@ export const ProjectDisplayBlock: React.FC<ProjectDisplayBlockType> = ({
     []
   );
   const minSquares = 9;
-  const placeholdersNeeded = Math.max(0, minSquares - projects.length);
+  const placeholdersNeeded = Math.max(0, minSquares - (projects?.length ?? 0));
 
   // Assign colors once on component mount
   useEffect(() => {
     const newSquareColours: SquareColourAssignment[] = [];
 
     // Assign colors to project squares
-    projects.forEach((_, index) => {
+    projects?.forEach((_, index) => {
       newSquareColours.push({
         id: `project-${index}`,
         colour: chooseUniqueRandomColour(),
@@ -143,7 +143,7 @@ export const ProjectDisplayBlock: React.FC<ProjectDisplayBlockType> = ({
       {/* Projects Grid */}
       <div className="grid grid-cols-3 gap-4 md:gap-2">
         {/* Project Squares */}
-        {projects.map((project, index) => {
+        {projects?.map((project, index) => {
           const squareId = `project-${index}`;
           const bgColor = getSquareColour(squareId);
 
@@ -175,7 +175,7 @@ export const ProjectDisplayBlock: React.FC<ProjectDisplayBlockType> = ({
  * Individual project display with image and hover effect
  */
 const ProjectSquare: React.FC<{
-  project: ProjectDisplayBlockType['projects'][0];
+  project: NonNullable<ProjectDisplayBlockType['projects']>[number];
   hoverColor?: PuzzleSquareColour;
 }> = ({ project, hoverColor }) => {
   const [isPressed, setIsPressed] = useState(false);
@@ -199,7 +199,11 @@ const ProjectSquare: React.FC<{
       )}
 
       <div
-        className="absolute inset-0 flex flex-col items-center justify-center bg-transparent p-4 text-center transition-all duration-300 group-hover:bg-opacity-90"
+        className={cn(
+          'absolute inset-0 flex flex-col items-center justify-center',
+          'bg-transparent p-4 text-center',
+          'transition-all duration-300 group-hover:bg-opacity-90'
+        )}
         style={
           {
             '--hover-color':
@@ -266,7 +270,7 @@ const PlaceholderSquare: React.FC<{
     <div
       className={cn(
         'relative h-full w-full overflow-hidden rounded-xl transition-transform duration-300',
-        'bg-gradient-to-tr from-gray-400 to-gray-300 dark:from-gray-500 dark:to-gray-700',
+        'bg-gradient-to-tr from-neutral-400 via-neutral-500 to-neutral-700',
         isPressed ? 'scale-95' : '',
         'hover:scale-95'
       )}

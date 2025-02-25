@@ -1,237 +1,193 @@
 'use client';
 
-import React, { useEffect, useRef, useState, useMemo } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { cn } from '@/utilities/cn';
 import type { HighlightTextBlock as HighlightTextBlockType } from '@/payload-types';
 
 /**
- * Constants for performance optimization
+ * Toggleable constants for the highlighting effect.
  */
 const CONSTANTS = {
   HIGHLIGHT_SPEED_MULTIPLIER: 1,
-  VIEWPORT_TRIGGER_POINT: 0.8,
-  SCROLL_RANGE_MULTIPLIER: 1.18,
-  SMOOTHING_FACTOR: 0.1,
+  VIEWPORT_TRIGGER_POINT: 0.58,
+  SCROLL_RANGE_MULTIPLIER: 0.65,
   SCROLL_THROTTLE_MS: 16, // ~60fps
 } as const;
 
 /**
- * Word component extracted for better performance
+ * Props for the individual Word component.
  */
-const Word = React.memo(
-  ({
-    word,
-    shouldHighlight,
-    baseColorLight,
-    baseColorDark,
-    highlightStyleLight,
-    highlightStyleDark,
-  }: {
-    word: string;
-    shouldHighlight: boolean;
-    baseColorLight: string;
-    baseColorDark: string;
-    highlightStyleLight: string;
-    highlightStyleDark: string;
-  }) => {
-    const isSimpleColor = (style: string) => !style.includes(' ');
+interface WordProps {
+  /**
+   * The word string to display.
+   */
+  word: string;
+  /**
+   * Whether the word should be fully visible (highlighted) or hidden.
+   */
+  highlighted: boolean;
+  /**
+   * Tailwind CSS classes for the highlight style in light mode.
+   * (e.g. "bg-gradient-to-b from-neutral-400 via-neutral-500 to-neutral-700 bg-clip-text text-transparent")
+   */
+  highlightStyleLight: string;
+  /**
+   * Tailwind CSS classes for the highlight style in dark mode.
+   */
+  highlightStyleDark: string;
+}
 
+/**
+ * A memoized Word component that displays one word with a smooth opacity transition.
+ *
+ * The component wraps the passed word in a span whose opacity is set to 1 when highlighted,
+ * or 0 otherwise. It renders separate spans for light and dark modes.
+ *
+ * @param {WordProps} props - Component properties.
+ * @returns {JSX.Element} The rendered word.
+ */
+const Word: React.FC<WordProps> = React.memo(
+  ({ word, highlighted, highlightStyleLight, highlightStyleDark }) => {
     return (
-      <span className="relative mb-0 inline-block leading-loose tracking-wide lg:mb-3">
-        <span
-          className={cn(
-            'will-change-opacity absolute inset-0 transition-opacity duration-1000',
-            `text-${baseColorLight} text-opacity-60 dark:text-${baseColorDark} dark:text-opacity-60`,
-            shouldHighlight ? 'opacity-0' : 'opacity-100'
-          )}
-        >
-          <span className="drop-shadow-light dark:drop-shadow-dark-outline">
-            {word}
-          </span>
+      <span
+        className="inline-block font-mono leading-relaxed tracking-wide transition-opacity duration-1000 ease-in-out lg:mb-2"
+        style={{ opacity: highlighted ? 1 : 0 }}
+      >
+        {/* Render for light mode */}
+        <span className="block dark:hidden">
+          <span className={cn(highlightStyleLight)}>{word}</span>
         </span>
-        <span
-          className={cn(
-            'will-change-opacity transition-opacity duration-1000',
-            shouldHighlight ? 'opacity-100' : 'opacity-0'
-          )}
-        >
-          <span className="dark:hidden">
-            <span
-              className={cn(
-                'drop-shadow-light',
-                isSimpleColor(highlightStyleLight)
-                  ? `text-${highlightStyleLight}`
-                  : highlightStyleLight
-              )}
-            >
-              {word}
-            </span>
-          </span>
-          <span className="hidden dark:block">
-            <span
-              className={cn(
-                isSimpleColor(highlightStyleDark)
-                  ? `text-${highlightStyleDark}`
-                  : highlightStyleDark
-              )}
-            >
-              {word}
-            </span>
-          </span>
+        {/* Render for dark mode */}
+        <span className="hidden dark:block">
+          <span className={cn(highlightStyleDark)}>{word}</span>
         </span>
       </span>
     );
   }
 );
-
 Word.displayName = 'Word';
 
 /**
- * A text block component that highlights words sequentially as the user scrolls.
- * Uses intersection observer and requestAnimationFrame for smooth scroll-based animations.
+ * A text block component that highlights individual words sequentially as the user scrolls.
  *
- * @component
- * @param {HighlightTextBlockType} props - Component props
- * @param {string} props.text - The text content to be displayed and highlighted
- * @param {string} props.baseColorLight - Base text color in light mode
- * @param {string} props.baseColorDark - Base text color in dark mode
- * @param {string} props.highlightStyleLight - Highlight style/color in light mode
- * @param {string} props.highlightStyleDark - Highlight style/color in dark mode
+ * The component splits the input text (preserving whitespace) and renders each non-whitespace word with the gradient highlight.
+ * A throttled scroll handler calculates a progress value and maps that to a current highlight index.
+ * Each word uses a CSS transition on opacity so that the highlighting effect is smoothly animated.
+ *
+ * @param {HighlightTextBlockType} props - Component properties.
+ * @param {string} props.text - The text to display.
+ * @param {string} props.highlightStyleLight - Tailwind highlight style classes for light mode.
+ * @param {string} props.highlightStyleDark - Tailwind highlight style classes for dark mode.
+ * @returns {JSX.Element} The rendered highlight text block.
  *
  * @example
- * ```tsx
  * <HighlightTextBlock
  *   text="Sample highlight text"
- *   baseColorLight="gray-600"
- *   baseColorDark="gray-400"
- *   highlightStyleLight="blue-500"
- *   highlightStyleDark="blue-300"
+ *   highlightStyleLight="bg-gradient-to-b from-neutral-400 via-neutral-500 to-neutral-700 bg-clip-text text-transparent"
+ *   highlightStyleDark="bg-gradient-to-b from-neutral-400 via-neutral-500 to-neutral-700 bg-clip-text text-transparent"
  * />
- * ```
  */
 export const HighlightTextBlock: React.FC<HighlightTextBlockType> = (props) => {
-  const {
-    text,
-    baseColorLight,
-    baseColorDark,
-    highlightStyleLight,
-    highlightStyleDark,
-  } = props;
+  const { text, highlightStyleLight, highlightStyleDark } = props;
 
-  // Memoize word splitting
-  const words = useMemo(() => text.split(/(\s+)/), [text]);
+  // Split the text into tokens while preserving whitespace.
+  const tokens = useMemo(() => text.split(/(\s+)/), [text]);
 
-  const containerRef = useRef<HTMLDivElement>(null);
-  const [currentProgressIndex, setCurrentProgressIndex] = useState<number>(-1);
-  const lastScrollTime = useRef<number>(0);
-
-  // Memoize non-empty word indices
-  const nonEmptyWordIndices = useMemo(
+  // Compute the number of non-whitespace (highlightable) tokens.
+  const nonEmptyCount = useMemo(
     () =>
-      words
-        .map((word, index) => (word.trim() ? index : -1))
-        .filter((index) => index !== -1),
-    [words]
+      tokens.reduce((acc, token) => (token.trim() !== '' ? acc + 1 : acc), 0),
+    [tokens]
   );
 
-  const targetProgressRef = useRef<number>(0);
-  const rafRef = useRef<number | null>(null);
+  // State: current highlight index (last word index that should be visible).
+  const [highlightIndex, setHighlightIndex] = useState<number>(-1);
 
-  // Optimized scroll handler with intersection observer
+  // Ref for the container element to measure its position.
+  const containerRef = useRef<HTMLDivElement | null>(null);
+
   useEffect(() => {
-    if (!containerRef.current) return;
+    let ticking = false;
+    let lastScrollTime = 0;
 
-    const observer = new IntersectionObserver(
-      (entries) => {
-        const entry = entries[0];
-        if (!entry) return;
-
-        const now = performance.now();
-        if (now - lastScrollTime.current < CONSTANTS.SCROLL_THROTTLE_MS) return;
-        lastScrollTime.current = now;
-
-        const containerRect = entry.boundingClientRect;
-        const viewportHeight = window.innerHeight;
-
-        const rawProgress = Math.max(
-          -0.2,
-          Math.min(
-            1,
-            (viewportHeight * CONSTANTS.VIEWPORT_TRIGGER_POINT -
-              containerRect.top) /
-              (viewportHeight * 0.5 * CONSTANTS.SCROLL_RANGE_MULTIPLIER)
-          )
-        );
-
-        targetProgressRef.current = rawProgress;
-      },
-      {
-        threshold: Array.from({ length: 20 }, (_, i) => i / 20),
-        rootMargin: '20% 0px -20% 0px',
+    /**
+     * Updates the current highlight index based on scroll progress.
+     *
+     * Uses the container's bounding rectangle and the viewport height to compute a progress value.
+     * The progress is clamped between 0 and 1, then multiplied by the total number of words (adjusted by HIGHLIGHT_SPEED_MULTIPLIER)
+     * to produce the new highlight index.
+     */
+    const updateHighlight = (): void => {
+      if (!containerRef.current) return;
+      const now = performance.now();
+      if (now - lastScrollTime < CONSTANTS.SCROLL_THROTTLE_MS) {
+        ticking = false;
+        return;
       }
-    );
-
-    observer.observe(containerRef.current);
-    return () => observer.disconnect();
-  }, []);
-
-  // Optimized animation loop
-  useEffect(() => {
-    let currentProgress = 0;
-
-    const animate = () => {
-      const delta = targetProgressRef.current - currentProgress;
-      currentProgress += delta * CONSTANTS.SMOOTHING_FACTOR;
-
-      if (currentProgress <= 0) {
-        setCurrentProgressIndex(-1);
-      } else {
-        const progressIndex = Math.min(
-          nonEmptyWordIndices.length - 1,
-          Math.floor(
-            currentProgress *
-              CONSTANTS.HIGHLIGHT_SPEED_MULTIPLIER *
-              nonEmptyWordIndices.length
-          )
-        );
-        setCurrentProgressIndex(progressIndex);
-      }
-
-      rafRef.current = requestAnimationFrame(animate);
+      lastScrollTime = now;
+      const rect = containerRef.current.getBoundingClientRect();
+      const viewportHeight = window.innerHeight;
+      // Calculate progress using the toggleable constants.
+      let progress =
+        (viewportHeight * CONSTANTS.VIEWPORT_TRIGGER_POINT - rect.top) /
+        (viewportHeight * CONSTANTS.SCROLL_RANGE_MULTIPLIER);
+      progress = Math.max(0, Math.min(1, progress));
+      const newIndex =
+        progress === 0
+          ? -1
+          : Math.floor(
+              progress * CONSTANTS.HIGHLIGHT_SPEED_MULTIPLIER * nonEmptyCount
+            );
+      setHighlightIndex((prevIndex) =>
+        prevIndex !== newIndex ? newIndex : prevIndex
+      );
+      ticking = false;
     };
 
-    animate();
+    const handleScroll = (): void => {
+      if (!ticking) {
+        requestAnimationFrame(updateHighlight);
+        ticking = true;
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    // Initial update on mount.
+    updateHighlight();
+
     return () => {
-      if (rafRef.current) cancelAnimationFrame(rafRef.current);
+      window.removeEventListener('scroll', handleScroll);
     };
-  }, [nonEmptyWordIndices.length]);
+  }, [nonEmptyCount]);
+
+  // currentWordIndex is used to assign an increasing index to each non-whitespace token.
+  let currentWordIndex = 0;
 
   return (
-    <div className="relative mx-auto max-w-7xl px-6 py-24 sm:py-32 lg:px-8 lg:py-48">
-      <div
-        ref={containerRef}
-        className="text-center text-3xl font-light lg:text-6xl"
-      >
-        {words.map((word, index) => {
-          if (!word.trim()) {
-            return <span key={`${word}-${index}`}>{word}</span>;
+    <div
+      ref={containerRef}
+      className="mx-auto max-w-7xl px-6 py-24 sm:py-32 lg:px-8 lg:py-48"
+    >
+      <div className="whitespace-pre-wrap text-center text-3xl font-light lg:text-6xl">
+        {tokens.map((token, idx) => {
+          if (token.trim() === '') {
+            // Render whitespace tokens without additional styling.
+            return <span key={`ws-${idx}`}>{token}</span>;
+          } else {
+            // Determine if the word should be highlighted based on its order.
+            const isHighlighted = currentWordIndex <= highlightIndex;
+            const wordComponent = (
+              <Word
+                key={`word-${idx}`}
+                word={token}
+                highlighted={isHighlighted}
+                highlightStyleLight={highlightStyleLight}
+                highlightStyleDark={highlightStyleDark}
+              />
+            );
+            currentWordIndex++;
+            return wordComponent;
           }
-
-          const wordPosition = nonEmptyWordIndices.indexOf(index);
-          const shouldHighlight =
-            wordPosition !== -1 && wordPosition <= currentProgressIndex;
-
-          return (
-            <Word
-              key={`${word}-${index}`}
-              word={word}
-              shouldHighlight={shouldHighlight}
-              baseColorLight={baseColorLight}
-              baseColorDark={baseColorDark}
-              highlightStyleLight={highlightStyleLight}
-              highlightStyleDark={highlightStyleDark}
-            />
-          );
         })}
       </div>
     </div>
