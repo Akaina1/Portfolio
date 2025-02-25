@@ -10,7 +10,7 @@ import type { HighlightTextBlock as HighlightTextBlockType } from '@/payload-typ
 const CONSTANTS = {
   HIGHLIGHT_SPEED_MULTIPLIER: 1,
   VIEWPORT_TRIGGER_POINT: 0.58,
-  SCROLL_RANGE_MULTIPLIER: 0.65,
+  SCROLL_RANGE_MULTIPLIER: 0.62,
   SCROLL_THROTTLE_MS: 16, // ~60fps
 } as const;
 
