@@ -15,28 +15,16 @@ type DefaultLogo = {
 // Default logos with specific dimensions
 const DEFAULT_LOGOS: DefaultLogo[] = [
   {
-    src: '/media/react-svgrepo-com.svg',
+    src: '/media/typescript-svgrepo-com.svg',
     alt: 'Default Logo 1',
     width: 90,
     height: 90,
   },
   {
-    src: '/media/test.svg',
+    src: '/media/tailwind-svgrepo-com.svg',
     alt: 'Default Logo 2',
-    width: 150, // Larger logo
-    height: 150,
-  },
-  {
-    src: '/media/react-svgrepo-com.svg',
-    alt: 'Default Logo 1',
-    width: 90,
-    height: 90,
-  },
-  {
-    src: '/media/test.svg',
-    alt: 'Default Logo 2',
-    width: 150, // Larger logo
-    height: 150,
+    width: 110, // Larger logo
+    height: 110,
   },
   {
     src: '/media/react-svgrepo-com.svg',
@@ -45,10 +33,22 @@ const DEFAULT_LOGOS: DefaultLogo[] = [
     height: 90,
   },
   {
-    src: '/media/test.svg',
+    src: '/media/nodejs-logo-svgrepo-com.svg',
     alt: 'Default Logo 2',
     width: 150, // Larger logo
     height: 150,
+  },
+  {
+    src: '/media/payload.svg',
+    alt: 'Default Logo 1',
+    width: 150,
+    height: 150,
+  },
+  {
+    src: '/media/nextjs-icon-svgrepo-com.svg',
+    alt: 'Default Logo 2',
+    width: 90, // Larger logo
+    height: 90,
   },
   // Add more logos with custom dimensions
 ];
