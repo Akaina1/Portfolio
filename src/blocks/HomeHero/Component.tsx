@@ -58,7 +58,7 @@ const SecretContent: React.FC<{ secret: SecretData }> = ({ secret }) => {
     <div
       className={cn(
         'rounded-lg bg-black/10 p-6 dark:bg-white/10',
-        'duration-300 animate-in fade-in slide-in-from-bottom-4'
+        'animate-in fade-in slide-in-from-bottom-4 duration-300'
       )}
     >
       <h2 className="mb-4 text-center text-xl font-bold text-black dark:text-white">
@@ -244,7 +244,7 @@ export const HomeHeroBlock: React.FC<HomeHeroProps> = ({
           <div
             className={cn(
               'mb-4 flex items-center justify-center gap-2',
-              'duration-300 animate-in fade-in slide-in-from-top-4'
+              'animate-in fade-in slide-in-from-top-4 duration-300'
             )}
           >
             <span className="text-lg font-medium text-black dark:text-white">
@@ -281,7 +281,7 @@ export const HomeHeroBlock: React.FC<HomeHeroProps> = ({
           <div
             className={cn(
               'mb-4 text-center text-red-500',
-              'duration-300 animate-in fade-in zoom-in'
+              'animate-in fade-in zoom-in duration-300'
             )}
           >
             Invalid Code
