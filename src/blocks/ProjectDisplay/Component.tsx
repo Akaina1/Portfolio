@@ -10,7 +10,7 @@ import { AnimatedDivider } from '@/components/AnimatedDivider';
 /**
  * Define the color object type
  */
-type PuzzleSquareColourData = {
+type ProjectSquareColourData = {
   id: string;
   gradient: string;
 };
@@ -18,7 +18,7 @@ type PuzzleSquareColourData = {
 /**
  * Update color constants to include identifiers
  */
-const PUZZLE_SQUARE_COLOURS: PuzzleSquareColourData[] = [
+const PROJECT_SQUARE_COLOURS: ProjectSquareColourData[] = [
   {
     id: 'RED',
     gradient: 'linear-gradient(to top right, rgb(220 38 38), rgb(254 202 202))', // red-600 to red-200
@@ -60,21 +60,21 @@ const PUZZLE_SQUARE_COLOURS: PuzzleSquareColourData[] = [
   },
 ] as const;
 
-type PuzzleSquareColour = (typeof PUZZLE_SQUARE_COLOURS)[number];
+type ProjectSquareColour = (typeof PROJECT_SQUARE_COLOURS)[number];
 
 /**
  * Maintains state of available colors between function calls
  */
-let availableColours: PuzzleSquareColour[] = [...PUZZLE_SQUARE_COLOURS];
+let availableColours: ProjectSquareColour[] = [...PROJECT_SQUARE_COLOURS];
 
 /**
  * Returns a random color that hasn't been used since the last reset
  * Resets when all colors have been used
  */
-const chooseUniqueRandomColour = (): PuzzleSquareColour => {
+const chooseUniqueRandomColour = (): ProjectSquareColour => {
   // Reset if all colours have been used
   if (availableColours.length === 0) {
-    availableColours = [...PUZZLE_SQUARE_COLOURS];
+    availableColours = [...PROJECT_SQUARE_COLOURS];
   }
 
   // Get random index from remaining colours
@@ -87,8 +87,8 @@ const chooseUniqueRandomColour = (): PuzzleSquareColour => {
 };
 
 type SquareColourAssignment = {
-  id: string; // 'project-{index}' or 'placeholder-{index}'
-  colour: PuzzleSquareColour;
+  id: string;
+  colour: ProjectSquareColour;
 };
 
 /**
@@ -125,9 +125,9 @@ export const ProjectDisplayBlock: React.FC<ProjectDisplayBlockType> = ({
     });
 
     setSquareColours(newSquareColours);
-  }, [placeholdersNeeded, projects]); // Empty dependency array ensures this runs once on mount
+  }, [placeholdersNeeded, projects]);
 
-  const getSquareColour = (id: string): PuzzleSquareColour | undefined => {
+  const getSquareColour = (id: string): ProjectSquareColour | undefined => {
     return squareColours.find((square) => square.id === id)?.colour;
   };
 
@@ -176,20 +176,17 @@ export const ProjectDisplayBlock: React.FC<ProjectDisplayBlockType> = ({
  */
 const ProjectSquare: React.FC<{
   project: NonNullable<ProjectDisplayBlockType['projects']>[number];
-  hoverColor?: PuzzleSquareColour;
+  hoverColor?: ProjectSquareColour;
 }> = ({ project, hoverColor }) => {
-  const [isPressed, setIsPressed] = useState(false);
-
   return (
-    <div
+    <Link
+      href={project.slug ? `/projects/${project.slug}` : '#'}
       className={cn(
-        'relative h-full w-full overflow-hidden rounded-xl transition-transform duration-300',
-        isPressed ? 'scale-95' : '',
+        'relative block h-full w-full overflow-hidden rounded-xl transition-transform duration-300',
         'hover:scale-95'
       )}
-      onClick={() => setIsPressed(!isPressed)}
-      role="button"
       tabIndex={0}
+      aria-label={`View ${project.title} project`}
     >
       {project.displayImage && (
         <Media
@@ -209,51 +206,32 @@ const ProjectSquare: React.FC<{
             '--hover-color':
               hoverColor?.gradient ||
               'linear-gradient(to top right, rgb(0 0 0), rgb(0 0 0))',
-            backgroundImage: isPressed ? 'var(--hover-color)' : 'none',
-            ['--tw-bg-opacity']: isPressed ? '0.9' : '0',
+            backgroundImage: 'none',
+            ['--tw-bg-opacity']: '0',
           } as React.CSSProperties
         }
         onMouseEnter={(e) => {
-          if (!isPressed) {
-            const target = e.currentTarget;
-            target.style.backgroundImage = 'var(--hover-color)';
-            target.style['--tw-bg-opacity'] = '0.9';
-          }
+          const target = e.currentTarget;
+          target.style.backgroundImage = 'var(--hover-color)';
+          target.style['--tw-bg-opacity'] = '0.9';
         }}
         onMouseLeave={(e) => {
-          if (!isPressed) {
-            const target = e.currentTarget;
-            target.style.backgroundImage = 'none';
-            target.style['--tw-bg-opacity'] = '0';
-          }
+          const target = e.currentTarget;
+          target.style.backgroundImage = 'none';
+          target.style['--tw-bg-opacity'] = '0';
         }}
       >
         <h3
           className={cn(
             'mb-4 text-sm font-bold text-white transition-opacity lg:text-lg',
-            isPressed || 'group-hover:opacity-100',
-            isPressed ? 'opacity-100' : 'opacity-0'
+            'group-hover:opacity-100',
+            'opacity-0'
           )}
         >
           {project.title}
         </h3>
-
-        {project.slug && (
-          <Link
-            href={`/projects/${project.slug}`}
-            className={cn(
-              'rounded-lg bg-white/20 px-4 py-2 text-xs text-white transition-all lg:text-lg',
-              'backdrop-blur-sm hover:bg-white/30',
-              isPressed || 'group-hover:opacity-100',
-              isPressed ? 'opacity-100' : 'opacity-0'
-            )}
-            onClick={(e) => e.stopPropagation()} // Prevent triggering square press
-          >
-            View Project
-          </Link>
-        )}
       </div>
-    </div>
+    </Link>
   );
 };
 
@@ -262,19 +240,15 @@ const ProjectSquare: React.FC<{
  * Matches the ProjectSquare hover effect
  */
 const PlaceholderSquare: React.FC<{
-  hoverColor?: PuzzleSquareColour;
+  hoverColor?: ProjectSquareColour;
 }> = ({ hoverColor }) => {
-  const [isPressed, setIsPressed] = useState(false);
-
   return (
     <div
       className={cn(
         'relative h-full w-full overflow-hidden rounded-xl transition-transform duration-300',
         'bg-gradient-to-tr from-neutral-400 via-neutral-500 to-neutral-700',
-        isPressed ? 'scale-95' : '',
         'hover:scale-95'
       )}
-      onClick={() => setIsPressed(!isPressed)}
       role="button"
       tabIndex={0}
     >
@@ -285,30 +259,26 @@ const PlaceholderSquare: React.FC<{
             '--hover-color':
               hoverColor?.gradient ||
               'linear-gradient(to top right, rgb(0 0 0), rgb(0 0 0))',
-            backgroundImage: isPressed ? 'var(--hover-color)' : 'none',
-            ['--tw-bg-opacity']: isPressed ? '0.9' : '0',
+            backgroundImage: 'none',
+            ['--tw-bg-opacity']: '0',
           } as React.CSSProperties
         }
         onMouseEnter={(e) => {
-          if (!isPressed) {
-            const target = e.currentTarget;
-            target.style.backgroundImage = 'var(--hover-color)';
-            target.style['--tw-bg-opacity'] = '0.9';
-          }
+          const target = e.currentTarget;
+          target.style.backgroundImage = 'var(--hover-color)';
+          target.style['--tw-bg-opacity'] = '0.9';
         }}
         onMouseLeave={(e) => {
-          if (!isPressed) {
-            const target = e.currentTarget;
-            target.style.backgroundImage = 'none';
-            target.style['--tw-bg-opacity'] = '0';
-          }
+          const target = e.currentTarget;
+          target.style.backgroundImage = 'none';
+          target.style['--tw-bg-opacity'] = '0';
         }}
       >
         <h3
           className={cn(
             'text-lg font-bold text-white transition-opacity',
-            isPressed || 'group-hover:opacity-100',
-            isPressed ? 'opacity-100' : 'opacity-0'
+            'group-hover:opacity-100',
+            'opacity-0'
           )}
         >
           Coming Soon
