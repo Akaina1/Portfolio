@@ -27,23 +27,6 @@ export const Players: CollectionConfig = {
       type: 'text',
       required: true,
     },
-    {
-      name: 'gameStats',
-      type: 'group',
-      fields: [
-        {
-          name: 'score',
-          type: 'number',
-          defaultValue: 0,
-        },
-        {
-          name: 'level',
-          type: 'number',
-          defaultValue: 1,
-        },
-        // Add other player-specific fields as needed
-      ],
-    },
     // Add any other player-specific fields
   ],
   timestamps: true,
