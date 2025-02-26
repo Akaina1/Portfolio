@@ -1,5 +1,5 @@
 ---
-description: Software Design and Architecture
+description: for continious software development of the game-server and frontend
 globs: 
 alwaysApply: false
 ---
@@ -242,3 +242,149 @@ src/
   - Essential project files (e.g., `.env`, `.gitignore`, `.prettierrc`, etc.) are in place.
 
 ---
+# Backend Model File Structure:
+
+/models/player-state/
+├── core/
+│   ├── player.model.ts            # User account information
+│   ├── character.model.ts         # Base character attributes and identity
+│   ├── inventory.model.ts         # Item storage and management
+│   ├── equipment.model.ts         # Currently equipped items and gear sets
+│   ├── skill.model.ts             # Character skills and proficiencies
+│   ├── ability.model.ts           # Spells, abilities, and special moves
+│   └── session.model.ts           # Active session tracking and device information
+│
+├── progression/
+│   ├── flag.model.ts              # Player-specific game state flags
+│   ├── quest-progress.model.ts    # Active and completed quest tracking
+│   ├── default-story-progress.model.ts    # Main and side storyline progression for the DEFAULT path
+│   ├── worldstory-progress.model.ts       # Main and side storyline progression for the WORLD STORY path
+│   ├── achievement.model.ts       # Achievement unlocks and progress
+│   ├── reputation.model.ts        # Faction and NPC relationship tracking
+│   └── milestone.model.ts         # Significant player progression points
+│
+└── persistence/
+    ├── versioning/
+    │   └── state-version.model.ts      # Basic version tracking for player state
+    │
+    └── caching/
+        └── memory-cache.model.ts       # Simple in-memory cache for performance
+===============================================================================
+BREAK
+===============================================================================
+/models/websocket/
+├── connection/
+│   ├── socket-connection.model.ts    # Basic socket connection data
+│   └── session.model.ts              # Active session tracking
+│
+└── message/
+    ├── message-log.model.ts          # Basic logging of important messages
+    └── broadcast-group.model.ts      # Simple broadcast group management
+===============================================================================
+BREAK
+===============================================================================
+/models/game-world/
+├── world/
+│   ├── world-state.model.ts         # Overall world state and configuration
+│   ├── world-event.model.ts         # World events and their effects
+│   ├── world-rule.model.ts          # Rules and constraints for the world
+│   └── world-region.model.ts        # Larger regions containing multiple areas
+│
+├── area/                            # Changed from "location" to "area"
+│   ├── area.model.ts                # Basic area data and properties
+│   ├── area-connection.model.ts     # Connections between areas
+│   ├── area-feature.model.ts        # Special features within areas
+│   └── area-instance.model.ts       # Active instances of areas
+│
+├── entity/
+│   ├── entity-template.model.ts     # Base templates for entities
+│   ├── entity-instance.model.ts     # Active entity instances
+│   ├── entity-interaction.model.ts  # Interaction definitions and outcomes
+│   └── entity-state.model.ts        # Entity state tracking
+│
+├── item/
+│   ├── item-definition.model.ts     # Base item templates and properties
+│   ├── item-instance.model.ts       # Specific instances of items with unique properties
+│   ├── item-category.model.ts       # Item categories and classifications
+│   ├── item-effect.model.ts         # Effects that items can have
+│   ├── item-requirement.model.ts    # Requirements to use/equip items
+│   └── item-interaction.model.ts    # How items interact with entities/world
+│
+├── status-effect/
+│   ├── status-effect-definition.model.ts  # Templates for status effects
+│   ├── status-effect-instance.model.ts    # Active instances of status effects
+│   ├── status-effect-modifier.model.ts    # How status effects modify entities
+│   ├── status-effect-trigger.model.ts     # Events that trigger status effects
+│   ├── status-effect-duration.model.ts    # Duration and timing mechanisms
+│   └── status-effect-stack.model.ts       # Rules for stacking multiple effects
+│
+├── npc/
+│   ├── npc-template.model.ts        # Base templates for NPCs
+│   ├── npc-instance.model.ts        # Active NPC instances
+│   ├── npc-behavior.model.ts        # AI behaviors and patterns
+│   ├── npc-dialogue.model.ts        # Conversation trees and options
+│   └── npc-schedule.model.ts        # Time-based NPC activities
+│
+├── environment/
+│   ├── environment-type.model.ts    # Environment definitions and properties
+│   ├── weather.model.ts             # Weather conditions and effects
+│   ├── time-cycle.model.ts          # Time progression and cycles
+│   └── environment-effect.model.ts  # Environmental effects and hazards
+│
+├── trading/
+│   ├── trade.model.ts           # Player-to-player trade sessions
+│   ├── trade-offer.model.ts     # Items/currency offered in a trade
+│   ├── merchant.model.ts        # NPC shop definitions
+│   ├── shop-inventory.model.ts  # Items available at merchants
+│   └── transaction.model.ts     # Record of completed trades
+│
+├── power/
+│   ├── power-source.model.ts        # Sources of power in the world
+│   ├── power-interaction.model.ts   # How powers interact with the world
+│   ├── power-distribution.model.ts  # Power concentration and balance
+│   └── power-effect.model.ts        # Effects of power usage
+│
+└── sync/
+    ├── cache-strategy.model.ts      # Caching rules and priorities
+    ├── persistence-rule.model.ts    # Data persistence configuration
+    ├── sync-conflict.model.ts       # Conflict detection and resolution
+    └── world-snapshot.model.ts      # Point-in-time world state captures
+===============================================================================
+BREAK
+===============================================================================
+/models/flag-narrative/
+├── flag/
+│   ├── flag-definition.model.ts     # Flag metadata and configuration
+│   └── flag-state.model.ts          # Current state of flags (per character)
+│
+├── quest/
+│   ├── quest-definition.model.ts    # Quest metadata and structure
+│   ├── quest-step.model.ts          # Individual quest objectives
+│   └── quest-dependency.model.ts    # Quest prerequisites and chains
+│
+└── progression/
+    ├── quest-progress.model.ts      # Player's quest progress tracking
+    └── quest-reward.model.ts        # Quest rewards definition
+===============================================================================
+BREAK
+===============================================================================
+/models/world-narrative/
+├── alteration/
+│   └── world-change.model.ts        # Permanent world changes
+│
+├── event/
+│   └── live-event.model.ts          # Temporary events (including scheduled)
+│
+├── quest/
+│   └── world-quest-definition.model.ts  # World-narrative specific quests
+│
+└── world-story/
+    ├── world-story-definition.model.ts  # Structure definition of world story
+    └── world-story-branch.model.ts      # Optional branches in world story
+
+---
+# Other Notes:
+for testing in the future:
+1. Create test files in the /src/test directory
+2. Name test files descriptively, like test-enum-helper.ts for testing enum helpers
+3. Run tests using ts-node src/test/[test-file-name].ts
