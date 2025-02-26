@@ -9,6 +9,7 @@
 export interface Config {
   auth: {
     users: UserAuthOperations;
+    players: PlayerAuthOperations;
   };
   collections: {
     pages: Page;
@@ -16,6 +17,7 @@ export interface Config {
     media: Media;
     categories: Category;
     users: User;
+    players: Player;
     projects: Project;
     redirects: Redirect;
     forms: Form;
@@ -32,6 +34,7 @@ export interface Config {
     media: MediaSelect<false> | MediaSelect<true>;
     categories: CategoriesSelect<false> | CategoriesSelect<true>;
     users: UsersSelect<false> | UsersSelect<true>;
+    players: PlayersSelect<false> | PlayersSelect<true>;
     projects: ProjectsSelect<false> | ProjectsSelect<true>;
     redirects: RedirectsSelect<false> | RedirectsSelect<true>;
     forms: FormsSelect<false> | FormsSelect<true>;
@@ -53,15 +56,37 @@ export interface Config {
     footer: FooterSelect<false> | FooterSelect<true>;
   };
   locale: null;
-  user: User & {
-    collection: 'users';
-  };
+  user:
+    | (User & {
+        collection: 'users';
+      })
+    | (Player & {
+        collection: 'players';
+      });
   jobs: {
     tasks: unknown;
     workflows: unknown;
   };
 }
 export interface UserAuthOperations {
+  forgotPassword: {
+    email: string;
+    password: string;
+  };
+  login: {
+    email: string;
+    password: string;
+  };
+  registerFirstUser: {
+    email: string;
+    password: string;
+  };
+  unlock: {
+    email: string;
+    password: string;
+  };
+}
+export interface PlayerAuthOperations {
   forgotPassword: {
     email: string;
     password: string;
@@ -673,6 +698,28 @@ export interface ProjectCardsBlockType {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "players".
+ */
+export interface Player {
+  id: string;
+  username: string;
+  gameStats?: {
+    score?: number | null;
+    level?: number | null;
+  };
+  updatedAt: string;
+  createdAt: string;
+  email: string;
+  resetPasswordToken?: string | null;
+  resetPasswordExpiration?: string | null;
+  salt?: string | null;
+  hash?: string | null;
+  loginAttempts?: number | null;
+  lockUntil?: string | null;
+  password?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "projects".
  */
 export interface Project {
@@ -781,6 +828,10 @@ export interface PayloadLockedDocument {
         value: string | User;
       } | null)
     | ({
+        relationTo: 'players';
+        value: string | Player;
+      } | null)
+    | ({
         relationTo: 'projects';
         value: string | Project;
       } | null)
@@ -801,10 +852,15 @@ export interface PayloadLockedDocument {
         value: string | Search;
       } | null);
   globalSlug?: string | null;
-  user: {
-    relationTo: 'users';
-    value: string | User;
-  };
+  user:
+    | {
+        relationTo: 'users';
+        value: string | User;
+      }
+    | {
+        relationTo: 'players';
+        value: string | Player;
+      };
   updatedAt: string;
   createdAt: string;
 }
@@ -814,10 +870,15 @@ export interface PayloadLockedDocument {
  */
 export interface PayloadPreference {
   id: string;
-  user: {
-    relationTo: 'users';
-    value: string | User;
-  };
+  user:
+    | {
+        relationTo: 'users';
+        value: string | User;
+      }
+    | {
+        relationTo: 'players';
+        value: string | Player;
+      };
   key?: string | null;
   value?:
     | {
@@ -1145,6 +1206,28 @@ export interface CategoriesSelect<T extends boolean = true> {
  */
 export interface UsersSelect<T extends boolean = true> {
   name?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  email?: T;
+  resetPasswordToken?: T;
+  resetPasswordExpiration?: T;
+  salt?: T;
+  hash?: T;
+  loginAttempts?: T;
+  lockUntil?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "players_select".
+ */
+export interface PlayersSelect<T extends boolean = true> {
+  username?: T;
+  gameStats?:
+    | T
+    | {
+        score?: T;
+        level?: T;
+      };
   updatedAt?: T;
   createdAt?: T;
   email?: T;
