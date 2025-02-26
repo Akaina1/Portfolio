@@ -1,9 +1,10 @@
-import type { AccessArgs } from 'payload'
+import type { AccessArgs } from 'payload';
 
-import type { User } from '@/payload-types'
+import type { User } from '@/payload-types';
 
-type isAuthenticated = (args: AccessArgs<User>) => boolean
+type isAuthenticated = (args: AccessArgs<User>) => boolean;
 
 export const authenticated: isAuthenticated = ({ req: { user } }) => {
-  return Boolean(user)
-}
+  // Only grant access if user exists and is from the users collection (admin)
+  return Boolean(user && user.collection === 'users');
+};
