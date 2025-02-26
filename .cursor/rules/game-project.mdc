@@ -1,0 +1,244 @@
+---
+description: Software Design and Architecture
+globs: 
+alwaysApply: false
+---
+# Project Overview and Details
+
+I am building a text-based MMORPG integrated directly into my portfolio website.  The website is currently built with a next.js 15 frontend and utilizing payload cms 3.0 as the content management system.
+
+The website has a /game slug which is where users will be able to:
+
+1. sign up (via the payloadcms player collection)
+2. connect via websocket (socket.io) to the backend game server hosted separately from the frontend
+
+The game will be highly simplified in terms of design, being text-based (with the exception of the actual GUI on the frontend) Players will interact via typing messages into a message box, as well as on screen (and hotkeyed) buttons. very simple assets will be included directly in the frontend to avoid fetching assets for the simple gui (will need to optimize this aspect)
+
+Core Gameplay:
+-A text-based RPG built using Next.js for the frontend.
+-The game focuses on player experience, choice-driven narrative, and branching paths.
+-Initially, narrative and quests will be hand-crafted with robust flag-based activation.
+
+Game State & Player Progression:
+-The game world is persistent and reactive, requiring the tracking of player actions, dialogue choices, and quest progress.
+-Flags (Boolean values or structured data) will determine whether certain events or quests are available.
+-The backend will process all game logic, ensuring that the world reacts dynamically to player actions.
+
+2. Backend Architecture
+
+Hosting & Server Strategy:
+-The frontend (Next.js) will be hosted on Vercel, but WebSockets (for real-time communication) would require a separate backend due to Vercel’s serverless limitations.
+-The backend will be deployed as a persistent server (possibly Dockerized) to handle:
+-Player connections via WebSockets (e.g., Socket.io)
+-Game logic & flag-based quest tracking
+-Data storage (e.g., MongoDB, PostgreSQL, or a NoSQL alternative)
+
+Monolithic vs. Microservices:
+-Modular Monolith was chosen as the initial approach for simplicity and maintainability.
+-Microservices could be introduced later if scaling demands it (e.g., separate services for quest tracking, player data, etc.).
+
+3. Real-Time Communication & Performance Considerations
+
+Frontend-Backend Communication:
+-WebSockets for real-time game events (e.g., receiving new dialogue, combat, and world updates).
+-API Calls (REST or GraphQL) for fetching static/non-time-sensitive data (e.g., quest details, character info).
+
+Optimizing Quest Activation:
+-Each quest has activation conditions based on multiple flags.
+-To optimize, instead of checking all 10,000 (estimate) flags each time an event happens:
+-Only track changes to relevant flags.
+-Use an indexing system or database triggers to efficiently check when a quest should activate.
+-Maintain an active player state cache in memory (e.g., Redis) to avoid excessive database queries.
+
+Scalability & Cost Considerations:
+-Vercel is not ideal for WebSockets due to cost and serverless function execution limits.
+-A dedicated backend (e.g., DigitalOcean, Linode, AWS EC2, Fly.io) will be required for real-time connections.
+-Using Redis or an in-memory cache will help optimize flag checking and game state updates.
+
+-I am starting with a hard cap of 1000 player per server, if required I can deploy more instances of the backend for player to connect to, when designing the backend we should account for multiple servers in the future.
+
+My goal right now is to create a blueprint for the architecture and design how the systems will all work.
+
+I want to have a good foundation created before I start coding anything.
+
+I will be using lucid charts to create diagrams based on this conversation.
+
+Let's start general, creating a big picture, and then slowly specify details in each module as we continue to build out the blueprints.
+
+It is important to keep in mind:
+
+1. Performance is key for online games with high amount of checks being performance by the server to multiple clients (Our backend should be built assuming max capacity of a server at all times, yes it is over-engineering but it is safe)
+
+2. With this being a text based rpg the only data flowing will be integers and strings (i assume at this point) so this should be easier to optimize.
+
+3. The goal of this project is more in the creative side, at least for me.  The technical aspects of this project are great for my portfolio, but I really just want to create unique and dynamic stories for people to discover.
+
+4. Simplicity is Gold.  This means, if there is a simple way to do something, we should do that. (of course weighing simplicity with requirements is key)
+
+to review we have the following Modules, which are the highest level part of the backend server:
+
+1. Player State Module
+2. Websocket Module
+3. Game World Module
+4. Flag & Narrative Module
+5. World Narrative Module
+
+Narrative Note: In my narrative I want to have 2 main paths for players, basically 2 MSQ's (Main Scenario Quests):
+
+1.  The default MSQ path that the vast majority of players will take, this is still a very expansive and sprawling narrative, with many branching choices within it and a conclusive ending (definitive ending that makes no room for expanding on this story path, leaving the extended narrative to the Unique Path) 
+
+2. The Unique MSQ Path, This is a hyper unique story path that will be my magnum opus of story telling.  The quests and story paths are even more extensive and affects the entire game world in permanent ways.  This path will consist of one-off unique encounters, quests, and events for players to engage with.  And yes this means there will be certain quests in the game that are only found ONCE by a single player.  They may choose to share information via in game info sharing service (plans for a robust economy around info sharing) or potentially players may choose to keep unique information to themselves to benefit.  My game revolves around choice, I plan to give players extensive choices.  This also leads into another aspect of the game; players are NOT equal. In all mmo's (or the vast majority) players are mainly equal strength when at similar levels, but in my game there is no level cap, stats have no cap, and buffs have no limits plus are stackable.  I plan to hide extremely overpowered objects and rewards throughout the Unique MSQ and hidden side stories.  Many of these rewards will be one-off, meaning some players will be at an incredible advantage.  One way I will balance this is with a rule; for every overpowered item/skill/etc in the game, there is or WILL BE a counter to that item/skill/etc placed in the game somewhere.  It may be another one-off reward that is a perfect counter to another overpowered reward, but it will always exist.
+
+# Project Overview: Text-Based MMORPG Architecture
+
+## Current State Summary
+
+You're building a text-based MMORPG integrated with your portfolio website, using Next.js 15 for the frontend and PayloadCMS 3.0 for content management. After our discussion, you've decided to use Nest.js for the backend server architecture due to its modular design and TypeScript support.
+
+## Architecture Design
+
+### High-Level Architecture
+We've established a modular server architecture consisting of:
+
+1. **Core Game Modules**:
+   - Websocket Module (real-time communication)
+   - Player State Module (player data management)
+   - Game World Module (environment and entities)
+   - Flag & Narrative Module (quest and flag systems)
+   - World Narrative Module (unique content and world alterations)
+
+2. **Service Layers**:
+   - Narrative Orchestrator (coordinates narrative systems)
+   - Event Bus Service (facilitates inter-module communication)
+   - Shared Cache Service (unified caching across modules)
+   - Database Layer (persistent storage)
+
+### Module Refinements
+We identified and addressed several overlapping components:
+
+1. **Session Management**: Clarified distinct responsibilities between Websocket and Player State modules
+2. **Flag Management**: Centralized in Flag & Narrative Module while maintaining a player-specific interface
+3. **Progress Tracking**: Maintained separation between high-level player progress and detailed quest tracking
+4. **Information Economy**: Simplified by removing the complex information economy framework in favor of player-driven trading
+5. **Caching Strategy**: Consolidated into a Shared Cache Service with both hot (memory) and warm (Redis) data stores
+
+### Communication Flow
+The architecture now features:
+- An Event Bus for decoupled communication between modules
+- Clear interfaces between modules
+- Defined data flow patterns
+- Centralized services for cross-cutting concerns
+
+## Narrative Design
+
+Your game will feature two main narrative paths:
+1. **Default MSQ Path**: A comprehensive but conclusive main story for most players
+2. **Unique MSQ Path**: Your "magnum opus" featuring one-off encounters and permanent world changes
+
+Key narrative elements include:
+- Player inequality by design (no level caps, unique rewards)
+- One-off content that can only be discovered once
+- Information sharing economy between players
+- Balance through counters for every powerful item/ability
+
+## Technical Decisions
+
+1. **Backend Technology**: Nest.js selected for its:
+   - Module-based architecture aligning with your design
+   - TypeScript support
+   - Dependency injection system
+   - WebSocket integration
+   - Scalability and maintainability
+
+2. **Performance Considerations**:
+   - Optimized flag checking system
+   - Efficient caching strategy
+   - Modular design for potential scaling
+   - Initial cap of 1000 players per server
+
+3. **Data Management**:
+   - Shared database and caching layers
+   - Clear separation between hot and cold data
+   - Efficient state change propagation
+
+   <file structure>
+src/
+├── app.module.ts              // Central module imports all other modules
+├── app.controller.ts          // Basic demo or health check endpoints
+├── app.service.ts             // Shared service functionality (if needed)
+├── main.ts                    // Application entry point
+├── modules/
+│   ├── websocket/             // Handles all WebSocket connections and events
+│   │   ├── websocket.module.ts
+│   │   ├── websocket.gateway.ts
+│   │   └── interfaces/         // WebSocket-specific interfaces
+│   │
+│   ├── player-state/          // Manages player session data, connections, etc.
+│   │   ├── player-state.module.ts
+│   │   ├── player-state.service.ts
+│   │   └── interfaces/
+│   │
+│   ├── game-world/            // Represents the game environment and its entities
+│   │   ├── game-world.module.ts
+│   │   ├── game-world.service.ts
+│   │   └── interfaces/
+│   │
+│   ├── flag-narrative/        // Tracks flags/conditions and crafts quest activation logic
+│   │   ├── flag-narrative.module.ts
+│   │   ├── flag-narrative.service.ts
+│   │   └── interfaces/
+│   │
+│   └── world-narrative/       // Handles narrative events that change the game world
+│       ├── world-narrative.module.ts
+│       ├── world-narrative.service.ts
+│       └── interfaces/
+│
+└── shared/                    // Shared resources and utilities
+    ├── cache/                 // In-memory & Redis cache modules
+    │   ├── cache.module.ts
+    │   ├── cache.service.ts
+    │   └── interfaces/
+    │
+    └── event-bus/             // An internal event bus for decoupled communication
+        ├── event-bus.module.ts
+        ├── event-bus.service.ts
+        └── interfaces/
+
+   <file structure>
+
+# Backend Architecture Overview
+
+**Architecture & Technology Stack:**  
+- **Backend Framework:** Nest.js for its modular, TypeScript-based design and built-in WebSocket integration.
+- **Real-Time Communication:** Socket.io (using the `@nestjs/websockets` package) handles real-time game events.
+- **Database:** MongoDB via Mongoose. You’re using an existing MongoDB Atlas instance with two databases:  
+  - PayloadCMS uses the "test" database.
+  - The game server will use a separate "game" database.
+- **Caching & State Management:**  
+  - A two-tier caching strategy with in-memory (hot) cache and Redis (warm) cache.  
+  - For local development, Redis is running on Docker and is integrated with Nest.js using the maintained `@liaoliaots/nestjs-redis` module.
+- **Hosting:**  
+  - Frontend (Next.js) is hosted on Vercel.
+  - The backend (Nest.js) is planned for a dedicated persistent environment (initially managed containers on Heroku, later scalable as needed).
+
+**Performance Considerations:**
+- Performance is key given the high volume of state checks and flag-based quest activations.  
+- The backend is designed assuming maximum capacity with careful caching and optimized flag checking to support up to 1,000 players per server (with room to expand).
+
+---
+
+# Current Development State
+
+- **Local Environment:**  
+  - A basic Nest.js project is established with support for environment variables (`dotenv`), Mongoose, and MongoDB integration.
+  - The Redis instance for local dev is running via Docker Desktop (mapped to `localhost:6379` and referenced by `REDIS_URL`).
+
+- **Socket.io Setup:**  
+  - On the backend, socket.io is installed using `@nestjs/websockets` along with `socket.io` as the engine.
+  - On the frontend (Next.js), only the `socket.io-client` package will be installed to connect to the backend server.
+
+- **Git and File Management:**  
+  - A private Git repository has been initialized.
+  - Essential project files (e.g., `.env`, `.gitignore`, `.prettierrc`, etc.) are in place.
+
+---
