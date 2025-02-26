@@ -100,6 +100,7 @@ const tailwindConfig = {
         'accordion-up': 'accordion-up 0.2s ease-out',
         dividerGlow: 'dividerGlow 2s linear infinite',
         clickExpand: 'clickExpand 1s ease-out forwards',
+        'button-press': 'buttonPress 0.1s ease-out forwards',
       },
       width: {
         '8xl': '90rem',
@@ -223,6 +224,11 @@ const tailwindConfig = {
             transform: 'scale(4)',
             opacity: '0',
           },
+        },
+        buttonPress: {
+          '0%': { transform: 'scale(1)', filter: 'brightness(1)' },
+          '50%': { transform: 'scale(0.90)', filter: 'brightness(0.5)' },
+          '100%': { transform: 'scale(1)', filter: 'brightness(1)' },
         },
       },
       typography: ({ _theme }) => ({
