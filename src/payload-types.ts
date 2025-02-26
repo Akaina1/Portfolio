@@ -703,10 +703,6 @@ export interface ProjectCardsBlockType {
 export interface Player {
   id: string;
   username: string;
-  gameStats?: {
-    score?: number | null;
-    level?: number | null;
-  };
   updatedAt: string;
   createdAt: string;
   email: string;
@@ -1222,12 +1218,6 @@ export interface UsersSelect<T extends boolean = true> {
  */
 export interface PlayersSelect<T extends boolean = true> {
   username?: T;
-  gameStats?:
-    | T
-    | {
-        score?: T;
-        level?: T;
-      };
   updatedAt?: T;
   createdAt?: T;
   email?: T;
