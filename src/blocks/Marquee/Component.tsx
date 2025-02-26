@@ -104,7 +104,7 @@ export const MarqueeBlock: React.FC<MarqueeBlockType> = ({ images }) => {
   return (
     <div
       className={cn(
-        'marquee marquee--8 relative left-1/2 right-1/2 my-14 -ml-[50vw] -mr-[50vw] max-h-[110px] w-screen bg-white/50 dark:bg-white/5',
+        'marquee marquee--8 relative left-1/2 right-1/2 my-14 -ml-[50vw] -mr-[50vw] max-h-[110px] w-screen bg-white/50 dark:bg-zinc-900',
         images && images.length > 0 ? 'py-3' : ''
       )}
     >

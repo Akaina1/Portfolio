@@ -92,7 +92,7 @@ export const ProjectCardsBlock: React.FC<ProjectCardsBlockType> = ({
       <h1
         className={cn(
           'text-center text-5xl font-bold text-black dark:text-white',
-          'transition-all duration-300 ease-in-out',
+          'transition-all duration-500 ease-in-out',
           expandedProject ? 'animate-fade-down animate-once' : ''
         )}
       >
