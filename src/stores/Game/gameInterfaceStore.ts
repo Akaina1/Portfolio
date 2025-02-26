@@ -170,6 +170,11 @@ const defaultPartyMembers: TimedEntity[] = [
   },
 ];
 
+// Define a type for action data
+interface ActionData {
+  [key: string]: string | number | boolean | object;
+}
+
 // Define the store interface
 interface GameInterfaceStore {
   // Player state
@@ -206,7 +211,7 @@ interface GameInterfaceStore {
   toggleEntityTimeStop: () => void;
   togglePartyTimeStop: () => void;
   setCommand: (command: string) => void;
-  handleCommandSubmit: () => void;
+  handleCommandSubmit: () => boolean;
   setSacrificeAmount: (amount: number) => void;
   handleSacrificeAP: () => void;
   setGiftAmount: (memberId: string, amount: number) => void;
@@ -217,6 +222,7 @@ interface GameInterfaceStore {
   changeKeybind: (actionId: string, newKeybind: string) => void;
   toggleSettingsModal: () => void;
   resetStore: () => void;
+  executeAction: (actionType: string, actionData?: ActionData) => boolean;
 }
 
 // Create the store
@@ -288,11 +294,16 @@ export const useGameInterfaceStore = create<GameInterfaceStore>()(
       },
 
       handleCommandSubmit: () => {
-        const { command, spendPlayerAP } = get();
-        if (spendPlayerAP(1)) {
-          console.log('Command submitted:', command);
-          set({ command: '' });
-        }
+        const { command } = get();
+
+        // Process the command without requiring AP
+        console.log('Command submitted:', command);
+
+        // Only clear the command after processing
+        set({ command: '' });
+
+        // Return true to indicate successful submission
+        return true;
       },
 
       setSacrificeAmount: (amount) => {
@@ -435,6 +446,19 @@ export const useGameInterfaceStore = create<GameInterfaceStore>()(
           },
           command: '',
         });
+      },
+
+      executeAction: (actionType: string, actionData?: ActionData) => {
+        const { spendPlayerAP } = get();
+
+        // Check if player has enough AP for this action
+        if (spendPlayerAP(1)) {
+          console.log(`Executed action: ${actionType}`, actionData);
+          return true;
+        }
+
+        console.log(`Cannot execute action ${actionType}: Not enough AP`);
+        return false;
       },
     }),
     {

@@ -37,6 +37,20 @@ const CommandConsole: React.FC = () => {
   const hotKeyButtonClass =
     'h-10 w-32 rounded bg-green-600 text-sm text-white hover:bg-green-700 flex items-center justify-center';
 
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+
+    // Always process the command input
+    // Use underscore prefix to indicate intentionally unused variable
+    const _commandSubmitted = handleCommandSubmit();
+
+    // If the command requires AP to execute an action, use executeAction instead
+    // For example:
+    // if (commandRequiresAP(command)) {
+    //   executeAction('command', { command });
+    // }
+  };
+
   return (
     <div className="flex h-full flex-col bg-white p-4 dark:bg-gray-900/70">
       <SectionHeader text="Command Console" icon="⌘" version="v1.0" />
@@ -321,21 +335,13 @@ const CommandConsole: React.FC = () => {
       </div>
 
       {/* Command input at the bottom */}
-      <form
-        onSubmit={(e) => {
-          e.preventDefault();
-          handleCommandSubmit();
-        }}
-        className="flex"
-      >
+      <form onSubmit={handleSubmit} className="flex">
         <input
           type="text"
           value={command}
           onChange={(e) => setCommand(e.target.value)}
           className="flex-1 rounded-l border border-gray-300 p-2 dark:border-gray-700 dark:bg-gray-800"
-          placeholder={
-            playerAP > 0 ? 'Enter command...' : 'Need AP to execute commands...'
-          }
+          placeholder="Enter command..."
         />
         <KeybindButton
           actionId="send-command"
@@ -343,12 +349,7 @@ const CommandConsole: React.FC = () => {
           keybind={getKeybind('send-command')}
           onAction={handleCommandSubmit}
           type="submit"
-          className={`rounded-r px-4 py-2 font-bold text-white ${
-            playerAP > 0
-              ? 'bg-purple-600 hover:bg-purple-700'
-              : 'cursor-not-allowed bg-gray-500'
-          }`}
-          disabled={playerAP === 0}
+          className="rounded-r bg-purple-600 px-4 py-2 font-bold text-white hover:bg-purple-700"
           showKeybindLabel={showKeybindLabels}
         >
           Send
