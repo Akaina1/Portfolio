@@ -1,8 +1,8 @@
 import {
   MapPoint,
   LocationDetails,
-} from '../components/Game/GameInterface/MapPoint/type';
-import { generatePlaceholderData } from '../utilities/generatePlaceholderData';
+} from '../../components/Game/GameInterface/MapPoint/type';
+import { generatePlaceholderData } from '../../utilities/generatePlaceholderData';
 
 // Cache for location details
 const locationCache: Record<string, LocationDetails> = {};
