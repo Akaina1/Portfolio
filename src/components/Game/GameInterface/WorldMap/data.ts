@@ -1,17 +1,7 @@
-/**
- * Interface defining a map point with position and metadata
- */
-export interface MapPoint {
-  id: string;
-  x: number; // X coordinate on the original image (in pixels)
-  y: number; // Y coordinate on the original image (in pixels)
-  label: string;
-  type: 'city' | 'landmark' | 'point-of-interest' | 'location';
-  visible: boolean; // Whether the point should be displayed on the map
-}
+import { MapPoint } from '../MapPoint/type';
 
 /**
- * Initial map points data
+ * Map points data
  */
 export const mapPoints: MapPoint[] = [
   {
@@ -2822,84 +2812,100 @@ export const mapPoints: MapPoint[] = [
     type: 'location',
     visible: true,
   },
-];
-
-/**
- * Function to add a new map point
- * @param points Current map points array
- * @param x X coordinate
- * @param y Y coordinate
- * @returns Updated map points array with new point added
- */
-export const addMapPoint = (
-  points: MapPoint[],
-  x: number,
-  y: number
-): MapPoint[] => {
-  // Find the highest numeric ID to determine the next ID
-  const highestId = points.reduce((max, point) => {
-    const idNumber = parseInt(point.id.replace(/\D/g, ''), 10);
-    return isNaN(idNumber) ? max : Math.max(max, idNumber);
-  }, 0);
-
-  // Create new point with incremented ID
-  const newPoint: MapPoint = {
-    id: `point${highestId + 1}`,
-    x,
-    y,
-    label: 'Template',
+  {
+    id: 'point353',
+    x: 11024,
+    y: 3402,
+    label: 'Template353',
     type: 'location',
-    visible: true, // New points are visible by default
-  };
-
-  // Return new array with added point
-  return [...points, newPoint];
-};
-
-/**
- * Function to toggle a point's visibility
- * @param points Current map points array
- * @param pointId ID of the point to toggle
- * @returns Updated map points array with toggled visibility
- */
-export const togglePointVisibility = (
-  points: MapPoint[],
-  pointId: string
-): MapPoint[] => {
-  return points.map((point) =>
-    point.id === pointId ? { ...point, visible: !point.visible } : point
-  );
-};
-
-/**
- * Function to set a point's visibility
- * @param points Current map points array
- * @param pointId ID of the point to update
- * @param visible New visibility state
- * @returns Updated map points array with updated visibility
- */
-export const setPointVisibility = (
-  points: MapPoint[],
-  pointId: string,
-  visible: boolean
-): MapPoint[] => {
-  return points.map((point) =>
-    point.id === pointId ? { ...point, visible } : point
-  );
-};
-
-/**
- * Function to export map points as formatted code
- * @param points Map points array
- * @returns Formatted string representation of the map points array
- */
-export const exportMapPointsAsCode = (points: MapPoint[]): string => {
-  return `export const mapPoints: MapPoint[] = [
-${points
-  .map(
-    (point) =>
-      `  { id: '${point.id}', x: ${point.x}, y: ${point.y}, label: '${point.label}', type: '${point.type}', visible: ${point.visible} },`
-  )
-  .join('\n')}
-];`;
-};
+    visible: true,
+  },
+  {
+    id: 'point354',
+    x: 9916,
+    y: 3444,
+    label: 'Template354',
+    type: 'location',
+    visible: true,
+  },
+  {
+    id: 'point355',
+    x: 10126,
+    y: 3028,
+    label: 'Template355',
+    type: 'location',
+    visible: true,
+  },
+  {
+    id: 'point356',
+    x: 11208,
+    y: 3126,
+    label: 'Template356',
+    type: 'location',
+    visible: true,
+  },
+  {
+    id: 'point357',
+    x: 12160,
+    y: 3104,
+    label: 'Template357',
+    type: 'location',
+    visible: true,
+  },
+  {
+    id: 'point358',
+    x: 13516,
+    y: 2906,
+    label: 'Template358',
+    type: 'location',
+    visible: true,
+  },
+  {
+    id: 'point359',
+    x: 12944,
+    y: 3654,
+    label: 'Template359',
+    type: 'location',
+    visible: true,
+  },
+  {
+    id: 'point360',
+    x: 13086,
+    y: 3092,
+    label: 'Template360',
+    type: 'location',
+    visible: true,
+  },
+  {
+    id: 'point361',
+    x: 12280,
+    y: 5227,
+    label: 'Template361',
+    type: 'location',
+    visible: true,
+  },
+  {
+    id: 'point362',
+    x: 888,
+    y: 4143,
+    label: 'Template362',
+    type: 'location',
+    visible: true,
+  },
+  {
+    id: 'point363',
+    x: 613,
+    y: 4031,
+    label: 'Template363',
+    type: 'location',
+    visible: true,
+  },
+  {
+    id: 'point364',
+    x: 1640,
+    y: 2733,
+    label: 'Template364',
+    type: 'location',
+    visible: true,
+  },
+];
