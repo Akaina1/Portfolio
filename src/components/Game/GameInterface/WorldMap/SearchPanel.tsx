@@ -1,21 +1,5 @@
 import React from 'react';
-import { MapPoint } from '../MapPoint/type';
-import { SearchFilters } from './type';
-
-interface SearchPanelProps {
-  isMapReady: boolean;
-  showSearch: boolean;
-  searchFilters: SearchFilters;
-  searchResults: MapPoint[];
-  updateFilter: (
-    key: keyof SearchFilters,
-    value: string | string[] | boolean | null | number
-  ) => void;
-  toggleArrayFilter: (key: keyof SearchFilters, value: string) => void;
-  resetSearchFilters: () => void;
-  handleSearch: () => void;
-  centerOnPoint: (point: MapPoint) => void;
-}
+import { SearchPanelProps } from './type';
 
 const SearchPanel: React.FC<SearchPanelProps> = ({
   isMapReady,

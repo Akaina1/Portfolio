@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { MapPoint } from '../WorldMap/data';
+import { MapPoint } from '../MapPoint/type';
 
 // Define difficulty levels with corresponding colors
 const DIFFICULTY_LEVELS = {

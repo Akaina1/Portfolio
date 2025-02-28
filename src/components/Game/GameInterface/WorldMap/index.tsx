@@ -4,7 +4,7 @@ import { mapPoints as initialMapPoints } from './data';
 
 // Import custom hooks
 import { useMapInteraction } from './hooks/useMapInteraction';
-import { useMapPoints } from './hooks/useMapPoints';
+import { useMapPoints } from '../MapPoint/hooks/useMapPoints';
 import { useSearch } from './hooks/useSearch';
 
 // Import components
