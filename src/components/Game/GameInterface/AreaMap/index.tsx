@@ -1,21 +1,25 @@
 import { useMemo } from 'react';
-import { terrainSymbols } from '../ASCII/terrainSybmols';
+import { terrainSymbols } from '../ASCII/terrainSymbols';
 
 export const AreaMap: React.FC<{
   mapData: string[][];
   roomName: string;
   legend?: boolean;
-}> = ({ mapData, roomName, legend = true }) => {
+  legendData?: string[][];
+}> = ({ mapData, roomName, legend = true, legendData }) => {
   // Get unique terrain types in this map for the legend
   const uniqueTerrains = useMemo(() => {
+    // Use legendData if provided, otherwise use mapData
+    const dataToUse = legendData || mapData;
+
     const terrains = new Set<string>();
-    mapData.forEach((row) => {
+    dataToUse.forEach((row) => {
       row.forEach((cell) => {
         if (terrainSymbols[cell]) terrains.add(cell);
       });
     });
     return Array.from(terrains);
-  }, [mapData]);
+  }, [mapData, legendData]);
 
   return (
     <div className="flex flex-col items-center">
