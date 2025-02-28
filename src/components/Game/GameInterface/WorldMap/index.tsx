@@ -12,7 +12,6 @@ import MapControls from './MapControls';
 import SearchPanel from './SearchPanel';
 import MapLegend from './MapLegend';
 import MapCanvas from './MapCanvas';
-import LocationCardWrapper from './LocationCardWrapper';
 import ExportModal from './ExportModal';
 
 export const ZoomableWorldMap: React.FC = () => {
@@ -233,6 +232,8 @@ export const ZoomableWorldMap: React.FC = () => {
         mapPoints={mapPoints}
         showHiddenPoints={showHiddenPoints}
         selectedSearchResult={selectedSearchResult}
+        activePoint={activePoint}
+        locationCardPosition={locationCardPosition}
         handleMouseDown={handleMouseDown}
         handleMouseMove={handleMouseMove}
         handleMouseUp={handleMouseUp}
@@ -243,13 +244,7 @@ export const ZoomableWorldMap: React.FC = () => {
         handlePointMouseEnter={handlePointMouseEnter}
         handlePointMouseLeave={handlePointMouseLeave}
         handleImageLoad={handleImageLoad}
-      />
-
-      {/* Location card */}
-      <LocationCardWrapper
-        activePoint={activePoint}
-        position={locationCardPosition}
-        onClose={() => setActivePoint(null)}
+        setActivePoint={setActivePoint}
       />
 
       {/* Coordinate helper text */}

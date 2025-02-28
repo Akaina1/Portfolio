@@ -1,6 +1,7 @@
 import React, { RefObject } from 'react';
 import Image from 'next/image';
 import { MapPoint } from '../MapPoint/type';
+import LocationCardWrapper from './LocationCardWrapper';
 
 interface MapCanvasProps {
   containerRef: RefObject<HTMLDivElement>;
@@ -15,6 +16,8 @@ interface MapCanvasProps {
   mapPoints: MapPoint[];
   showHiddenPoints: boolean;
   selectedSearchResult: MapPoint | null;
+  activePoint: MapPoint | null;
+  locationCardPosition: { x: number; y: number };
   handleMouseDown: (e: React.MouseEvent) => void;
   handleMouseMove: (e: React.MouseEvent) => void;
   handleMouseUp: () => void;
@@ -25,6 +28,7 @@ interface MapCanvasProps {
   handlePointMouseEnter: (e: React.MouseEvent, point: MapPoint) => void;
   handlePointMouseLeave: () => void;
   handleImageLoad: () => void;
+  setActivePoint: (point: MapPoint | null) => void;
 }
 
 const MapCanvas: React.FC<MapCanvasProps> = ({
@@ -40,6 +44,8 @@ const MapCanvas: React.FC<MapCanvasProps> = ({
   mapPoints,
   showHiddenPoints,
   selectedSearchResult,
+  activePoint,
+  locationCardPosition,
   handleMouseDown,
   handleMouseMove,
   handleMouseUp,
@@ -50,6 +56,7 @@ const MapCanvas: React.FC<MapCanvasProps> = ({
   handlePointMouseEnter,
   handlePointMouseLeave,
   handleImageLoad,
+  setActivePoint,
 }) => {
   // Get point style based on type
   const getPointStyle = (type: MapPoint['type']) => {
@@ -194,6 +201,16 @@ const MapCanvas: React.FC<MapCanvasProps> = ({
             </div>
           )}
         </>
+      )}
+
+      {/* Location card - render inside the map container */}
+      {activePoint && (
+        <LocationCardWrapper
+          activePoint={activePoint}
+          position={locationCardPosition}
+          onClose={() => setActivePoint(null)}
+          containerRef={containerRef}
+        />
       )}
     </div>
   );
