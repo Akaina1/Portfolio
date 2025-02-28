@@ -7,20 +7,28 @@ import GameInterface from '@/components/Game/GameInterface';
 import { useGameStore } from '@/stores/Game/gameStore';
 import { usePathname } from 'next/navigation';
 import { useGameInterfaceStore } from '@/stores/Game/gameInterfaceStore';
+import { useSocket } from '@/hooks/useSocket';
+import { usePlayerStore } from '@/stores/Player/playerStore';
 
 /**
  * Game Page Component
  *
  * This is the main entry point for the game experience.
  * It handles the flow between authentication, character selection, and the game interface.
+ * It also manages socket connection and authentication.
  */
 const GamePage: React.FC = () => {
   const [isLoaded, setIsLoaded] = useState(false);
   const viewState = useGameStore((state) => state.viewState);
+  const setViewState = useGameStore((state) => state.setViewState);
   const [isMounted, setIsMounted] = useState(false);
   const pathname = usePathname();
   const { toggleSettingsModal, keybinds, enableKeybinds } =
     useGameInterfaceStore();
+
+  // Socket connection
+  const { isConnected, isAuthenticated, connectionError } = useSocket();
+  const player = usePlayerStore((state) => state.player);
 
   // Simulate loading effect
   useEffect(() => {
@@ -31,6 +39,22 @@ const GamePage: React.FC = () => {
   useEffect(() => {
     setIsMounted(true);
   }, []);
+
+  // Effect to handle socket authentication errors
+  useEffect(() => {
+    if (connectionError && viewState === 'game') {
+      console.error('Socket connection error:', connectionError);
+      // Handle authentication errors by returning to auth view
+      if (
+        connectionError.includes('authentication') ||
+        connectionError.includes('unauthorized') ||
+        connectionError.includes('token')
+      ) {
+        console.warn('Authentication error detected, returning to login');
+        setViewState('auth');
+      }
+    }
+  }, [connectionError, viewState, setViewState]);
 
   // Global keybind listener for settings
   useEffect(() => {
@@ -93,6 +117,31 @@ const GamePage: React.FC = () => {
       case 'auth':
         return <AuthView />;
       case 'game':
+        // Show connection status if not connected
+        if (!isConnected || !isAuthenticated) {
+          return (
+            <div className="flex h-screen w-full flex-col items-center justify-center">
+              <h2 className="mb-4 text-2xl font-bold">
+                Connecting to game server...
+              </h2>
+              {connectionError && (
+                <div className="mt-4 rounded border border-red-400 bg-red-100 px-4 py-3 text-red-700">
+                  {connectionError}
+                </div>
+              )}
+              {player && (
+                <div className="mt-4">
+                  <button
+                    className="rounded bg-purple-600 px-4 py-2 text-white hover:bg-purple-700"
+                    onClick={() => window.location.reload()} // Simple refresh to retry
+                  >
+                    Retry Connection
+                  </button>
+                </div>
+              )}
+            </div>
+          );
+        }
         return <GameInterface />;
       default:
         return <AuthView />;

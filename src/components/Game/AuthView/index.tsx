@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useGameStore } from '../../../stores/Game/gameStore';
 import { AnimatedDivider } from '@/components/AnimatedDivider';
 import { useGameInterfaceStore } from '@/stores/Game/gameInterfaceStore';
+import { usePlayerStore } from '@/stores/Player/playerStore';
 
 const AuthView: React.FC = () => {
   const setViewState = useGameStore((state) => state.setViewState);
@@ -12,6 +13,11 @@ const AuthView: React.FC = () => {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+
+  // Player store actions
+  const setToken = usePlayerStore((state) => state.setToken);
+  const setPlayer = usePlayerStore((state) => state.setPlayer);
+  const setPlayerError = usePlayerStore((state) => state.setError);
 
   // Disable all keybinds when AuthView is shown
   const disableKeybinds = useGameInterfaceStore(
@@ -35,6 +41,7 @@ const AuthView: React.FC = () => {
     e.preventDefault();
     setLoading(true);
     setError('');
+    setPlayerError(null);
 
     try {
       const response = await fetch('/api/players/login', {
@@ -54,10 +61,47 @@ const AuthView: React.FC = () => {
 
       console.log('Login successful:', data);
 
-      // Transition to game view on successful login
-      setViewState('game');
-    } catch (err) {
-      setError(err.message || 'Something went wrong');
+      // Extract token from response
+      let token: string | null = null;
+
+      if (data.token) {
+        token = data.token;
+      } else if (data.user?.token) {
+        token = data.user.token;
+      } else if (data.accessToken) {
+        token = data.accessToken;
+      } else {
+        const authHeader = response.headers.get('Authorization');
+        if (authHeader?.startsWith('Bearer ')) {
+          token = authHeader.substring(7);
+        }
+      }
+
+      // Extract user ID
+      const userId = data.user?.id || data.id || '';
+
+      if (token) {
+        console.log('Token found and stored');
+        setToken(token);
+
+        // Store player data - make sure we have both ID and email
+        setPlayer({
+          id: userId,
+          email: data.user?.email || data.email || email,
+          username: data.user?.username || data.username || email.split('@')[0],
+        });
+
+        // Transition to game view on successful login
+        setViewState('game');
+      } else {
+        console.error('No token found in response:', data);
+        throw new Error('No authentication token received');
+      }
+    } catch (err: unknown) {
+      const errorMessage =
+        err instanceof Error ? err.message : 'Something went wrong';
+      setError(errorMessage);
+      setPlayerError(errorMessage);
       console.error('Login error:', err);
     } finally {
       setLoading(false);
