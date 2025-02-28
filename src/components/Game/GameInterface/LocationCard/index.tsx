@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { MapPoint } from '../MapPoint/type';
-import { LocationService } from '../../../../services/locationService';
+import { LocationService } from '../../../../services/game/locationService';
 import {
   DIFFICULTY_LEVELS,
   UTILITY_TYPES,
