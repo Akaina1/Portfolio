@@ -60,6 +60,18 @@ const KeybindButton: React.FC<KeybindButtonProps> = ({
     if (!keybind) return;
 
     const handleKeyDown = (e: KeyboardEvent) => {
+      // Check if the active element is an input field, textarea, or inside the search overlay
+      const activeElement = document.activeElement;
+      if (
+        activeElement instanceof HTMLInputElement ||
+        activeElement instanceof HTMLTextAreaElement ||
+        activeElement instanceof HTMLSelectElement ||
+        activeElement?.closest('.search-overlay') !== null
+      ) {
+        // Skip keybind processing when user is typing in form elements
+        return;
+      }
+
       // Parse the keybind string
       const keys = keybind.toLowerCase().split('+');
       const mainKey = keys[keys.length - 1];

@@ -10,6 +10,38 @@ import {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   setPointVisibility,
 } from './data';
+import LocationCard from '../LocationCard';
+import { generatePlaceholderData, LocationData } from '../LocationCard';
+
+// Define search filter types
+interface SearchFilters {
+  label: string;
+  type: string[];
+  resources: string[];
+  utilities: string[];
+  enemies: string[];
+  difficulty: string[];
+  isSafe: boolean | null;
+  minLevel: number | null;
+  maxLevel: number | null;
+  climate: string[];
+  hasQuestgivers: boolean | null;
+}
+
+// Define initial search filters
+const initialSearchFilters: SearchFilters = {
+  label: '',
+  type: [],
+  resources: [],
+  utilities: [],
+  enemies: [],
+  difficulty: [],
+  isSafe: null,
+  minLevel: null,
+  maxLevel: null,
+  climate: [],
+  hasQuestgivers: null,
+};
 
 export const ZoomableWorldMap: React.FC = () => {
   const [scale, setScale] = useState(0.4); // Start zoomed out to see the whole map
@@ -36,7 +68,28 @@ export const ZoomableWorldMap: React.FC = () => {
   const [isMapLoading, setIsMapLoading] = useState(true);
   const [isMapReady, setIsMapReady] = useState(false);
 
-  // Prevent page scrolling when mouse is over the map container
+  // Add state for the active location card
+  const [activePoint, setActivePoint] = useState<MapPoint | null>(null);
+  const [locationCardPosition, setLocationCardPosition] = useState({
+    x: 0,
+    y: 0,
+  });
+
+  // Add hover timeout to prevent flickering
+  const hoverTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Add search-related state
+  const [showSearch, setShowSearch] = useState(false);
+  const [searchFilters, setSearchFilters] =
+    useState<SearchFilters>(initialSearchFilters);
+  const [searchResults, setSearchResults] = useState<MapPoint[]>([]);
+  const [selectedSearchResult, setSelectedSearchResult] =
+    useState<MapPoint | null>(null);
+  const [locationDataCache, setLocationDataCache] = useState<
+    Record<string, LocationData>
+  >({});
+
+  // Log search filters when they change
   useEffect(() => {
     const container = containerRef.current;
     if (!container) return;
@@ -75,7 +128,7 @@ export const ZoomableWorldMap: React.FC = () => {
     return () => {
       container.removeEventListener('wheel', preventScrollAndZoom);
     };
-  }, [scale, position, setScale, setPosition]);
+  }, [scale, position, setScale, setPosition, searchFilters]);
 
   // Handle image loading states
   useEffect(() => {
@@ -99,6 +152,15 @@ export const ZoomableWorldMap: React.FC = () => {
     };
   }, [isMapReady]);
 
+  // Clean up hover timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (hoverTimeoutRef.current) {
+        clearTimeout(hoverTimeoutRef.current);
+      }
+    };
+  }, []);
+
   // Handle point click - now with visibility toggle when in edit mode
   const handlePointClick = (point: MapPoint) => {
     if (isAddingPoints) {
@@ -108,8 +170,6 @@ export const ZoomableWorldMap: React.FC = () => {
 
       // Generate and log the code for the updated points array
       const code = exportMapPointsAsCode(updatedPoints);
-      console.log('Updated map points:');
-      console.log(code);
 
       // Set the exported code for the modal
       setExportedCode(code);
@@ -121,6 +181,71 @@ export const ZoomableWorldMap: React.FC = () => {
       );
       // You can add your custom logic here
     }
+  };
+
+  // Handle point hover to show location card
+  const handlePointMouseEnter = (e: React.MouseEvent, point: MapPoint) => {
+    // Clear any existing timeout
+    if (hoverTimeoutRef.current) {
+      clearTimeout(hoverTimeoutRef.current);
+    }
+
+    // Set a small delay to prevent flickering on quick mouse movements
+    hoverTimeoutRef.current = setTimeout(() => {
+      // Get container's bounding rectangle
+      const rect = containerRef.current?.getBoundingClientRect();
+      if (!rect) return;
+
+      // Calculate position for the location card
+      const pointScreenX = point.x * scale + position.x;
+      const pointScreenY = point.y * scale + position.y;
+
+      // Card dimensions (approximate)
+      const cardWidth = 320;
+      const cardHeight = 400; // Estimate based on content
+
+      // Determine best position for the card
+      // Try to position it to the right of the point first
+      let cardX = pointScreenX + 20;
+      let cardY = pointScreenY - cardHeight / 2;
+
+      // Check if card would go off the right edge
+      if (cardX + cardWidth > rect.width) {
+        // Position to the left of the point instead
+        cardX = pointScreenX - cardWidth - 20;
+      }
+
+      // If card would go off the left edge too, center it horizontally
+      if (cardX < 0) {
+        cardX = Math.max(
+          10,
+          Math.min(rect.width - cardWidth - 10, pointScreenX - cardWidth / 2)
+        );
+      }
+
+      // Check if card would go off the top or bottom
+      if (cardY < 0) {
+        cardY = 10; // Keep a small margin from the top
+      } else if (cardY + cardHeight > rect.height) {
+        cardY = rect.height - cardHeight - 10; // Keep a small margin from the bottom
+      }
+
+      setLocationCardPosition({ x: cardX, y: cardY });
+      setActivePoint(point);
+    }, 200); // 200ms delay
+  };
+
+  // Handle point mouse leave to hide location card
+  const handlePointMouseLeave = () => {
+    // Clear any existing timeout
+    if (hoverTimeoutRef.current) {
+      clearTimeout(hoverTimeoutRef.current);
+    }
+
+    // Set a small delay before hiding to prevent flickering
+    hoverTimeoutRef.current = setTimeout(() => {
+      setActivePoint(null);
+    }, 100);
   };
 
   // Add a function to track mouse position on the image
@@ -158,8 +283,6 @@ export const ZoomableWorldMap: React.FC = () => {
 
     // Generate and log the code for the updated points array
     const code = exportMapPointsAsCode(updatedPoints);
-    console.log('Updated map points:');
-    console.log(code);
 
     // Set the exported code for the modal
     setExportedCode(code);
@@ -259,6 +382,187 @@ export const ZoomableWorldMap: React.FC = () => {
     setIsMapReady(true);
   };
 
+  // Function to center the map on a specific point
+  const centerOnPoint = (point: MapPoint) => {
+    if (!containerRef.current) return;
+
+    // Get container dimensions
+    const rect = containerRef.current.getBoundingClientRect();
+    const centerX = rect.width / 2;
+    const centerY = rect.height / 2;
+
+    // Calculate position to center the point
+    const newPosX = centerX - point.x * scale;
+    const newPosY = centerY - point.y * scale;
+
+    // Update position
+    setPosition({ x: newPosX, y: newPosY });
+
+    // Highlight the point
+    setSelectedSearchResult(point);
+
+    // Hide search overlay when centering on a point from search results
+    setShowSearch(false);
+
+    // Clear the highlight after 3 seconds
+    setTimeout(() => {
+      setSelectedSearchResult(null);
+    }, 3000);
+  };
+
+  // Function to handle search
+  const handleSearch = () => {
+    // Generate location data for all points if not already cached
+    const updatedCache = { ...locationDataCache };
+
+    // Filter points based on search criteria
+    const results = mapPoints.filter((point) => {
+      // Skip hidden points unless in edit mode with showHiddenPoints enabled
+      if (!point.visible && (!isAddingPoints || !showHiddenPoints)) {
+        return false;
+      }
+
+      // Get or generate location data
+      let locationData = updatedCache[point.id];
+      if (!locationData) {
+        locationData = generatePlaceholderData(point);
+        updatedCache[point.id] = locationData;
+      }
+
+      // Check label match (case insensitive)
+      if (
+        searchFilters.label &&
+        !point.label.toLowerCase().includes(searchFilters.label.toLowerCase())
+      ) {
+        return false;
+      }
+
+      // Check type match
+      if (
+        searchFilters.type.length > 0 &&
+        !searchFilters.type.includes(point.type)
+      ) {
+        return false;
+      }
+
+      // Check resources match
+      if (
+        searchFilters.resources.length > 0 &&
+        !searchFilters.resources.some((resource) =>
+          locationData.resources.includes(resource)
+        )
+      ) {
+        return false;
+      }
+
+      // Check utilities match
+      if (
+        searchFilters.utilities.length > 0 &&
+        !searchFilters.utilities.some((utility) =>
+          locationData.utilities.some(
+            (locUtility) => locUtility.toString() === utility
+          )
+        )
+      ) {
+        return false;
+      }
+
+      // Check enemies match
+      if (
+        searchFilters.enemies.length > 0 &&
+        !searchFilters.enemies.some((enemy) =>
+          locationData.enemies.includes(enemy)
+        )
+      ) {
+        return false;
+      }
+
+      // Check difficulty match
+      if (
+        searchFilters.difficulty.length > 0 &&
+        !searchFilters.difficulty.includes(locationData.difficulty)
+      ) {
+        return false;
+      }
+
+      // Check safety match
+      if (
+        searchFilters.isSafe !== null &&
+        locationData.isSafe !== searchFilters.isSafe
+      ) {
+        return false;
+      }
+
+      // Check level range match
+      if (
+        searchFilters.minLevel !== null &&
+        locationData.recommendedLevelRange[0] < searchFilters.minLevel
+      ) {
+        return false;
+      }
+
+      if (
+        searchFilters.maxLevel !== null &&
+        locationData.recommendedLevelRange[1] > searchFilters.maxLevel
+      ) {
+        return false;
+      }
+
+      // Check climate match
+      if (
+        searchFilters.climate.length > 0 &&
+        !searchFilters.climate.includes(locationData.climate)
+      ) {
+        return false;
+      }
+
+      // Check quest availability match
+      if (
+        searchFilters.hasQuestgivers !== null &&
+        locationData.hasQuestgivers !== searchFilters.hasQuestgivers
+      ) {
+        return false;
+      }
+
+      // If all checks pass, include this point in results
+      return true;
+    });
+
+    // Update cache and search results
+    setLocationDataCache(updatedCache);
+    setSearchResults(results);
+  };
+
+  // Function to reset search filters
+  const resetSearchFilters = () => {
+    setSearchFilters(initialSearchFilters);
+    setSearchResults([]);
+  };
+
+  // Function to update a single filter
+  const updateFilter = (
+    key: keyof SearchFilters,
+    value: string | string[] | boolean | null | number
+  ) => {
+    setSearchFilters((prev) => ({
+      ...prev,
+      [key]: value,
+    }));
+  };
+
+  // Function to toggle a value in an array filter
+  const toggleArrayFilter = (key: keyof SearchFilters, value: string) => {
+    setSearchFilters((prev) => {
+      const currentArray = prev[key] as string[];
+      return {
+        ...prev,
+        [key]: currentArray.includes(value)
+          ? currentArray.filter((item) => item !== value)
+          : [...currentArray, value],
+      };
+    });
+  };
+
   return (
     <div className="flex flex-col items-center">
       <h3 className="mb-4 text-lg font-bold">Detailed World Map</h3>
@@ -326,11 +630,455 @@ export const ZoomableWorldMap: React.FC = () => {
             </button>
           )}
 
+          {/* Add search toggle button */}
+          <button
+            className={`rounded px-2 py-1 text-xs ${
+              showSearch
+                ? 'bg-purple-500 text-white dark:bg-purple-700'
+                : 'bg-gray-200 dark:bg-gray-700'
+            }`}
+            onClick={() => setShowSearch((prev) => !prev)}
+          >
+            {showSearch ? 'Hide Search' : 'Search Locations'}
+          </button>
+
           <span className="self-end text-xs">
             {isAddingPoints
               ? 'Click on the map to add new points. Click on existing points to toggle visibility.'
-              : 'Use mouse wheel to zoom in/out, click and drag to pan the map'}
+              : 'Use mouse wheel to zoom in/out, click and drag to pan the map. Hover over points to see details.'}
           </span>
+        </div>
+      )}
+
+      {/* Search panel */}
+      {isMapReady && showSearch && (
+        <div className="search-overlay mb-4 w-full rounded-lg border border-gray-700 bg-gray-800 p-4">
+          <h4 className="mb-2 text-sm font-bold text-white">
+            Search Locations
+          </h4>
+
+          <div className="mb-4 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+            {/* Name search */}
+            <div>
+              <label className="mb-1 block text-xs text-gray-300">
+                Location Name
+              </label>
+              <input
+                type="text"
+                className="w-full rounded border border-gray-600 bg-gray-700 px-2 py-1 text-sm text-white"
+                placeholder="Search by name..."
+                value={searchFilters.label}
+                onChange={(e) => updateFilter('label', e.target.value)}
+              />
+            </div>
+
+            {/* Type filter */}
+            <div>
+              <label className="mb-1 block text-xs text-gray-300">
+                Location Type
+              </label>
+              <div className="flex flex-wrap gap-1">
+                {['city', 'landmark', 'point-of-interest', 'location'].map(
+                  (type) => (
+                    <button
+                      key={type}
+                      className={`rounded px-2 py-0.5 text-xs ${
+                        searchFilters.type.includes(type)
+                          ? 'bg-blue-500 text-white'
+                          : 'bg-gray-600 text-gray-300'
+                      }`}
+                      onClick={() => toggleArrayFilter('type', type)}
+                    >
+                      {type}
+                    </button>
+                  )
+                )}
+              </div>
+            </div>
+
+            {/* Resources filter */}
+            <div>
+              <label className="mb-1 block text-xs text-gray-300">
+                Resources
+              </label>
+              <select
+                className="w-full rounded border border-gray-600 bg-gray-700 px-2 py-1 text-sm text-white"
+                value=""
+                onChange={(e) => {
+                  if (e.target.value) {
+                    toggleArrayFilter('resources', e.target.value);
+                  }
+                }}
+              >
+                <option value="">Select resource...</option>
+                {[
+                  'Herbs',
+                  'Ore',
+                  'Wood',
+                  'Leather',
+                  'Cloth',
+                  'Gems',
+                  'Magic Essence',
+                ].map((resource) => (
+                  <option key={resource} value={resource}>
+                    {resource}{' '}
+                    {searchFilters.resources.includes(resource) ? '✓' : ''}
+                  </option>
+                ))}
+              </select>
+              {searchFilters.resources.length > 0 && (
+                <div className="mt-1 flex flex-wrap gap-1">
+                  {searchFilters.resources.map((resource) => (
+                    <span
+                      key={resource}
+                      className="flex items-center rounded bg-blue-900 px-1 py-0.5 text-xs text-white"
+                    >
+                      {resource}
+                      <button
+                        className="ml-1 text-xs text-gray-300 hover:text-white"
+                        onClick={() => toggleArrayFilter('resources', resource)}
+                      >
+                        ×
+                      </button>
+                    </span>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Services filter */}
+            <div>
+              <label className="mb-1 block text-xs text-gray-300">
+                Services
+              </label>
+              <select
+                className="w-full rounded border border-gray-600 bg-gray-700 px-2 py-1 text-sm text-white"
+                value=""
+                onChange={(e) => {
+                  if (e.target.value) {
+                    toggleArrayFilter('utilities', e.target.value);
+                  }
+                }}
+              >
+                <option value="">Select service...</option>
+                {[
+                  'INN',
+                  'SHOP',
+                  'BLACKSMITH',
+                  'ALCHEMIST',
+                  'STABLE',
+                  'BANK',
+                  'GUILD',
+                  'TAVERN',
+                ].map((utility) => (
+                  <option key={utility} value={utility}>
+                    {utility}{' '}
+                    {searchFilters.utilities.includes(utility) ? '✓' : ''}
+                  </option>
+                ))}
+              </select>
+              {searchFilters.utilities.length > 0 && (
+                <div className="mt-1 flex flex-wrap gap-1">
+                  {searchFilters.utilities.map((utility) => (
+                    <span
+                      key={utility}
+                      className="flex items-center rounded bg-purple-900 px-1 py-0.5 text-xs text-white"
+                    >
+                      {utility}
+                      <button
+                        className="ml-1 text-xs text-gray-300 hover:text-white"
+                        onClick={() => toggleArrayFilter('utilities', utility)}
+                      >
+                        ×
+                      </button>
+                    </span>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Enemies filter */}
+            <div>
+              <label className="mb-1 block text-xs text-gray-300">
+                Enemies
+              </label>
+              <select
+                className="w-full rounded border border-gray-600 bg-gray-700 px-2 py-1 text-sm text-white"
+                value=""
+                onChange={(e) => {
+                  if (e.target.value) {
+                    toggleArrayFilter('enemies', e.target.value);
+                  }
+                }}
+              >
+                <option value="">Select enemy type...</option>
+                {[
+                  'Bandits',
+                  'Wolves',
+                  'Undead',
+                  'Elementals',
+                  'Dragons',
+                  'Demons',
+                  'Cultists',
+                  'Wildlife',
+                  'Constructs',
+                ].map((enemy) => (
+                  <option key={enemy} value={enemy}>
+                    {enemy} {searchFilters.enemies.includes(enemy) ? '✓' : ''}
+                  </option>
+                ))}
+              </select>
+              {searchFilters.enemies.length > 0 && (
+                <div className="mt-1 flex flex-wrap gap-1">
+                  {searchFilters.enemies.map((enemy) => (
+                    <span
+                      key={enemy}
+                      className="flex items-center rounded bg-red-900 px-1 py-0.5 text-xs text-white"
+                    >
+                      {enemy}
+                      <button
+                        className="ml-1 text-xs text-gray-300 hover:text-white"
+                        onClick={() => toggleArrayFilter('enemies', enemy)}
+                      >
+                        ×
+                      </button>
+                    </span>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Difficulty filter */}
+            <div>
+              <label className="mb-1 block text-xs text-gray-300">
+                Difficulty
+              </label>
+              <div className="flex flex-wrap gap-1">
+                {[
+                  'BEGINNER',
+                  'INTERMEDIATE',
+                  'ADVANCED',
+                  'EXPERT',
+                  'LEGENDARY',
+                ].map((diff) => (
+                  <button
+                    key={diff}
+                    className={`rounded px-2 py-0.5 text-xs ${
+                      searchFilters.difficulty.includes(diff)
+                        ? 'bg-orange-500 text-white'
+                        : 'bg-gray-600 text-gray-300'
+                    }`}
+                    onClick={() => toggleArrayFilter('difficulty', diff)}
+                  >
+                    {diff.charAt(0) + diff.slice(1).toLowerCase()}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Safety filter */}
+            <div>
+              <label className="mb-1 block text-xs text-gray-300">Safety</label>
+              <div className="flex gap-2">
+                <button
+                  className={`rounded px-2 py-0.5 text-xs ${
+                    searchFilters.isSafe === true
+                      ? 'bg-green-500 text-white'
+                      : 'bg-gray-600 text-gray-300'
+                  }`}
+                  onClick={() =>
+                    updateFilter(
+                      'isSafe',
+                      searchFilters.isSafe === true ? null : true
+                    )
+                  }
+                >
+                  Safe Zones
+                </button>
+                <button
+                  className={`rounded px-2 py-0.5 text-xs ${
+                    searchFilters.isSafe === false
+                      ? 'bg-red-500 text-white'
+                      : 'bg-gray-600 text-gray-300'
+                  }`}
+                  onClick={() =>
+                    updateFilter(
+                      'isSafe',
+                      searchFilters.isSafe === false ? null : false
+                    )
+                  }
+                >
+                  Dangerous Areas
+                </button>
+              </div>
+            </div>
+
+            {/* Level range filter */}
+            <div>
+              <label className="mb-1 block text-xs text-gray-300">
+                Level Range
+              </label>
+              <div className="flex items-center gap-2">
+                <input
+                  type="number"
+                  className="w-16 rounded border border-gray-600 bg-gray-700 px-2 py-1 text-sm text-white"
+                  placeholder="Min"
+                  min="1"
+                  max="50"
+                  value={searchFilters.minLevel || ''}
+                  onChange={(e) =>
+                    updateFilter(
+                      'minLevel',
+                      e.target.value ? parseInt(e.target.value) : null
+                    )
+                  }
+                />
+                <span className="text-xs text-gray-400">to</span>
+                <input
+                  type="number"
+                  className="w-16 rounded border border-gray-600 bg-gray-700 px-2 py-1 text-sm text-white"
+                  placeholder="Max"
+                  min="1"
+                  max="50"
+                  value={searchFilters.maxLevel || ''}
+                  onChange={(e) =>
+                    updateFilter(
+                      'maxLevel',
+                      e.target.value ? parseInt(e.target.value) : null
+                    )
+                  }
+                />
+              </div>
+            </div>
+
+            {/* Climate filter */}
+            <div>
+              <label className="mb-1 block text-xs text-gray-300">
+                Climate
+              </label>
+              <div className="flex flex-wrap gap-1">
+                {[
+                  'TROPICAL',
+                  'TEMPERATE',
+                  'ARID',
+                  'COLD',
+                  'ARCTIC',
+                  'MAGICAL',
+                ].map((climate) => (
+                  <button
+                    key={climate}
+                    className={`rounded px-2 py-0.5 text-xs ${
+                      searchFilters.climate.includes(climate)
+                        ? 'bg-teal-500 text-white'
+                        : 'bg-gray-600 text-gray-300'
+                    }`}
+                    onClick={() => toggleArrayFilter('climate', climate)}
+                  >
+                    {climate.charAt(0) + climate.slice(1).toLowerCase()}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Quest availability filter */}
+            <div>
+              <label className="mb-1 block text-xs text-gray-300">Quests</label>
+              <div className="flex gap-2">
+                <button
+                  className={`rounded px-2 py-0.5 text-xs ${
+                    searchFilters.hasQuestgivers === true
+                      ? 'bg-yellow-500 text-white'
+                      : 'bg-gray-600 text-gray-300'
+                  }`}
+                  onClick={() =>
+                    updateFilter(
+                      'hasQuestgivers',
+                      searchFilters.hasQuestgivers === true ? null : true
+                    )
+                  }
+                >
+                  Has Quests
+                </button>
+                <button
+                  className={`rounded px-2 py-0.5 text-xs ${
+                    searchFilters.hasQuestgivers === false
+                      ? 'bg-gray-500 text-white'
+                      : 'bg-gray-600 text-gray-300'
+                  }`}
+                  onClick={() =>
+                    updateFilter(
+                      'hasQuestgivers',
+                      searchFilters.hasQuestgivers === false ? null : false
+                    )
+                  }
+                >
+                  No Quests
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* Search buttons */}
+          <div className="flex justify-end gap-2">
+            <button
+              className="rounded bg-gray-600 px-3 py-1 text-sm text-white hover:bg-gray-500"
+              onClick={resetSearchFilters}
+            >
+              Reset
+            </button>
+            <button
+              className="rounded bg-blue-600 px-3 py-1 text-sm text-white hover:bg-blue-500"
+              onClick={() => {
+                handleSearch();
+              }}
+            >
+              Search
+            </button>
+          </div>
+
+          {/* Search results */}
+          {searchResults.length > 0 && (
+            <div className="mt-4">
+              <h5 className="mb-2 text-sm font-semibold text-white">
+                Results ({searchResults.length})
+              </h5>
+              <div className="max-h-40 overflow-y-auto rounded border border-gray-700 bg-gray-900 p-2">
+                {searchResults.map((point) => (
+                  <div
+                    key={point.id}
+                    className="mb-1 flex cursor-pointer items-center justify-between rounded px-2 py-1 hover:bg-gray-700"
+                    onClick={() => centerOnPoint(point)}
+                  >
+                    <div>
+                      <span className="text-sm font-medium text-white">
+                        {point.label}
+                      </span>
+                      <span className="ml-2 text-xs text-gray-400">
+                        ({point.type})
+                      </span>
+                    </div>
+                    <button
+                      className="rounded bg-blue-600 px-2 py-0.5 text-xs text-white hover:bg-blue-500"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        centerOnPoint(point);
+                      }}
+                    >
+                      Center
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* No results message */}
+          {searchResults.length === 0 &&
+            searchFilters !== initialSearchFilters && (
+              <div className="mt-4 text-center text-sm text-gray-400">
+                No locations match your search criteria.
+              </div>
+            )}
         </div>
       )}
 
@@ -358,7 +1106,9 @@ export const ZoomableWorldMap: React.FC = () => {
             <span>Hidden Point</span>
           </div>
           <div className="ml-4 text-xs italic">
-            Click on points to toggle visibility
+            {isAddingPoints
+              ? 'Click on points to toggle visibility'
+              : 'Hover over points to see location details'}
           </div>
         </div>
       )}
@@ -419,8 +1169,10 @@ export const ZoomableWorldMap: React.FC = () => {
                   key={point.id}
                   className={`map-point absolute z-10 flex h-12 w-12 cursor-pointer items-center justify-center rounded-full border-4 ${getPointStyle(
                     point.type
-                  )} ${
-                    !point.visible ? 'opacity-50' : ''
+                  )} ${!point.visible ? 'opacity-50' : ''} ${
+                    selectedSearchResult && selectedSearchResult.id === point.id
+                      ? 'animate-pulse border-white ring-4 ring-white'
+                      : ''
                   } transition-all hover:h-14 hover:w-14 hover:border-white`}
                   style={{
                     left: `${point.x}px`,
@@ -431,6 +1183,8 @@ export const ZoomableWorldMap: React.FC = () => {
                     e.stopPropagation();
                     handlePointClick(point);
                   }}
+                  onMouseEnter={(e) => handlePointMouseEnter(e, point)}
+                  onMouseLeave={handlePointMouseLeave}
                   title={`${point.label}${!point.visible ? ' (Hidden)' : ''}`}
                 >
                   {/* Add visibility indicator */}
@@ -486,6 +1240,15 @@ export const ZoomableWorldMap: React.FC = () => {
               </div>
             )}
           </>
+        )}
+
+        {/* Location Card - show when hovering over a point */}
+        {activePoint && (
+          <LocationCard
+            point={activePoint}
+            position={locationCardPosition}
+            onClose={() => setActivePoint(null)}
+          />
         )}
       </div>
 
