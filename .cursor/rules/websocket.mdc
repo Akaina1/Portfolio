@@ -1,0 +1,143 @@
+---
+description: for information about websocket implementation and connection
+globs: 
+alwaysApply: false
+---
+
+# WebSocket Connection and Authentication Flow
+
+## Overview
+
+Our game server implements a secure WebSocket connection system using Socket.IO and JWT authentication. The server validates player tokens issued by PayloadCMS to ensure only authenticated players can connect to the game.
+
+## Technical Components
+
+1. **WebSocket Server**: NestJS application with Socket.IO integration
+2. **Authentication Service**: Validates JWT tokens from PayloadCMS
+3. **Connection Gateway**: Manages socket connections, authentication, and message handling
+4. **WebSocket Service**: Provides utility methods for working with connected sockets
+
+## Authentication Flow
+
+1. **Token Generation**:
+   - PayloadCMS generates JWT tokens when players log in
+   - These tokens contain player information including:
+     - `id`: The player's unique identifier
+     - `collection`: Should be "players" to be valid
+     - `email`: The player's email address
+     - Standard JWT fields (`iat`, `exp`)
+
+2. **Connection Initiation**:
+   - Client connects to `ws://[server-address]/game` namespace
+   - Client provides the JWT token in the connection handshake:
+     ```javascript
+     const socket = io('ws://localhost:3001/game', {
+       auth: { token: jwtToken }
+     });
+     ```
+
+3. **Token Validation**:
+   - Server extracts token from handshake: `client.handshake.auth.token` or `client.handshake.query.token`
+   - Server validates token using the shared `PAYLOAD_SECRET`
+   - Server verifies token belongs to the "players" collection
+   - If valid, player is authenticated and connection is maintained
+   - If invalid, connection is rejected with an error message
+
+4. **Socket Data Storage**:
+   - Upon successful authentication, player data is stored in the socket:
+     ```typescript
+     authSocket.data.playerId = playerData.playerId;
+     authSocket.data.authenticated = true;
+     authSocket.data.authenticatedAt = new Date();
+     ```
+
+5. **Connection Events**:
+   - `authentication:success`: Sent to client upon successful authentication
+   - `authentication:failure`: Sent to client if authentication fails
+   - `disconnect`: Triggered when client disconnects
+
+## Message Exchange
+
+1. **Event-Based Communication**:
+   - Server and client communicate using named events
+   - Events are defined in the `SocketEvents` enum
+
+2. **Basic Events**:
+   - `ping`/`pong`: Simple heartbeat mechanism
+   - `player:joined`, `player:left`: Player connection status
+   - `player:moved`, `player:action`: Player activities
+   - `world:update`, `world:event`: World state changes
+
+3. **Message Format**:
+   - Messages are JSON objects
+   - Standard format includes `event` and `data` properties
+
+## Implementation Details for Frontend
+
+1. **Connection Setup**:
+   ```javascript
+   // Get the JWT token from your authentication system
+   const token = getAuthToken();
+   
+   // Connect to the game server
+   const socket = io('ws://game-server-url/game', {
+     auth: { token }
+   });
+   
+   // Handle connection events
+   socket.on('connect', () => {
+     console.log('Connected to game server');
+   });
+   
+   socket.on('authentication:success', (data) => {
+     console.log('Authentication successful', data);
+     // Enable game interactions
+   });
+   
+   socket.on('authentication:failure', (data) => {
+     console.log('Authentication failed', data.message);
+     // Show error to user
+   });
+   ```
+
+2. **Error Handling**:
+   - Handle connection errors and authentication failures
+   - Implement reconnection logic
+   - Provide user feedback on connection status
+
+3. **Game Events**:
+   - Listen for game state updates
+   - Send player actions to the server
+   - Update UI based on server events
+
+4. **Disconnection Handling**:
+   - Gracefully handle disconnections
+   - Attempt reconnection when appropriate
+   - Preserve game state during reconnection attempts
+
+## Security Considerations
+
+1. **Token Security**:
+   - Store tokens securely (e.g., HttpOnly cookies)
+   - Never expose the `PAYLOAD_SECRET` in client code
+   - Implement token refresh mechanisms for long sessions
+
+2. **Validation**:
+   - All incoming messages should be validated
+   - Don't trust client-side data without verification
+   - Implement rate limiting to prevent abuse
+
+3. **Error Handling**:
+   - Don't expose sensitive information in error messages
+   - Log authentication failures for security monitoring
+
+## Testing
+
+We've verified the WebSocket server works using a test client that:
+1. Connects to the server with a valid JWT token
+2. Successfully authenticates
+3. Exchanges ping/pong messages
+4. Properly handles disconnection
+
+This confirms our authentication flow and basic message exchange are working correctly.
+

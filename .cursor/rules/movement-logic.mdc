@@ -1,0 +1,330 @@
+---
+description: for when discussing entity/player movement
+globs: 
+alwaysApply: false
+---
+
+# Movement System Documentation
+
+## Overview
+
+The movement system is designed to provide a dynamic, class-based approach to character movement within the game world. It integrates with the time bar mechanic to create a strategic element to movement while handling server-client communication efficiently. The system accounts for character class specializations, terrain variations, and potential status effects.
+
+## Core Components
+
+### 1. Character Class Movement Attributes
+
+Each character class defines base movement characteristics that influence how characters of that class navigate the game world:
+
+```typescript
+movementAttributes: {
+    style: MOVEMENT_STYLE,
+    baseSpeed: number,
+    terrainModifiers: {
+        road: number,
+        forest: number,
+        mountain: number,
+        water: number,
+        swamp: number
+    },
+    baseCooldown: number,
+    staminaCost: number,
+    specialMovementAbilities: Array<{
+        name: string,
+        description: string,
+        unlockLevel: number,
+        effect: string,
+        cooldown: number
+    }>
+}
+```
+
+- **Movement Style**: Defines the general movement approach (STANDARD, QUICK, HEAVY, STEALTHY, MAGICAL)
+- **Base Speed**: The default movement speed for the class
+- **Terrain Modifiers**: Class-specific modifiers for different terrain types
+  - Values < 1.0 indicate faster movement (e.g., 0.8 for roads)
+  - Values > 1.0 indicate slower movement (e.g., 1.5 for mountains)
+- **Base Cooldown**: The default time in milliseconds between movements
+- **Stamina Cost**: Optional resource cost for movement
+- **Special Movement Abilities**: Class-specific movement abilities that unlock at certain levels
+
+### 2. Character Movement Properties
+
+Individual characters inherit movement properties from their class and maintain their current movement state:
+
+```typescript
+movement: {
+    style: MOVEMENT_STYLE,
+    baseSpeed: number,
+    currentSpeed: number,
+    lastMoveTime: Date,
+    movementCooldown: number,
+    terrainModifier: number,
+    isMoving: boolean,
+    terrainModifiers: {
+        road: number,
+        forest: number,
+        mountain: number,
+        water: number,
+        swamp: number
+    },
+    queuedMovement?: {
+        direction: string,
+        timestamp: Date
+    }
+}
+```
+
+- **Current Speed**: The actual speed after applying modifiers
+- **Last Move Time**: Timestamp of the last movement
+- **Terrain Modifier**: The current terrain modifier being applied
+- **Is Moving**: Flag indicating if the character is currently in motion
+- **Queued Movement**: Optional next movement to execute after current movement completes
+
+### 3. Movement Status
+
+The character status is updated to reflect movement:
+
+```typescript
+export const CHARACTER_STATUS = {
+    ACTIVE: 'ACTIVE',
+    RESTING: 'RESTING',
+    INJURED: 'INJURED',
+    UNCONSCIOUS: 'UNCONSCIOUS',
+    MOVING: 'MOVING'
+} as const
+```
+
+- **MOVING**: Indicates the character is currently in the process of moving
+
+## Movement Flow
+
+### 1. Movement Initiation
+
+When a player initiates movement:
+
+1. The client sends a movement request to the server with direction and current terrain
+2. The server calls `character.startMovement(direction, terrainType)`
+3. The movement time is calculated based on:
+   - Character's base movement cooldown
+   - Character's current speed
+   - Terrain-specific modifiers
+   - Current status effects or equipment modifiers
+4. The character's status is updated to `MOVING`
+5. The server returns the calculated movement time to the client
+
+```typescript
+// Example calculation
+const movementTime = character.calculateMovementTime('forest');
+// If forest modifier is 1.2 and base cooldown is 300ms
+// Result would be 300 * 1.2 = 360ms
+```
+
+### 2. Movement Bar Visualization
+
+The client visualizes the movement using a movement bar:
+
+1. The bar depletes over the duration returned by the server
+2. The depletion is immediate upon movement initiation
+3. The character visually moves when the bar is fully depleted
+4. The bar refills instantly after movement completes
+
+This creates a visual representation of the movement cooldown while masking server processing time.
+
+### 3. Movement Completion
+
+When the movement bar is fully depleted:
+
+1. The client sends a movement completion request to the server
+2. The server calls `character.completeMovement(newX, newY, newZ)`
+3. The character's position is updated
+4. The character's status is reset to `ACTIVE`
+5. Any queued movements are processed if implemented
+
+## Terrain System
+
+The movement system accounts for different terrain types:
+
+- **Road**: Typically faster movement (modifier < 1.0)
+- **Forest**: Slightly slower movement (modifier > 1.0)
+- **Mountain**: Significantly slower movement (modifier > 1.5)
+- **Water**: Very slow or restricted movement (modifier > 2.0)
+- **Swamp**: Slow, difficult movement (modifier > 1.7)
+
+Different character classes have different affinities for terrain types:
+
+```typescript
+// Example: Ranger class might have better forest movement
+{
+    terrainModifiers: {
+        road: 0.9,    // 10% faster on roads
+        forest: 0.8,   // 20% faster in forests
+        mountain: 1.2, // 20% slower in mountains
+        water: 1.8,    // 80% slower in water
+        swamp: 1.4     // 40% slower in swamps
+    }
+}
+
+// Example: Warrior class might be slower in difficult terrain
+{
+    terrainModifiers: {
+        road: 0.8,     // 20% faster on roads
+        forest: 1.3,    // 30% slower in forests
+        mountain: 1.7,  // 70% slower in mountains
+        water: 2.5,     // 150% slower in water
+        swamp: 2.0      // 100% slower in swamps
+    }
+}
+```
+
+## Movement Styles
+
+The system defines several movement styles that affect how characters move:
+
+- **STANDARD**: Balanced movement with no special characteristics
+- **QUICK**: Faster base movement but potentially more affected by difficult terrain
+- **HEAVY**: Slower base movement but less affected by certain terrain types
+- **STEALTHY**: Moderate speed with bonuses for concealment during movement
+- **MAGICAL**: Special movement that might bypass certain terrain restrictions
+
+## Special Movement Abilities
+
+Classes can have unique movement abilities that unlock at specific levels:
+
+```typescript
+// Example: Rogue's "Shadow Step"
+{
+    name: "Shadow Step",
+    description: "Move through shadows without being detected",
+    unlockLevel: 5,
+    effect: "Reduces detection chance by 75% during movement",
+    cooldown: 60000 // 60 seconds
+}
+
+// Example: Mage's "Blink"
+{
+    name: "Blink",
+    description: "Teleport a short distance",
+    unlockLevel: 8,
+    effect: "Instantly move up to 3 tiles in any direction",
+    cooldown: 120000 // 120 seconds
+}
+```
+
+## Implementation Methods
+
+The character model includes three key methods for movement:
+
+### 1. calculateMovementTime
+
+```typescript
+calculateMovementTime(terrainType = 'normal'): number
+```
+
+Calculates the time required for a character to move based on:
+- Base movement cooldown
+- Character's current speed
+- Terrain-specific modifiers
+- Status effects or equipment modifiers
+
+Returns the calculated movement time in milliseconds.
+
+### 2. startMovement
+
+```typescript
+startMovement(direction: string, terrainType = 'normal'): number
+```
+
+Initiates character movement:
+- Calculates movement time
+- Updates character status to MOVING
+- Sets the current terrain modifier
+- Records the movement start time
+
+Returns the calculated movement time for client-side visualization.
+
+### 3. completeMovement
+
+```typescript
+completeMovement(newX: number, newY: number, newZ?: number): void
+```
+
+Completes the movement:
+- Updates the character's position
+- Resets movement status to ACTIVE
+- Processes any queued movements if implemented
+
+## Technical Considerations
+
+### Server-Client Synchronization
+
+The movement system is designed to handle network latency:
+
+1. **Immediate Feedback**: The client depletes the movement bar immediately upon input
+2. **Server Validation**: The server validates the move while the bar depletes
+3. **Visual Movement**: The character moves when the bar is fully depleted
+4. **Instant Refill**: The bar refills instantly after movement, allowing for responsive gameplay
+
+### Performance Optimization
+
+- Movement calculations are performed on the server to prevent cheating
+- The client handles visualization to maintain responsiveness
+- Movement bar depletion masks server processing time
+- Terrain modifiers are cached on the character to reduce lookups
+
+### Extensibility
+
+The system is designed for future extensions:
+
+- **Status Effects**: Can modify movement speed or terrain modifiers
+- **Equipment Effects**: Items can provide movement bonuses in specific terrain
+- **Weather Effects**: Could be added to further modify movement
+- **Movement Queuing**: Framework exists for implementing movement queues
+
+## Integration with Other Systems
+
+### Time Bar System
+
+The movement system integrates with the time bar mechanic:
+- Movement depletes the movement bar
+- The bar visualizes the cooldown between movements
+- This creates a strategic element to movement timing
+
+### Character Class System
+
+Movement characteristics are defined at the class level:
+- Different classes have different movement styles
+- Classes have unique terrain affinities
+- Special movement abilities are class-specific
+
+## Example Scenarios
+
+### Standard Movement
+
+1. Player clicks to move their character to an adjacent forest tile
+2. Client sends movement request to server
+3. Server calculates movement time: 300ms base * 1.2 forest modifier = 360ms
+4. Server updates character status to MOVING and returns 360ms
+5. Client depletes movement bar over 360ms
+6. When bar is depleted, character visually moves to the new tile
+7. Client sends movement completion to server
+8. Server updates character position and resets status to ACTIVE
+9. Movement bar refills instantly, ready for next move
+
+### Class-Specific Movement
+
+1. A Ranger (with forest modifier 0.8) moves into a forest tile
+2. Server calculates: 300ms base * 0.8 forest modifier = 240ms
+3. Movement completes faster than for other classes
+
+### Special Ability Movement
+
+1. A Mage uses "Blink" ability to cross a water obstacle
+2. Special movement bypasses normal terrain calculations
+3. Character teleports across after a brief casting time
+4. Ability goes on cooldown for 120 seconds
+
+## Conclusion
+
+The movement system provides a flexible, class-based approach to character movement that integrates with the game's time bar mechanic. It accounts for terrain variations, character specializations, and potential status effects while handling server-client communication efficiently. The system is designed to be extensible for future enhancements while providing immediate feedback to players.
+

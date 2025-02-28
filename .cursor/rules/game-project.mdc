@@ -161,6 +161,82 @@ Key narrative elements include:
    - Clear separation between hot and cold data
    - Efficient state change propagation
 
+   # Game World Structure Documentation
+
+## Hierarchical Organization
+
+The game world is organized in a hierarchical structure with five distinct levels, each represented by its own data model:
+
+1. **Game World** - The top-level container for the entire game universe
+2. **World Region** - Major geographical divisions within the world
+3. **Location** - Specific places within a region
+4. **Area Group** - Logical collections of connected areas within a location
+5. **Area** - Individual playable spaces where gameplay occurs
+
+## Navigation Flow
+
+Players navigate the game world in a top-down manner:
+
+1. Select a **Region** from the **World Map**
+2. Navigate between connected **Locations** within the selected **Region**
+3. Choose an **Area Group** to explore within a **Location**
+4. Move between connected **Areas** within an **Area Group**
+5. Interact with the environment and entities within each **Area**
+
+## Component Details
+
+### Game World
+- Represents the entire game universe
+- Contains multiple regions
+- Defines global game settings and properties
+
+### World Region
+- Major geographical areas (forests, mountains, deserts, etc.)
+- Displayed as diamond shapes on the world map
+- Contains multiple connected locations
+- Has difficulty ratings and level recommendations
+- May have discovery/access requirements
+
+### Location
+- Specific places within a region (settlements, natural formations, structures, etc.)
+- Connected to other locations via paths, roads, or other transitions
+- Contains multiple area groups
+- Represented on the region map as nodes connected by paths
+- May have access requirements and specific properties
+
+### Area Group
+- Logical collections of connected areas (town center, market district, dungeon level, etc.)
+- Serves as an organizational layer between locations and individual areas
+- Connected to other area groups within the same location
+- Has specific themes, difficulty levels, and properties
+- Represented on the location map as connected nodes
+
+### Area
+- Individual playable spaces represented as grid-based maps
+- Contains terrain features, NPCs, objects, and interactive elements
+- Connected to other areas within the same area group
+- Rendered as ASCII maps for gameplay
+- The smallest unit where actual gameplay and character movement occurs
+
+## Relationships and Connections
+
+- **Regions** connect to other regions through region transitions
+- **Locations** connect to other locations within the same region
+- **Area Groups** connect to other area groups within the same location
+- **Areas** connect to other areas within the same area group
+
+Each level maintains references to its parent and children, ensuring proper navigation and data integrity throughout the game world.
+
+## Visual Representation
+
+- **World Map**: Shows regions as diamond shapes
+- **Region Map**: Shows locations as nodes connected by paths
+- **Location Map**: Shows area groups as nodes connected by paths
+- **Area Group Map**: Shows areas arranged in a grid pattern
+- **Area**: Displays the actual playable space as an ASCII grid
+
+This hierarchical structure provides a clear organization for the game world, allowing for efficient data management, logical navigation, and a coherent player experience.
+
    <file structure>
 src/
 ├── app.module.ts              // Central module imports all other modules
@@ -274,97 +350,62 @@ BREAK
 ===============================================================================
 /models/websocket/
 ├── connection/
-│   ├── socket-connection.model.ts    # Basic socket connection data
-│   └── session.model.ts              # Active session tracking
-│
+│   └── session.model.ts              # Persistent session tracking for reconnection
 └── message/
-    ├── message-log.model.ts          # Basic logging of important messages
-    └── broadcast-group.model.ts      # Simple broadcast group management
+    └── message-log.model.ts          # Logging of critical/important messages only
 ===============================================================================
 BREAK
 ===============================================================================
 /models/game-world/
 ├── world/
 │   ├── world-state.model.ts         # Overall world state and configuration
-│   ├── world-event.model.ts         # World events and their effects
-│   ├── world-rule.model.ts          # Rules and constraints for the world
 │   └── world-region.model.ts        # Larger regions containing multiple areas
 │
-├── area/                            # Changed from "location" to "area"
+├── area/                            # Renamed from "location" for consistency
 │   ├── area.model.ts                # Basic area data and properties
 │   ├── area-connection.model.ts     # Connections between areas
-│   ├── area-feature.model.ts        # Special features within areas
-│   └── area-instance.model.ts       # Active instances of areas
+│   └── area-feature.model.ts        # Special features within areas
 │
 ├── entity/
-│   ├── entity-template.model.ts     # Base templates for entities
-│   ├── entity-instance.model.ts     # Active entity instances
-│   ├── entity-interaction.model.ts  # Interaction definitions and outcomes
-│   └── entity-state.model.ts        # Entity state tracking
-│
-├── item/
-│   ├── item-definition.model.ts     # Base item templates and properties
-│   ├── item-instance.model.ts       # Specific instances of items with unique properties
-│   ├── item-category.model.ts       # Item categories and classifications
-│   ├── item-effect.model.ts         # Effects that items can have
-│   ├── item-requirement.model.ts    # Requirements to use/equip items
-│   └── item-interaction.model.ts    # How items interact with entities/world
-│
-├── status-effect/
-│   ├── status-effect-definition.model.ts  # Templates for status effects
-│   ├── status-effect-instance.model.ts    # Active instances of status effects
-│   ├── status-effect-modifier.model.ts    # How status effects modify entities
-│   ├── status-effect-trigger.model.ts     # Events that trigger status effects
-│   ├── status-effect-duration.model.ts    # Duration and timing mechanisms
-│   └── status-effect-stack.model.ts       # Rules for stacking multiple effects
+│   ├── entity-template.model.ts       # Base blueprint for all entities
+│   ├── entity-instance.model.ts       # Active entity instances in the world
+│   ├── entity-dialogue.model.ts       # Dialogue options for interactive entities
+│   └── entity-relation.model.ts       # NEW: Defines relationships to players
 │
 ├── npc/
 │   ├── npc-template.model.ts        # Base templates for NPCs
 │   ├── npc-instance.model.ts        # Active NPC instances
 │   ├── npc-behavior.model.ts        # AI behaviors and patterns
-│   ├── npc-dialogue.model.ts        # Conversation trees and options
-│   └── npc-schedule.model.ts        # Time-based NPC activities
+│   └── npc-dialogue.model.ts        # Conversation trees and options
+│
+├── item/                            # Important to keep this module
+│   ├── item-definition.model.ts     # Item definitions and properties
+│   ├── item-instance.model.ts       # Active item instances
+│   └── item-effect.model.ts         # Effects of items when used
 │
 ├── environment/
-│   ├── environment-type.model.ts    # Environment definitions and properties
-│   ├── weather.model.ts             # Weather conditions and effects
-│   ├── time-cycle.model.ts          # Time progression and cycles
-│   └── environment-effect.model.ts  # Environmental effects and hazards
+│   ├── environment-type.model.ts    # Environment definitions
+│   ├── weather.model.ts             # Weather conditions (simplified)
+│   └── time-cycle.model.ts          # Time progression and cycles
 │
-├── trading/
-│   ├── trade.model.ts           # Player-to-player trade sessions
-│   ├── trade-offer.model.ts     # Items/currency offered in a trade
-│   ├── merchant.model.ts        # NPC shop definitions
-│   ├── shop-inventory.model.ts  # Items available at merchants
-│   └── transaction.model.ts     # Record of completed trades
+├── status-effect/                   # Important to keep this module
+│   ├── status-effect.model.ts       # Status effect definitions
+│   └── active-effect.model.ts       # Active effects on entities
 │
-├── power/
-│   ├── power-source.model.ts        # Sources of power in the world
-│   ├── power-interaction.model.ts   # How powers interact with the world
-│   ├── power-distribution.model.ts  # Power concentration and balance
-│   └── power-effect.model.ts        # Effects of power usage
-│
-└── sync/
-    ├── cache-strategy.model.ts      # Caching rules and priorities
-    ├── persistence-rule.model.ts    # Data persistence configuration
-    ├── sync-conflict.model.ts       # Conflict detection and resolution
-    └── world-snapshot.model.ts      # Point-in-time world state captures
+└── trading/                         # New module as previously discussed
+    ├── trade.model.ts               # Player-to-player trade sessions
+    ├── trade-offer.model.ts         # Items/currency offered in a trade
+    ├── merchant.model.ts            # NPC shop definitions
+    └── shop-inventory.model.ts      # Items available at merchants
 ===============================================================================
 BREAK
 ===============================================================================
 /models/flag-narrative/
 ├── flag/
-│   ├── flag-definition.model.ts     # Flag metadata and configuration
-│   └── flag-state.model.ts          # Current state of flags (per character)
+│   └── flag-definition.model.ts     # Flag metadata and configuration
 │
-├── quest/
-│   ├── quest-definition.model.ts    # Quest metadata and structure
-│   ├── quest-step.model.ts          # Individual quest objectives
-│   └── quest-dependency.model.ts    # Quest prerequisites and chains
-│
-└── progression/
-    ├── quest-progress.model.ts      # Player's quest progress tracking
-    └── quest-reward.model.ts        # Quest rewards definition
+└── quest/
+    └── quest-definition.model.ts    # Consolidated quest definition (including steps, dependencies, rewards)
 ===============================================================================
 BREAK
 ===============================================================================
