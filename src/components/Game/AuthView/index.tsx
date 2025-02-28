@@ -1,19 +1,79 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useGameStore } from '../../../stores/Game/gameStore';
 import { AnimatedDivider } from '@/components/AnimatedDivider';
+import { useGameInterfaceStore } from '@/stores/Game/gameInterfaceStore';
 
 const AuthView: React.FC = () => {
   const setViewState = useGameStore((state) => state.setViewState);
   const [activeTab, setActiveTab] = useState<'signup' | 'login'>('signup');
 
-  // Temporary function to simulate successful auth
-  const handleAuth = (e: React.FormEvent) => {
+  // Login form state
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+
+  // Disable all keybinds when AuthView is shown
+  const disableKeybinds = useGameInterfaceStore(
+    (state) => state.disableKeybinds
+  );
+  const enableKeybinds = useGameInterfaceStore((state) => state.enableKeybinds);
+
+  // Disable keybinds on mount, enable on unmount
+  useEffect(() => {
+    // Disable keybinds when auth view is shown
+    disableKeybinds();
+
+    // Re-enable keybinds when auth view is unmounted
+    return () => {
+      enableKeybinds();
+    };
+  }, [disableKeybinds, enableKeybinds]);
+
+  // Handle login with Payload CMS
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    setViewState('character');
+    setLoading(true);
+    setError('');
+
+    try {
+      const response = await fetch('/api/players/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
+        credentials: 'include',
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Login failed');
+      }
+
+      console.log('Login successful:', data);
+
+      // Transition to game view on successful login
+      setViewState('game');
+    } catch (err) {
+      setError(err.message || 'Something went wrong');
+      console.error('Login error:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Placeholder signup handler (to be implemented later)
+  const handleSignup = (e: React.FormEvent) => {
+    e.preventDefault();
+    // For now, just log a message and transition as if signup was successful
+    console.log('Signup functionality to be implemented');
+    setViewState('game');
   };
 
   return (
-    <div className="mx-auto max-w-4xl">
+    <div className="auth-form-container mx-auto max-w-4xl">
       <h1 className="mb-4 text-center text-4xl font-bold">
         Welcome to the Game
       </h1>
@@ -44,10 +104,17 @@ const AuthView: React.FC = () => {
           </button>
         </div>
 
-        {/* Sign Up Form */}
+        {/* Error message display */}
+        {error && (
+          <div className="col-span-2 rounded border border-red-400 bg-red-100 px-4 py-3 text-red-700">
+            {error}
+          </div>
+        )}
+
+        {/* Sign Up Form (placeholder) */}
         {activeTab === 'signup' && (
           <div className="col-span-2">
-            <form onSubmit={handleAuth} className="space-y-4">
+            <form onSubmit={handleSignup} className="space-y-4">
               <div>
                 <label className="mb-1 block text-sm font-medium">
                   Username
@@ -86,16 +153,19 @@ const AuthView: React.FC = () => {
           </div>
         )}
 
-        {/* Login Form */}
+        {/* Login Form (with real authentication) */}
         {activeTab === 'login' && (
           <div className="col-span-2">
-            <form onSubmit={handleAuth} className="space-y-4">
+            <form onSubmit={handleLogin} className="space-y-4">
               <div>
                 <label className="mb-1 block text-sm font-medium">Email</label>
                 <input
                   type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                   className="w-full rounded-lg border border-gray-300 p-2 dark:border-gray-700 dark:bg-gray-800"
                   placeholder="Enter your email"
+                  required
                 />
               </div>
               <div>
@@ -104,15 +174,21 @@ const AuthView: React.FC = () => {
                 </label>
                 <input
                   type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
                   className="w-full rounded-lg border border-gray-300 p-2 dark:border-gray-700 dark:bg-gray-800"
                   placeholder="Enter your password"
+                  required
                 />
               </div>
               <button
                 type="submit"
-                className="w-full rounded-lg bg-purple-600 py-2 font-bold text-white hover:bg-purple-700"
+                disabled={loading}
+                className={`w-full rounded-lg bg-purple-600 py-2 font-bold text-white hover:bg-purple-700 ${
+                  loading ? 'cursor-not-allowed opacity-50' : ''
+                }`}
               >
-                Login
+                {loading ? 'Logging in...' : 'Login'}
               </button>
             </form>
           </div>

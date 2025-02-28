@@ -6,11 +6,13 @@ import ChatConsole from './ChatConsole/index';
 import PlayerConsole from './PlayerConsole/index';
 import EntityTimeBars from './EntityTimeBars/index';
 import PartyTimeBars from './PartyTimeBars/index';
+import { useGameInterfaceStore } from '@/stores/Game/gameInterfaceStore';
 
 const GameInterface: React.FC = () => {
   const setConnected = useGameStore((state) => state.setConnected);
   const containerRef = useRef<HTMLDivElement>(null);
   const [availableHeight, setAvailableHeight] = useState(0);
+  const { enableKeybinds } = useGameInterfaceStore();
 
   useEffect(() => {
     // Calculate available height accounting for the sticky header
@@ -34,12 +36,16 @@ const GameInterface: React.FC = () => {
       setConnected(true);
     }, 1000);
 
+    // Ensure keybinds are enabled when GameInterface mounts
+    enableKeybinds();
+    console.log('GameInterface mounted, ensuring keybinds are enabled');
+
     return () => {
       window.removeEventListener('resize', calculateAvailableHeight);
       console.log('Disconnecting from game server...');
       setConnected(false);
     };
-  }, [setConnected]);
+  }, [setConnected, enableKeybinds]);
 
   return (
     <div

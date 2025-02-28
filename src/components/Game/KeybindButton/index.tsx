@@ -34,6 +34,11 @@ const KeybindButton: React.FC<KeybindButtonProps> = ({
   const buttonRef = useRef<HTMLButtonElement>(null);
   const animationTimeoutRef = useRef<number | null>(null);
 
+  // Add the keybindsDisabled check
+  const keybindsDisabled = useGameInterfaceStore(
+    (state) => state.keybindsDisabled
+  );
+
   // Function to trigger animation without state changes
   const triggerAnimation = () => {
     // Clear any existing animation timeout
@@ -57,15 +62,16 @@ const KeybindButton: React.FC<KeybindButtonProps> = ({
 
   // Listen for the keybind
   useEffect(() => {
-    if (!keybind) return;
+    if (!keybind || keybindsDisabled) return; // Skip if keybinds are disabled
 
     const handleKeyDown = (e: KeyboardEvent) => {
-      // Check if the active element is an input field, textarea, or inside the search overlay
+      // Check if the active element is an input field, textarea, or inside the auth form
       const activeElement = document.activeElement;
       if (
         activeElement instanceof HTMLInputElement ||
         activeElement instanceof HTMLTextAreaElement ||
         activeElement instanceof HTMLSelectElement ||
+        activeElement?.closest('.auth-form-container') !== null || // Add this check for auth form
         activeElement?.closest('.search-overlay') !== null
       ) {
         // Skip keybind processing when user is typing in form elements
@@ -98,7 +104,7 @@ const KeybindButton: React.FC<KeybindButtonProps> = ({
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [keybind, onAction]);
+  }, [keybind, onAction, keybindsDisabled]); // Add keybindsDisabled to dependencies
 
   // Format keybind for display
   const formatKeybind = (kb: string) => {

@@ -55,8 +55,8 @@ const CommandConsole: React.FC = () => {
     <div className="flex h-full flex-col bg-white p-4 dark:bg-gray-900/70">
       <SectionHeader text="Command Console" icon="⌘" version="v1.0" />
 
-      {/* Fill more vertical space by expanding the button area */}
-      <div className="mb-4 grid flex-grow grid-cols-4 gap-4">
+      {/* Set a fixed height or use flex with specific constraints */}
+      <div className="mb-4 grid min-h-0 flex-1 grid-cols-4 gap-4">
         {/* Section 1: Movement buttons in a cross shape */}
         <div className="flex flex-col content-center items-center justify-around">
           <div className="grid grid-cols-3 grid-rows-3 gap-12">
@@ -257,7 +257,7 @@ const CommandConsole: React.FC = () => {
         {/* Section 3: Customizable hotkeys */}
         <div className="col-span-2 grid grid-cols-3 grid-rows-6 content-center items-center justify-items-center gap-2">
           {/* Generate 18 placeholder hotkey buttons */}
-          {Array.from({ length: 18 }).map((_, index) => (
+          {Array.from({ length: 15 }).map((_, index) => (
             <KeybindButton
               key={index}
               actionId={`hotkey-${index + 1}`}
@@ -273,8 +273,8 @@ const CommandConsole: React.FC = () => {
         </div>
       </div>
 
-      {/* Player Time Bar with pause control */}
-      <div className="mb-2">
+      {/* Make sure the time bar has fixed height */}
+      <div className="mb-2 flex-none">
         <div className="mb-1 flex items-center justify-between">
           <div className="flex items-center">
             <span className="mr-2 text-xs">Player Time</span>
@@ -324,7 +324,7 @@ const CommandConsole: React.FC = () => {
         </div>
         <TimeBar
           color="#8B5CF6"
-          segmentTime={5000} // 5 seconds per segment
+          segmentTime={5000}
           stopFill={isPlayerTimePaused}
           showPercentage={true}
           onSegmentComplete={gainPlayerAP}
@@ -334,8 +334,8 @@ const CommandConsole: React.FC = () => {
         />
       </div>
 
-      {/* Command input at the bottom */}
-      <form onSubmit={handleSubmit} className="flex">
+      {/* Command input with fixed height */}
+      <form onSubmit={handleSubmit} className="flex flex-none">
         <input
           type="text"
           value={command}

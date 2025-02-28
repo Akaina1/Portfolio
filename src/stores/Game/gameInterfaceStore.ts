@@ -201,6 +201,9 @@ interface GameInterfaceStore {
   keybinds: Keybind[];
   isSettingsOpen: boolean;
 
+  // Add keybinds disable state
+  keybindsDisabled: boolean;
+
   // Command console
   command: string;
 
@@ -223,6 +226,10 @@ interface GameInterfaceStore {
   toggleSettingsModal: () => void;
   resetStore: () => void;
   executeAction: (actionType: string, actionData?: ActionData) => boolean;
+
+  // Add keybind disable/enable actions
+  disableKeybinds: () => void;
+  enableKeybinds: () => void;
 }
 
 // Create the store
@@ -247,6 +254,8 @@ export const useGameInterfaceStore = create<GameInterfaceStore>()(
       keybinds: defaultKeybinds,
       isSettingsOpen: false,
       command: '',
+      // Add initial state for keybindsDisabled
+      keybindsDisabled: false,
 
       // Actions
       gainPlayerAP: () => {
@@ -459,6 +468,17 @@ export const useGameInterfaceStore = create<GameInterfaceStore>()(
 
         console.log(`Cannot execute action ${actionType}: Not enough AP`);
         return false;
+      },
+
+      // Add new actions for keybind control
+      disableKeybinds: () => {
+        set({ keybindsDisabled: true });
+        console.log('Keybinds disabled');
+      },
+
+      enableKeybinds: () => {
+        set({ keybindsDisabled: false });
+        console.log('Keybinds enabled');
       },
     }),
     {

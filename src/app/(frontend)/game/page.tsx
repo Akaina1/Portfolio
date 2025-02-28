@@ -2,10 +2,9 @@
 
 import React, { useState, useEffect } from 'react';
 import DeviceWarning from '@/components/Game/DeviceWarning';
-// import AuthView from '@/components/Game/AuthView';
-// import CharacterSelectView from '@/components/Game/CharacterSelectView';
+import AuthView from '@/components/Game/AuthView';
 import GameInterface from '@/components/Game/GameInterface';
-// import { useGameStore } from '@/stores/Game/gameStore';
+import { useGameStore } from '@/stores/Game/gameStore';
 import { usePathname } from 'next/navigation';
 import { useGameInterfaceStore } from '@/stores/Game/gameInterfaceStore';
 
@@ -17,10 +16,11 @@ import { useGameInterfaceStore } from '@/stores/Game/gameInterfaceStore';
  */
 const GamePage: React.FC = () => {
   const [isLoaded, setIsLoaded] = useState(false);
-  // const viewState = useGameStore((state) => state.viewState);
+  const viewState = useGameStore((state) => state.viewState);
   const [isMounted, setIsMounted] = useState(false);
   const pathname = usePathname();
-  const { toggleSettingsModal, keybinds } = useGameInterfaceStore();
+  const { toggleSettingsModal, keybinds, enableKeybinds } =
+    useGameInterfaceStore();
 
   // Simulate loading effect
   useEffect(() => {
@@ -35,6 +35,23 @@ const GamePage: React.FC = () => {
   // Global keybind listener for settings
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      // Check if keybinds are disabled
+      const keybindsDisabled =
+        useGameInterfaceStore.getState().keybindsDisabled;
+      if (keybindsDisabled) return;
+
+      // Check if input elements have focus
+      const activeElement = document.activeElement;
+      if (
+        activeElement instanceof HTMLInputElement ||
+        activeElement instanceof HTMLTextAreaElement ||
+        activeElement instanceof HTMLSelectElement ||
+        activeElement?.closest('.auth-form-container') !== null
+      ) {
+        // Skip when focus is in form elements
+        return;
+      }
+
       // Find the settings keybind
       const settingsKeybind = keybinds.find((kb) => kb.actionId === 'settings');
 
@@ -63,19 +80,24 @@ const GamePage: React.FC = () => {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [keybinds, toggleSettingsModal]);
 
-  // Temporarily disabled view state switching to focus on GameInterface
-  // const renderView = () => {
-  //   switch (viewState) {
-  //     case 'auth':
-  //       return <AuthView />;
-  //     case 'character':
-  //       return <CharacterSelectView />;
-  //     case 'game':
-  //       return <GameInterface />;
-  //     default:
-  //       return <AuthView />;
-  //   }
-  // };
+  // Add effect to ensure keybinds are enabled when we're in the game view
+  useEffect(() => {
+    if (viewState === 'game') {
+      enableKeybinds();
+    }
+  }, [viewState, enableKeybinds]);
+
+  // Render the appropriate view based on auth state
+  const renderView = () => {
+    switch (viewState) {
+      case 'auth':
+        return <AuthView />;
+      case 'game':
+        return <GameInterface />;
+      default:
+        return <AuthView />;
+    }
+  };
 
   // Return null during SSR to prevent hydration mismatch
   if (!isMounted) {
@@ -93,8 +115,8 @@ const GamePage: React.FC = () => {
       {/* Device compatibility warning */}
       <DeviceWarning />
 
-      {/* Direct rendering of GameInterface with no extra containers */}
-      <GameInterface />
+      {/* Render based on auth state */}
+      {renderView()}
     </div>
   );
 };
