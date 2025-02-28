@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { MapPoint } from '../../MapPoint/type';
-import { LocationData, generatePlaceholderData } from '../../LocationCard';
+import { LocationData } from '../../LocationCard';
+import { generatePlaceholderData } from '../../../../../utilities/generatePlaceholderData';
 import { SearchFilters, initialSearchFilters } from '../type';
 
 export function useSearch() {
