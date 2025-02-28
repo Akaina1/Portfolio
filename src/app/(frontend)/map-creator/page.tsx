@@ -139,7 +139,7 @@ export default function MapCreator() {
   };
 
   return (
-    <div className="container mx-auto min-h-screen p-8">
+    <div className="min-h-screen w-full p-24">
       <h1 className="mb-4 text-3xl font-bold">ASCII Map Creator</h1>
 
       {/* Map Configuration */}
@@ -242,90 +242,88 @@ export default function MapCreator() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-        {/* Map Editor */}
-        <div className="rounded-lg border border-gray-700 bg-gray-800 p-4">
-          <h2 className="mb-2 text-xl font-semibold">Map Editor</h2>
-          <p className="mb-4 text-sm text-gray-400">
-            Click on cells to place the selected terrain type.
-          </p>
+      {/* Map Editor */}
+      <div className="mb-6 rounded-lg border border-gray-700 bg-gray-800 p-4">
+        <h2 className="mb-2 text-xl font-semibold">Map Editor</h2>
+        <p className="mb-4 text-sm text-gray-400">
+          Click on cells to place the selected terrain type.
+        </p>
 
-          <div className="overflow-auto">
-            <div className="inline-block border-2 border-gray-600">
-              {mapData.map((row, rowIndex) => (
-                <div key={rowIndex} className="flex">
-                  {row.map((cell, colIndex) => {
-                    const terrain = terrainSymbols[cell];
-                    return (
-                      <button
-                        key={`${rowIndex}-${colIndex}`}
-                        className={`flex h-8 w-8 items-center justify-center border border-gray-800 ${
-                          terrain.color
-                        } hover:bg-gray-700`}
-                        onClick={() => handleCellClick(rowIndex, colIndex)}
-                        title={`${terrain.name} (${rowIndex}, ${colIndex})`}
-                      >
-                        {terrain.symbol}
-                      </button>
-                    );
-                  })}
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="mt-4">
-            <p className="text-sm">
-              Selected:
-              <span
-                className={`ml-2 font-mono ${terrainSymbols[selectedTerrain].color}`}
-              >
-                {terrainSymbols[selectedTerrain].symbol}
-              </span>
-              <span className="ml-1">
-                ({terrainSymbols[selectedTerrain].name})
-              </span>
-            </p>
+        <div className="overflow-auto">
+          <div className="inline-block border-2 border-gray-600">
+            {mapData.map((row, rowIndex) => (
+              <div key={rowIndex} className="flex">
+                {row.map((cell, colIndex) => {
+                  const terrain = terrainSymbols[cell];
+                  return (
+                    <button
+                      key={`${rowIndex}-${colIndex}`}
+                      className={`flex h-8 w-8 items-center justify-center border border-gray-800 ${
+                        terrain.color
+                      } hover:bg-gray-700`}
+                      onClick={() => handleCellClick(rowIndex, colIndex)}
+                      title={`${terrain.name} (${rowIndex}, ${colIndex})`}
+                    >
+                      {terrain.symbol}
+                    </button>
+                  );
+                })}
+              </div>
+            ))}
           </div>
         </div>
 
-        {/* Map Preview */}
-        <div className="rounded-lg border border-gray-700 bg-gray-800 p-4">
-          <h2 className="mb-2 text-xl font-semibold">Map Preview</h2>
-
-          <div className="overflow-auto">
-            <AreaMap mapData={mapData} roomName={mapName} />
-          </div>
-
-          <div className="mt-4 flex gap-2">
-            <button
-              onClick={() => setShowCode(!showCode)}
-              className="rounded bg-green-600 px-4 py-2 font-medium text-white hover:bg-green-700"
+        <div className="mt-4">
+          <p className="text-sm">
+            Selected:
+            <span
+              className={`ml-2 font-mono ${terrainSymbols[selectedTerrain].color}`}
             >
-              {showCode ? 'Hide Code' : 'Generate Code'}
-            </button>
+              {terrainSymbols[selectedTerrain].symbol}
+            </span>
+            <span className="ml-1">
+              ({terrainSymbols[selectedTerrain].name})
+            </span>
+          </p>
+        </div>
+      </div>
 
-            {showCode && (
-              <button
-                onClick={copyCodeToClipboard}
-                className="rounded bg-blue-600 px-4 py-2 font-medium text-white hover:bg-blue-700"
-              >
-                Copy to Clipboard
-              </button>
-            )}
-          </div>
+      {/* Map Preview */}
+      <div className="rounded-lg border border-gray-700 bg-gray-800 p-4">
+        <h2 className="mb-2 text-xl font-semibold">Map Preview</h2>
+
+        <div className="overflow-auto">
+          <AreaMap mapData={mapData} roomName={mapName} />
+        </div>
+
+        <div className="mt-4 flex gap-2">
+          <button
+            onClick={() => setShowCode(!showCode)}
+            className="rounded bg-green-600 px-4 py-2 font-medium text-white hover:bg-green-700"
+          >
+            {showCode ? 'Hide Code' : 'Generate Code'}
+          </button>
 
           {showCode && (
-            <div className="mt-4">
-              <textarea
-                ref={codeRef}
-                className="h-64 w-full rounded border border-gray-600 bg-gray-700 p-2 font-mono text-sm text-white"
-                value={generateCode()}
-                readOnly
-              />
-            </div>
+            <button
+              onClick={copyCodeToClipboard}
+              className="rounded bg-blue-600 px-4 py-2 font-medium text-white hover:bg-blue-700"
+            >
+              Copy to Clipboard
+            </button>
           )}
         </div>
+
+        {showCode && (
+          <div className="mt-4">
+            <textarea
+              ref={codeRef}
+              className="h-64 w-full rounded border border-gray-600 bg-gray-700 p-2 font-mono text-sm text-white"
+              value={generateCode()}
+              readOnly
+            />
+          </div>
+        )}
       </div>
     </div>
   );
