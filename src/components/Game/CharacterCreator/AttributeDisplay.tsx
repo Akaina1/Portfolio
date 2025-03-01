@@ -6,7 +6,7 @@ import React from 'react';
 interface Attribute {
   name: string;
   value: number;
-  max?: number;
+  max?: number; // Keeping for backward compatibility
   color?: string;
   description?: string;
 }
@@ -30,6 +30,7 @@ interface AttributeDisplayProps {
  * Visualizes character attributes using progress bars.
  * Can display primary attributes, secondary attributes, or any numeric character stats.
  * Supports customization of colors, labels, and layout.
+ * Uses a fixed scale of 100 for all progress bars while only showing actual values.
  */
 const AttributeDisplay: React.FC<AttributeDisplayProps> = ({
   attributes,
@@ -40,8 +41,8 @@ const AttributeDisplay: React.FC<AttributeDisplayProps> = ({
   compact = false,
   className = '',
 }) => {
-  // Default max value if not specified
-  const defaultMax = 100;
+  // Fixed scale of 100 for all progress bars
+  const FIXED_SCALE = 100;
 
   // Get color for attribute bar
   const getAttributeColor = (attribute: Attribute): string => {
@@ -87,11 +88,8 @@ const AttributeDisplay: React.FC<AttributeDisplayProps> = ({
         }`}
       >
         {attributes.map((attribute, index) => {
-          const max = attribute.max || defaultMax;
-          const percentage = Math.min(
-            100,
-            Math.max(0, (attribute.value / max) * 100)
-          );
+          // Calculate percentage using fixed scale of 100
+          const percentage = Math.min(100, Math.max(0, attribute.value));
           const color = getAttributeColor(attribute);
 
           return (
@@ -108,7 +106,6 @@ const AttributeDisplay: React.FC<AttributeDisplayProps> = ({
                   {showValues && (
                     <span className="text-sm text-gray-600 dark:text-gray-400">
                       {attribute.value}
-                      {attribute.max ? `/${attribute.max}` : ''}
                     </span>
                   )}
                 </div>
@@ -122,7 +119,7 @@ const AttributeDisplay: React.FC<AttributeDisplayProps> = ({
                   role="progressbar"
                   aria-valuenow={attribute.value}
                   aria-valuemin={0}
-                  aria-valuemax={max}
+                  aria-valuemax={FIXED_SCALE}
                   aria-label={`${attribute.name}: ${attribute.value}`}
                 />
               </div>
