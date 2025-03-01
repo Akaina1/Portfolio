@@ -23,7 +23,7 @@ export const MOVEMENT_STYLE = {
 } as const;
 
 export interface CharacterResponse {
-  id: string;
+  _id: string;
   playerId: string;
   name: string;
   level: number;
@@ -133,7 +133,7 @@ export interface CharacterResponse {
 }
 
 export interface CharacterClassResponse {
-  id: string;
+  _id: string;
   name: string;
   description: string;
   category: string;

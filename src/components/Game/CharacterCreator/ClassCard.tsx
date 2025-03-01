@@ -4,7 +4,7 @@ import React from 'react';
  * Props for the ClassCard component
  */
 interface ClassCardProps {
-  id: string;
+  _id: string;
   name: string;
   category: string;
   difficulty: number;
@@ -22,7 +22,7 @@ interface ClassCardProps {
  * Highlights the card when selected.
  */
 const ClassCard: React.FC<ClassCardProps> = ({
-  id,
+  _id,
   name,
   category,
   difficulty,
@@ -32,7 +32,7 @@ const ClassCard: React.FC<ClassCardProps> = ({
 }) => {
   // Add this debug log to see what props the component receives
   console.log(`ClassCard rendering for ${name || 'unknown'}:`, {
-    id,
+    _id,
     name,
     category,
     difficulty,
@@ -49,7 +49,7 @@ const ClassCard: React.FC<ClassCardProps> = ({
       stars.push(
         <svg
           key={`difficulty-star-${i}`}
-          className={`h-4 w-4 ${i <= difficulty ? 'text-yellow-500' : 'text-gray-300'}`}
+          className={`h-4 w-4 ${i <= difficulty ? 'text-yellow-500' : 'text-gray-300 dark:text-gray-600'}`}
           fill="currentColor"
           viewBox="0 0 20 20"
           xmlns="http://www.w3.org/2000/svg"
@@ -80,13 +80,13 @@ const ClassCard: React.FC<ClassCardProps> = ({
     <div
       className={`relative flex cursor-pointer flex-col overflow-hidden rounded-lg shadow-md transition-all duration-200 ${
         isSelected
-          ? 'scale-105 transform border-2 border-blue-500 shadow-lg'
-          : 'border border-gray-200 hover:border-blue-300 hover:shadow-lg'
+          ? 'scale-105 transform border-2 border-purple-500 shadow-lg'
+          : 'border border-gray-200 hover:border-purple-300 hover:shadow-lg dark:border-gray-700 dark:hover:border-purple-700'
       } `}
       onClick={() => {
         // Add debug log for click events
-        console.log(`ClassCard clicked: id=${id}, name=${name}`);
-        onSelect(id);
+        console.log(`ClassCard clicked: _id=${_id}, name=${name}`);
+        onSelect(_id);
       }}
       role="button"
       aria-pressed={isSelected}
@@ -94,13 +94,13 @@ const ClassCard: React.FC<ClassCardProps> = ({
       onKeyDown={(e) => {
         if (e.key === 'Enter' || e.key === ' ') {
           e.preventDefault();
-          onSelect(id);
+          onSelect(_id);
         }
       }}
     >
       {/* Selected indicator */}
       {isSelected && (
-        <div className="absolute right-2 top-2 z-10 rounded-full bg-blue-500 p-1">
+        <div className="absolute right-2 top-2 z-10 rounded-full bg-purple-500 p-1">
           <svg
             className="h-4 w-4 text-white"
             fill="none"
@@ -119,46 +119,48 @@ const ClassCard: React.FC<ClassCardProps> = ({
       )}
 
       {/* ASCII Art representation instead of image */}
-      <div className="flex h-32 items-center justify-center bg-gray-800 p-2">
+      <div className="flex h-32 items-center justify-center bg-gray-800 p-2 dark:bg-gray-900">
         <pre className="font-mono text-xs text-green-400">{getAsciiArt()}</pre>
       </div>
 
       {/* Class info */}
-      <div className="flex-grow p-4">
+      <div className="flex-grow bg-white p-4 dark:bg-gray-900/70">
         <div className="flex items-start justify-between">
-          <h3 className="text-lg font-semibold text-gray-800">
+          <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200">
             {name || 'Unknown Class'}
           </h3>
-          <span className="rounded-full bg-gray-100 px-2 py-1 text-xs text-gray-700">
+          <span className="rounded-full bg-gray-100 px-2 py-1 text-xs text-gray-700 dark:bg-gray-800 dark:text-gray-300">
             {category || 'N/A'}
           </span>
         </div>
 
         {/* Difficulty rating */}
         <div className="mt-2 flex items-center">
-          <span className="mr-1 text-xs text-gray-600">Difficulty:</span>
+          <span className="mr-1 text-xs text-gray-600 dark:text-gray-400">
+            Difficulty:
+          </span>
           <div className="flex">{difficultyStars()}</div>
         </div>
 
         {/* Description (truncated) */}
         {description ? (
-          <p className="mt-3 line-clamp-2 text-sm text-gray-600">
+          <p className="mt-3 line-clamp-2 text-sm text-gray-600 dark:text-gray-400">
             {description}
           </p>
         ) : (
-          <p className="mt-3 text-sm italic text-gray-400">
+          <p className="mt-3 text-sm italic text-gray-400 dark:text-gray-500">
             No description available
           </p>
         )}
       </div>
 
       {/* Call to action */}
-      <div className="border-t border-gray-100 bg-gray-50 px-4 py-3">
+      <div className="border-t border-gray-100 bg-gray-50 px-4 py-3 dark:border-gray-700 dark:bg-gray-800">
         <button
           className={`w-full rounded py-1.5 text-sm font-medium transition-colors ${
             isSelected
-              ? 'bg-blue-500 text-white'
-              : 'border border-blue-500 bg-white text-blue-500 hover:bg-blue-50'
+              ? 'bg-purple-500 text-white'
+              : 'border border-purple-500 bg-white text-purple-500 hover:bg-purple-50 dark:bg-gray-700 dark:text-purple-300 dark:hover:bg-gray-600'
           } `}
         >
           {isSelected ? 'Selected' : 'Select Class'}

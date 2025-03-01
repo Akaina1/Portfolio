@@ -44,7 +44,7 @@ const CharacterSelection: React.FC = () => {
 
         // Transform characters from store to display format
         const formattedCharacters = playerCharacters.map((char) => ({
-          id: char.id,
+          id: char._id,
           name: char.name,
           className: char.classId, // We would ideally map classId to class name
           level: char.level,

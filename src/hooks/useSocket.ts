@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { useSocketStore } from '@/stores/Game/socketStore';
 import { usePlayerStore } from '@/stores/Player/playerStore';
+import { useGameStore } from '@/stores/Game/gameStore';
 
 /**
  * Custom hook to manage socket connection
@@ -15,15 +16,23 @@ export function useSocket() {
   );
   const playerToken = usePlayerStore((state) => state.token);
 
+  // Get current view state to prevent socket connection in auth view
+  const viewState = useGameStore((state) => state.viewState);
+
   useEffect(() => {
-    // Only attempt connection if player is authenticated and in game view
-    if (isAuthenticatedPlayer && playerToken && !isConnected) {
-      console.log('Player authenticated - connecting socket');
+    // IMPORTANT: Only connect socket if player is authenticated AND not in auth view
+    if (
+      isAuthenticatedPlayer &&
+      playerToken &&
+      !isConnected &&
+      viewState !== 'auth'
+    ) {
+      console.log(
+        'Player authenticated and NOT in auth view - connecting socket'
+      );
       connect();
     }
-
-    // No cleanup function needed here
-  }, [isAuthenticatedPlayer, playerToken, isConnected, connect]);
+  }, [isAuthenticatedPlayer, playerToken, isConnected, connect, viewState]);
 
   return { isConnected, isAuthenticated, connectionError };
 }

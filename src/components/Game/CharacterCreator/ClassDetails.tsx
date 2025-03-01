@@ -22,8 +22,10 @@ const ClassDetails: React.FC<ClassDetailsProps> = ({
 }) => {
   if (!characterClass) {
     return (
-      <div className="rounded-lg border border-gray-200 bg-gray-50 p-4 text-center">
-        <p className="text-gray-500">Select a class to view details</p>
+      <div className="rounded-lg border border-gray-200 bg-gray-50 p-4 text-center dark:border-gray-700 dark:bg-gray-800">
+        <p className="text-gray-500 dark:text-gray-400">
+          Select a class to view details
+        </p>
       </div>
     );
   }
@@ -63,82 +65,103 @@ const ClassDetails: React.FC<ClassDetailsProps> = ({
 
   return (
     <div
-      className={`rounded-lg border border-gray-200 bg-white p-6 shadow-sm ${className}`}
+      className={`overflow-hidden rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800/50 ${className}`}
     >
       {/* Class header */}
-      <div className="mb-6 border-b border-gray-100 pb-4">
-        <h2 className="text-2xl font-bold text-gray-800">
+      <div className="mb-6 border-b border-gray-100 pb-4 dark:border-gray-700">
+        <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-200">
           {characterClass.name}
         </h2>
         <div className="mt-2 flex items-center">
-          <span className="mr-3 rounded-full bg-gray-100 px-3 py-1 text-sm text-gray-700">
+          <span className="mr-3 rounded-full bg-gray-100 px-3 py-1 text-sm text-gray-700 dark:bg-gray-700 dark:text-gray-300">
             {characterClass.category}
           </span>
-          <span className="flex items-center text-sm text-gray-600">
+          <span className="flex items-center text-sm text-gray-600 dark:text-gray-400">
             <span className="mr-1">Difficulty:</span>
             <span className="font-medium">{characterClass.difficulty}/5</span>
           </span>
         </div>
-        <p className="mt-4 text-gray-600">{characterClass.description}</p>
+        <p className="mt-4 text-gray-600 dark:text-gray-400">
+          {characterClass.description}
+        </p>
       </div>
 
       {/* Attributes section */}
       <div className="mb-6">
-        <h3 className="mb-4 text-lg font-semibold text-gray-800">
+        <h3 className="mb-4 text-lg font-semibold text-gray-800 dark:text-gray-200">
           Base Attributes
         </h3>
         <AttributeDisplay
           attributes={primaryAttributes}
-          compact={true}
+          compact={false}
           showDescriptions={true}
+          className="w-full"
         />
       </div>
 
       {/* Secondary attributes */}
       {secondaryAttributes.length > 0 && (
         <div className="mb-6">
-          <h3 className="mb-4 text-lg font-semibold text-gray-800">
+          <h3 className="mb-4 text-lg font-semibold text-gray-800 dark:text-gray-200">
             Secondary Attributes
           </h3>
-          <AttributeDisplay attributes={secondaryAttributes} compact={true} />
+          <AttributeDisplay
+            attributes={secondaryAttributes}
+            compact={false}
+            className="w-full"
+          />
         </div>
       )}
 
       {/* Resource system */}
       <div className="mb-6">
-        <h3 className="mb-4 text-lg font-semibold text-gray-800">
+        <h3 className="mb-4 text-lg font-semibold text-gray-800 dark:text-gray-200">
           Resource System
         </h3>
-        <div className="rounded-lg bg-gray-50 p-4">
-          <div className="mb-3 flex items-center justify-between">
-            <span className="font-medium text-gray-700">
-              {formatResourceType(characterClass.primaryResource.type)}
-            </span>
-            <span className="text-sm text-gray-600">
-              Base: {characterClass.primaryResource.baseValue}
-            </span>
+        <div className="rounded-lg bg-gray-50 p-5 dark:bg-gray-800">
+          <div className="mb-3 flex flex-col">
+            <div className="flex items-center justify-between">
+              <span className="text-base font-medium text-gray-700 dark:text-gray-300">
+                {formatResourceType(characterClass.primaryResource.type)}
+              </span>
+              <span className="font-medium text-gray-600 dark:text-gray-400">
+                Base: {characterClass.primaryResource.baseValue}
+              </span>
+            </div>
+            <div className="mt-3 space-y-1 text-sm text-gray-600 dark:text-gray-400">
+              <p>
+                <span className="font-medium">Growth:</span>{' '}
+                {characterClass.primaryResource.growthPerLevel} per level
+              </p>
+              <p>
+                <span className="font-medium">Regeneration:</span>{' '}
+                {characterClass.primaryResource.regenBase} per tick
+              </p>
+            </div>
           </div>
-          <p className="text-sm text-gray-600">
-            Grows by {characterClass.primaryResource.growthPerLevel} per level.
-            Base regeneration: {characterClass.primaryResource.regenBase} per
-            tick.
-          </p>
 
           {characterClass.secondaryResource && (
-            <div className="mt-4 border-t border-gray-200 pt-4">
-              <div className="mb-3 flex items-center justify-between">
-                <span className="font-medium text-gray-700">
-                  {formatResourceType(characterClass.secondaryResource.type)}
-                </span>
-                <span className="text-sm text-gray-600">
-                  Base: {characterClass.secondaryResource.baseValue}
-                </span>
+            <div className="mt-5 border-t border-gray-200 pt-5 dark:border-gray-700">
+              <div className="mb-3 flex flex-col">
+                <div className="flex items-center justify-between">
+                  <span className="text-base font-medium text-gray-700 dark:text-gray-300">
+                    {formatResourceType(characterClass.secondaryResource.type)}
+                  </span>
+                  <span className="font-medium text-gray-600 dark:text-gray-400">
+                    Base: {characterClass.secondaryResource.baseValue}
+                  </span>
+                </div>
+                <div className="mt-3 space-y-1 text-sm text-gray-600 dark:text-gray-400">
+                  <p>
+                    <span className="font-medium">Growth:</span>{' '}
+                    {characterClass.secondaryResource.growthPerLevel} per level
+                  </p>
+                  <p>
+                    <span className="font-medium">Regeneration:</span>{' '}
+                    {characterClass.secondaryResource.regenBase} per tick
+                  </p>
+                </div>
               </div>
-              <p className="text-sm text-gray-600">
-                Grows by {characterClass.secondaryResource.growthPerLevel} per
-                level. Base regeneration:{' '}
-                {characterClass.secondaryResource.regenBase} per tick.
-              </p>
             </div>
           )}
         </div>
@@ -148,24 +171,24 @@ const ClassDetails: React.FC<ClassDetailsProps> = ({
       {characterClass.classFeatures &&
         characterClass.classFeatures.length > 0 && (
           <div className="mb-6">
-            <h3 className="mb-4 text-lg font-semibold text-gray-800">
+            <h3 className="mb-4 text-lg font-semibold text-gray-800 dark:text-gray-200">
               Class Features
             </h3>
-            <div className="space-y-3">
+            <div className="space-y-4">
               {characterClass.classFeatures.map((feature, index) => (
                 <div
                   key={`feature-${feature.name}-${index}`}
-                  className="rounded-lg border border-gray-200 p-3"
+                  className="rounded-lg border border-gray-200 p-4 dark:border-gray-700"
                 >
-                  <div className="flex items-center justify-between">
-                    <h4 className="font-medium text-gray-800">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <h4 className="font-medium text-gray-800 dark:text-gray-200">
                       {feature.name}
                     </h4>
-                    <span className="rounded-full bg-blue-100 px-2 py-1 text-xs text-blue-700">
+                    <span className="rounded-full bg-purple-100 px-3 py-1 text-xs font-medium text-purple-700 dark:bg-purple-900/30 dark:text-purple-300">
                       Level {feature.unlockedAtLevel}
                     </span>
                   </div>
-                  <p className="mt-2 text-sm text-gray-600">
+                  <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
                     {feature.description}
                   </p>
                 </div>
@@ -178,14 +201,14 @@ const ClassDetails: React.FC<ClassDetailsProps> = ({
       {characterClass.startingAbilities &&
         characterClass.startingAbilities.length > 0 && (
           <div className="mb-6">
-            <h3 className="mb-4 text-lg font-semibold text-gray-800">
+            <h3 className="mb-4 text-lg font-semibold text-gray-800 dark:text-gray-200">
               Starting Abilities
             </h3>
             <div className="flex flex-wrap gap-2">
               {characterClass.startingAbilities.map((ability, index) => (
                 <span
                   key={`ability-${ability}-${index}`}
-                  className="rounded-full bg-purple-100 px-3 py-1 text-sm text-purple-700"
+                  className="rounded-full bg-purple-100 px-3 py-1.5 text-sm font-medium text-purple-700 dark:bg-purple-900/30 dark:text-purple-300"
                 >
                   {ability}
                 </span>
@@ -198,14 +221,14 @@ const ClassDetails: React.FC<ClassDetailsProps> = ({
       {characterClass.recommendedPlaystyles &&
         characterClass.recommendedPlaystyles.length > 0 && (
           <div>
-            <h3 className="mb-4 text-lg font-semibold text-gray-800">
+            <h3 className="mb-4 text-lg font-semibold text-gray-800 dark:text-gray-200">
               Recommended Playstyles
             </h3>
             <div className="flex flex-wrap gap-2">
               {characterClass.recommendedPlaystyles.map((style, index) => (
                 <span
                   key={`style-${style}-${index}`}
-                  className="rounded-full bg-green-100 px-3 py-1 text-sm text-green-700"
+                  className="rounded-full bg-green-100 px-3 py-1.5 text-sm font-medium text-green-700 dark:bg-green-900/30 dark:text-green-300"
                 >
                   {style}
                 </span>
@@ -252,19 +275,20 @@ const formatResourceType = (type: string): string => {
 };
 
 /**
- * Get description for primary attributes
+ * Get attribute description
  */
 const getAttributeDescription = (attribute: string): string => {
   const descriptions: Record<string, string> = {
     strength: 'Increases physical damage and carrying capacity.',
-    intelligence: 'Increases spell power and mana pool.',
-    dexterity: 'Improves attack speed, ranged damage, and evasion.',
-    constitution: 'Increases health points and physical resistance.',
-    wisdom: 'Improves mana regeneration and magical resistance.',
-    charisma: 'Enhances social interactions and certain magical abilities.',
+    intelligence: 'Improves spell power and mana reserves.',
+    dexterity: 'Enhances agility, accuracy, and dodge chance.',
+    constitution: 'Boosts health and physical resilience.',
+    wisdom: 'Increases mental resilience and perception.',
+    charisma: 'Improves social interactions and certain abilities.',
+    default: 'A core attribute of your character.',
   };
 
-  return descriptions[attribute] || '';
+  return descriptions[attribute] || descriptions.default;
 };
 
 export default ClassDetails;

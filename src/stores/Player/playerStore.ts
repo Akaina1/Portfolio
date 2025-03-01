@@ -107,10 +107,25 @@ export const usePlayerStore = create<PlayerState>()(
       },
 
       clearPlayerData: () => {
-        // Clear token from localStorage
+        console.log('Completely clearing player data and tokens');
+
+        // Clear ALL token-related items from localStorage
         if (typeof window !== 'undefined') {
           localStorage.removeItem('auth_token');
           localStorage.removeItem('token_expiry');
+          localStorage.removeItem('player_id');
+
+          // Also clear sessionStorage just to be safe
+          sessionStorage.removeItem('auth_token');
+          sessionStorage.removeItem('token_expiry');
+
+          // Some browsers cache aggressively, so force a clean slate
+          try {
+            document.cookie =
+              'auth_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+          } catch (e) {
+            console.error('Error clearing cookies:', e);
+          }
         }
 
         // Reset state
@@ -120,7 +135,6 @@ export const usePlayerStore = create<PlayerState>()(
           isAuthenticated: false,
           error: null,
           hasCheckedForCharacters: false,
-          // Reset other player-related state
         });
       },
 

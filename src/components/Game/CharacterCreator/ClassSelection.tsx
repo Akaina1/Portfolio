@@ -80,11 +80,11 @@ const ClassSelection: React.FC<ClassSelectionProps> = ({
           if (
             classes.length > 0 &&
             !selectedClassId &&
-            classes[0].id &&
+            classes[0]._id &&
             classes[0].name
           ) {
-            console.log('Auto-selecting first class:', classes[0].id);
-            setSelectedClassId(classes[0].id);
+            console.log('Auto-selecting first class:', classes[0]._id);
+            setSelectedClassId(classes[0]._id);
           }
         } else {
           console.error(
@@ -155,8 +155,10 @@ const ClassSelection: React.FC<ClassSelectionProps> = ({
         className={`flex h-full w-full items-center justify-center ${className}`}
       >
         <div className="text-center">
-          <div className="mx-auto mb-4 h-12 w-12 animate-spin rounded-full border-4 border-gray-200 border-t-blue-600"></div>
-          <p className="text-gray-600">Loading available classes...</p>
+          <div className="mx-auto mb-4 h-12 w-12 animate-spin rounded-full border-4 border-gray-200 border-t-purple-600 dark:border-gray-700 dark:border-t-purple-500"></div>
+          <p className="text-gray-600 dark:text-gray-300">
+            Loading available classes...
+          </p>
         </div>
       </div>
     );
@@ -169,9 +171,9 @@ const ClassSelection: React.FC<ClassSelectionProps> = ({
       <div
         className={`flex h-full w-full items-center justify-center ${className}`}
       >
-        <div className="max-w-md rounded-lg border border-red-200 bg-red-50 p-6 text-center">
+        <div className="max-w-md rounded-lg border border-red-200 bg-red-50 p-6 text-center dark:border-red-900 dark:bg-red-900/20">
           <svg
-            className="mx-auto h-12 w-12 text-red-500"
+            className="mx-auto h-12 w-12 text-red-500 dark:text-red-400"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -184,12 +186,14 @@ const ClassSelection: React.FC<ClassSelectionProps> = ({
               d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
             />
           </svg>
-          <h3 className="mt-3 text-lg font-medium text-red-800">
+          <h3 className="mt-3 text-lg font-medium text-red-800 dark:text-red-300">
             Error Loading Classes
           </h3>
-          <p className="mt-2 text-sm text-red-600">{errorMessage}</p>
+          <p className="mt-2 text-sm text-red-600 dark:text-red-400">
+            {errorMessage}
+          </p>
           <button
-            className="mt-4 rounded-md bg-red-100 px-4 py-2 text-sm font-medium text-red-700 hover:bg-red-200"
+            className="mt-4 rounded-md bg-red-100 px-4 py-2 text-sm font-medium text-red-700 hover:bg-red-200 dark:bg-red-800/30 dark:text-red-300 dark:hover:bg-red-800/50"
             onClick={() => window.location.reload()}
           >
             Try Again
@@ -205,8 +209,10 @@ const ClassSelection: React.FC<ClassSelectionProps> = ({
       <div
         className={`flex h-full w-full items-center justify-center ${className}`}
       >
-        <div className="max-w-md rounded-lg border border-gray-200 bg-gray-50 p-6 text-center">
-          <p className="text-gray-600">No character classes available.</p>
+        <div className="max-w-md rounded-lg border border-gray-200 bg-gray-50 p-6 text-center dark:border-gray-700 dark:bg-gray-800">
+          <p className="text-gray-600 dark:text-gray-300">
+            No character classes available.
+          </p>
         </div>
       </div>
     );
@@ -215,23 +221,25 @@ const ClassSelection: React.FC<ClassSelectionProps> = ({
   return (
     <div className={`w-full ${className}`}>
       <div className="mb-6">
-        <h2 className="text-2xl font-bold text-gray-800">Choose Your Class</h2>
-        <p className="mt-2 text-gray-600">
+        <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-100">
+          Choose Your Class
+        </h2>
+        <p className="mt-2 text-gray-600 dark:text-gray-300">
           Select a class that matches your preferred playstyle. Each class has
           unique abilities, attributes, and resource systems.
         </p>
       </div>
 
-      <div className="grid grid-cols-1 gap-8 md:grid-cols-3 lg:grid-cols-4">
+      <div className="grid grid-cols-1 gap-8 md:grid-cols-5">
         {/* Class cards grid */}
-        <div className="md:col-span-2 lg:col-span-3">
+        <div className="md:col-span-3">
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {characterClasses.map((characterClass) => {
               // Validate that the character class has the required properties
               const isValidClass =
                 characterClass &&
                 typeof characterClass === 'object' &&
-                'id' in characterClass &&
+                '_id' in characterClass &&
                 'name' in characterClass;
 
               if (!isValidClass) {
@@ -248,8 +256,8 @@ const ClassSelection: React.FC<ClassSelectionProps> = ({
               );
               return (
                 <ClassCard
-                  key={`class-${characterClass.id}`}
-                  id={characterClass.id}
+                  key={`class-${characterClass._id}`}
+                  _id={characterClass._id}
                   name={characterClass.name}
                   category={characterClass.category || 'Unknown'}
                   difficulty={characterClass.difficulty || 1}
@@ -257,7 +265,7 @@ const ClassSelection: React.FC<ClassSelectionProps> = ({
                     characterClass.description || 'No description available.'
                   }
                   iconUrl={characterClass.iconUrl}
-                  isSelected={selectedClassId === characterClass.id}
+                  isSelected={selectedClassId === characterClass._id}
                   onSelect={handleClassSelect}
                 />
               );
@@ -266,8 +274,8 @@ const ClassSelection: React.FC<ClassSelectionProps> = ({
         </div>
 
         {/* Class details panel */}
-        <div className="md:col-span-1 lg:col-span-1">
-          <div className="sticky top-4">
+        <div className="md:col-span-2">
+          <div className="sticky top-4 max-h-[calc(100vh-2rem)] overflow-y-auto">
             {selectedClass && (
               <ClassDetails
                 key={`class-details-${selectedClassId || 'none'}`}

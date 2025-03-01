@@ -140,31 +140,53 @@ export const useSocketStore = create<SocketStore>((set, get) => {
 
     // Disconnect socket
     disconnect: () => {
-      const state = getState();
-      if (state.socket) {
-        // Capture the socket locally to avoid state access after update
-        const socketToDisconnect = state.socket;
+      const { socket } = get();
 
-        // Update state first
+      if (socket) {
+        console.log('Explicitly disconnecting socket');
+        socket.disconnect();
+
+        // Important: Clear socket instance immediately
         set({
           socket: null,
           isConnected: false,
           isAuthenticated: false,
         });
-
-        // Then disconnect the socket
-        socketToDisconnect.disconnect();
       }
     },
 
-    resetSocket: () =>
+    resetSocket: () => {
+      console.log('Completely resetting socket state and stored tokens');
+
+      const { socket } = get();
+      if (socket) {
+        // Ensure socket is disconnected
+        socket.disconnect();
+      }
+
+      // Reset state completely
       set({
         socket: null,
         isConnected: false,
         isAuthenticated: false,
         connectionError: null,
-        shouldConnect: false,
-      }),
+      });
+
+      // Also clear any socket-related localStorage items
+      if (typeof window !== 'undefined') {
+        // If you're storing any socket IDs or state, clear them here
+        localStorage.removeItem('socket_id');
+        localStorage.removeItem('socket_auth');
+
+        // Force a disconnect in localStorage if you're using it for connection state
+        localStorage.setItem('socket_force_disconnect', Date.now().toString());
+
+        // Clear this after a second to allow other components to react
+        setTimeout(() => {
+          localStorage.removeItem('socket_force_disconnect');
+        }, 1000);
+      }
+    },
 
     // Utility methods for event handling
     on: (event, callback) => {

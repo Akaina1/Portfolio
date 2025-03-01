@@ -165,25 +165,31 @@ const CharacterDetails: React.FC<CharacterDetailsProps> = ({
     'scarred',
   ];
 
+  // Common form input classes
+  const inputBaseClass =
+    'w-full rounded-md border px-4 py-2 focus:outline-none focus:ring-2';
+  const inputClass = `${inputBaseClass} border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 focus:border-purple-500 focus:ring-purple-200 dark:focus:border-purple-400 dark:focus:ring-purple-900`;
+  const inputErrorClass = `${inputBaseClass} border-red-500 dark:border-red-400 focus:border-red-500 focus:ring-red-200 dark:focus:ring-red-900`;
+
   return (
     <div className={`w-full ${className}`}>
       <div className="mb-6">
-        <h2 className="text-2xl font-bold text-gray-800">
+        <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-100">
           Customize Your Character
         </h2>
-        <p className="mt-2 text-gray-600">
+        <p className="mt-2 text-gray-600 dark:text-gray-300">
           Personalize your {selectedClass.name} with a unique name, appearance,
           and backstory.
         </p>
       </div>
 
-      <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
-        {/* Form section */}
-        <div className="md:col-span-2">
+      <div className="grid grid-cols-1 gap-8 md:grid-cols-5">
+        {/* Form section (takes 3 columns on md screens) */}
+        <div className="md:col-span-3">
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Basic info section */}
-            <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
-              <h3 className="mb-4 text-lg font-semibold text-gray-800">
+            <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800/50">
+              <h3 className="mb-4 text-lg font-semibold text-gray-800 dark:text-gray-200">
                 Basic Information
               </h3>
 
@@ -191,7 +197,7 @@ const CharacterDetails: React.FC<CharacterDetailsProps> = ({
               <div className="mb-4">
                 <label
                   htmlFor="name"
-                  className="mb-1 block text-sm font-medium text-gray-700"
+                  className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300"
                 >
                   Character Name
                 </label>
@@ -201,13 +207,13 @@ const CharacterDetails: React.FC<CharacterDetailsProps> = ({
                   name="name"
                   value={formValues.name}
                   onChange={handleInputChange}
-                  className={`w-full rounded-md border ${
-                    errors.name ? 'border-red-500' : 'border-gray-300'
-                  } px-4 py-2 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200`}
+                  className={errors.name ? inputErrorClass : inputClass}
                   placeholder="Enter character name"
                 />
                 {errors.name && (
-                  <p className="mt-1 text-sm text-red-600">{errors.name}</p>
+                  <p className="mt-1 text-sm text-red-600 dark:text-red-400">
+                    {errors.name}
+                  </p>
                 )}
               </div>
 
@@ -215,7 +221,7 @@ const CharacterDetails: React.FC<CharacterDetailsProps> = ({
               <div className="mb-4">
                 <label
                   htmlFor="gender"
-                  className="mb-1 block text-sm font-medium text-gray-700"
+                  className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300"
                 >
                   Gender
                 </label>
@@ -224,7 +230,7 @@ const CharacterDetails: React.FC<CharacterDetailsProps> = ({
                   name="gender"
                   value={formValues.gender}
                   onChange={handleInputChange}
-                  className="w-full rounded-md border border-gray-300 px-4 py-2 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
+                  className={inputClass}
                 >
                   <option value="male">Male</option>
                   <option value="female">Female</option>
@@ -234,8 +240,8 @@ const CharacterDetails: React.FC<CharacterDetailsProps> = ({
             </div>
 
             {/* Appearance section */}
-            <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
-              <h3 className="mb-4 text-lg font-semibold text-gray-800">
+            <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800/50">
+              <h3 className="mb-4 text-lg font-semibold text-gray-800 dark:text-gray-200">
                 Appearance
               </h3>
 
@@ -244,7 +250,7 @@ const CharacterDetails: React.FC<CharacterDetailsProps> = ({
                 <div>
                   <label
                     htmlFor="appearance.skinTone"
-                    className="mb-1 block text-sm font-medium text-gray-700"
+                    className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300"
                   >
                     Skin Tone
                   </label>
@@ -253,7 +259,7 @@ const CharacterDetails: React.FC<CharacterDetailsProps> = ({
                     name="appearance.skinTone"
                     value={formValues.appearance.skinTone}
                     onChange={handleInputChange}
-                    className="w-full rounded-md border border-gray-300 px-4 py-2 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
+                    className={inputClass}
                   >
                     {skinTones.map((tone) => (
                       <option key={tone} value={tone}>
@@ -267,7 +273,7 @@ const CharacterDetails: React.FC<CharacterDetailsProps> = ({
                 <div>
                   <label
                     htmlFor="appearance.hairStyle"
-                    className="mb-1 block text-sm font-medium text-gray-700"
+                    className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300"
                   >
                     Hair Style
                   </label>
@@ -276,7 +282,7 @@ const CharacterDetails: React.FC<CharacterDetailsProps> = ({
                     name="appearance.hairStyle"
                     value={formValues.appearance.hairStyle}
                     onChange={handleInputChange}
-                    className="w-full rounded-md border border-gray-300 px-4 py-2 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
+                    className={inputClass}
                   >
                     {hairStyles.map((style) => (
                       <option key={style} value={style}>
@@ -290,7 +296,7 @@ const CharacterDetails: React.FC<CharacterDetailsProps> = ({
                 <div>
                   <label
                     htmlFor="appearance.hairColor"
-                    className="mb-1 block text-sm font-medium text-gray-700"
+                    className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300"
                   >
                     Hair Color
                   </label>
@@ -299,7 +305,7 @@ const CharacterDetails: React.FC<CharacterDetailsProps> = ({
                     name="appearance.hairColor"
                     value={formValues.appearance.hairColor}
                     onChange={handleInputChange}
-                    className="w-full rounded-md border border-gray-300 px-4 py-2 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
+                    className={inputClass}
                   >
                     {hairColors.map((color) => (
                       <option key={color} value={color}>
@@ -313,7 +319,7 @@ const CharacterDetails: React.FC<CharacterDetailsProps> = ({
                 <div>
                   <label
                     htmlFor="appearance.faceStyle"
-                    className="mb-1 block text-sm font-medium text-gray-700"
+                    className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300"
                   >
                     Face Style
                   </label>
@@ -322,7 +328,7 @@ const CharacterDetails: React.FC<CharacterDetailsProps> = ({
                     name="appearance.faceStyle"
                     value={formValues.appearance.faceStyle}
                     onChange={handleInputChange}
-                    className="w-full rounded-md border border-gray-300 px-4 py-2 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
+                    className={inputClass}
                   >
                     {faceStyles.map((style) => (
                       <option key={style} value={style}>
@@ -335,15 +341,15 @@ const CharacterDetails: React.FC<CharacterDetailsProps> = ({
             </div>
 
             {/* Backstory section */}
-            <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
-              <h3 className="mb-4 text-lg font-semibold text-gray-800">
+            <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800/50">
+              <h3 className="mb-4 text-lg font-semibold text-gray-800 dark:text-gray-200">
                 Backstory
               </h3>
 
               <div>
                 <label
                   htmlFor="backstory"
-                  className="mb-1 block text-sm font-medium text-gray-700"
+                  className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300"
                 >
                   Character Backstory (Optional)
                 </label>
@@ -353,7 +359,7 @@ const CharacterDetails: React.FC<CharacterDetailsProps> = ({
                   value={formValues.backstory}
                   onChange={handleInputChange}
                   rows={4}
-                  className="w-full rounded-md border border-gray-300 px-4 py-2 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
+                  className={inputClass}
                   placeholder="Write a brief backstory for your character..."
                 />
               </div>
@@ -363,7 +369,7 @@ const CharacterDetails: React.FC<CharacterDetailsProps> = ({
             <div className="flex justify-end">
               <button
                 type="submit"
-                className="rounded-md bg-blue-600 px-6 py-2 text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                className="rounded-md bg-purple-600 px-6 py-2 text-white shadow-sm hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800"
               >
                 Continue to Review
               </button>
@@ -371,40 +377,46 @@ const CharacterDetails: React.FC<CharacterDetailsProps> = ({
           </form>
         </div>
 
-        {/* Class info sidebar */}
-        <div className="md:col-span-1">
+        {/* Class info sidebar (takes 2 columns on md screens) */}
+        <div className="md:col-span-2">
           <div className="sticky top-4 space-y-6">
             {/* Class summary */}
-            <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
-              <h3 className="mb-4 text-lg font-semibold text-gray-800">
+            <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800/50">
+              <h3 className="mb-4 text-lg font-semibold text-gray-800 dark:text-gray-200">
                 Class Summary
               </h3>
               <div className="mb-3 flex items-center">
-                <span className="mr-2 font-medium text-gray-700">Class:</span>
-                <span className="text-gray-600">{selectedClass.name}</span>
+                <span className="mr-2 font-medium text-gray-700 dark:text-gray-300">
+                  Class:
+                </span>
+                <span className="text-gray-600 dark:text-gray-400">
+                  {selectedClass.name}
+                </span>
               </div>
               <div className="mb-3 flex items-center">
-                <span className="mr-2 font-medium text-gray-700">
+                <span className="mr-2 font-medium text-gray-700 dark:text-gray-300">
                   Category:
                 </span>
-                <span className="text-gray-600">{selectedClass.category}</span>
+                <span className="text-gray-600 dark:text-gray-400">
+                  {selectedClass.category}
+                </span>
               </div>
               <div className="flex items-center">
-                <span className="mr-2 font-medium text-gray-700">
+                <span className="mr-2 font-medium text-gray-700 dark:text-gray-300">
                   Difficulty:
                 </span>
-                <span className="text-gray-600">
+                <span className="text-gray-600 dark:text-gray-400">
                   {selectedClass.difficulty}/5
                 </span>
               </div>
             </div>
 
             {/* Base attributes */}
-            <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
-              <h3 className="mb-4 text-lg font-semibold text-gray-800">
+            <div className="overflow-hidden rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800/50">
+              <h3 className="mb-4 text-lg font-semibold text-gray-800 dark:text-gray-200">
                 Base Attributes
               </h3>
-              <AttributeDisplay attributes={attributes} />
+              <AttributeDisplay attributes={attributes} compact />
             </div>
           </div>
         </div>

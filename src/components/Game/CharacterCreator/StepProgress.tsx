@@ -56,7 +56,13 @@ const StepProgress: React.FC<StepProgressProps> = ({
           const stepClasses = `
             flex flex-col items-center relative
             ${isStepClickable(index) ? 'cursor-pointer' : 'cursor-default'}
-            ${isCompleted ? 'text-green-600' : isCurrent ? 'text-blue-600' : 'text-gray-400'}
+            ${
+              isCompleted
+                ? 'text-green-600 dark:text-green-400'
+                : isCurrent
+                  ? 'text-purple-600 dark:text-purple-400'
+                  : 'text-gray-400 dark:text-gray-500'
+            }
           `;
 
           // Set circle classes based on step status
@@ -64,10 +70,10 @@ const StepProgress: React.FC<StepProgressProps> = ({
             flex items-center justify-center w-10 h-10 rounded-full
             ${
               isCompleted
-                ? 'bg-green-100 border-2 border-green-600'
+                ? 'bg-green-100 dark:bg-green-900/30 border-2 border-green-600 dark:border-green-500'
                 : isCurrent
-                  ? 'bg-blue-100 border-2 border-blue-600'
-                  : 'bg-gray-100 border-2 border-gray-300'
+                  ? 'bg-purple-100 dark:bg-purple-900/30 border-2 border-purple-600 dark:border-purple-500'
+                  : 'bg-gray-100 dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-600'
             }
           `;
 
@@ -82,7 +88,11 @@ const StepProgress: React.FC<StepProgressProps> = ({
               {/* Step connector line */}
               {index > 0 && (
                 <div
-                  className={`absolute left-0 top-5 h-0.5 w-full -translate-x-1/2 ${index <= currentStep ? 'bg-green-600' : 'bg-gray-300'}`}
+                  className={`absolute left-0 top-5 h-0.5 w-full -translate-x-1/2 ${
+                    index <= currentStep
+                      ? 'bg-green-600 dark:bg-green-500'
+                      : 'bg-gray-300 dark:bg-gray-600'
+                  }`}
                   aria-hidden="true"
                 />
               )}
@@ -91,7 +101,7 @@ const StepProgress: React.FC<StepProgressProps> = ({
               <div className={circleClasses}>
                 {isCompleted ? (
                   <svg
-                    className="h-6 w-6 text-green-600"
+                    className="h-6 w-6 text-green-600 dark:text-green-400"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -114,7 +124,7 @@ const StepProgress: React.FC<StepProgressProps> = ({
 
               {/* Step description (optional) */}
               {step.description && (
-                <div className="mt-1 max-w-[120px] text-center text-xs">
+                <div className="mt-1 max-w-[120px] text-center text-xs text-gray-500 dark:text-gray-400">
                   {step.description}
                 </div>
               )}

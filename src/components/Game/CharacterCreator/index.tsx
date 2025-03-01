@@ -136,10 +136,12 @@ const CharacterCreator: React.FC = () => {
           />
         ) : (
           <div className="mt-8 text-center">
-            <p className="text-red-600">Please select a class first</p>
+            <p className="text-red-600 dark:text-red-400">
+              Please select a class first
+            </p>
             <button
               onClick={() => goToStep(1)}
-              className="mt-4 rounded-md bg-blue-600 px-4 py-2 text-white"
+              className="mt-4 rounded-md bg-purple-600 px-4 py-2 text-white hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800"
             >
               Back to Class Selection
             </button>
@@ -168,10 +170,12 @@ const CharacterCreator: React.FC = () => {
           />
         ) : (
           <div className="mt-8 text-center">
-            <p className="text-red-600">Missing character information</p>
+            <p className="text-red-600 dark:text-red-400">
+              Missing character information
+            </p>
             <button
               onClick={() => goToStep(1)}
-              className="mt-4 rounded-md bg-blue-600 px-4 py-2 text-white"
+              className="mt-4 rounded-md bg-purple-600 px-4 py-2 text-white hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800"
             >
               Start Over
             </button>
@@ -189,10 +193,12 @@ const CharacterCreator: React.FC = () => {
           />
         ) : (
           <div className="mt-8 text-center">
-            <p className="text-red-600">Character creation failed</p>
+            <p className="text-red-600 dark:text-red-400">
+              Character creation failed
+            </p>
             <button
               onClick={() => goToStep(1)}
-              className="mt-4 rounded-md bg-blue-600 px-4 py-2 text-white"
+              className="mt-4 rounded-md bg-purple-600 px-4 py-2 text-white hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800"
             >
               Try Again
             </button>
@@ -222,8 +228,8 @@ const CharacterCreator: React.FC = () => {
   };
 
   return (
-    <div className="container mx-auto max-w-6xl px-4 py-8">
-      <h1 className="text-3xl font-bold text-gray-900">
+    <div className="container mx-auto max-w-6xl rounded-lg bg-white/50 px-4 py-8 shadow-lg dark:bg-gray-900/70">
+      <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">
         Create Your Character
       </h1>
 
@@ -236,7 +242,9 @@ const CharacterCreator: React.FC = () => {
       />
 
       {/* Step content */}
-      {renderStepContent()}
+      <div className="rounded-lg bg-white/80 p-6 shadow-inner dark:bg-gray-800/50">
+        {renderStepContent()}
+      </div>
 
       {/* Navigation buttons (only show on first two steps) */}
       {currentStep < 2 && (
@@ -244,27 +252,25 @@ const CharacterCreator: React.FC = () => {
           {currentStep > 0 ? (
             <button
               onClick={handleBack}
-              className="rounded-md border border-gray-300 bg-white px-6 py-2 text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+              className="rounded-md border border-gray-300 bg-white px-6 py-2 text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600 dark:focus:ring-offset-gray-800"
             >
               Back
             </button>
           ) : (
-            <div></div> // Empty div to maintain flex layout
+            <div></div>
           )}
 
-          {currentStep < 2 && (
-            <button
-              onClick={handleNext}
-              disabled={!isNextEnabled()}
-              className={`rounded-md px-6 py-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
-                isNextEnabled()
-                  ? 'bg-blue-600 text-white hover:bg-blue-700'
-                  : 'cursor-not-allowed bg-gray-300 text-gray-500'
-              }`}
-            >
-              {currentStep === 0 ? 'Continue to Details' : 'Continue to Review'}
-            </button>
-          )}
+          <button
+            onClick={handleNext}
+            disabled={!isNextEnabled()}
+            className={`rounded-md px-6 py-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 ${
+              isNextEnabled()
+                ? 'bg-purple-600 text-white hover:bg-purple-700'
+                : 'cursor-not-allowed bg-gray-300 text-gray-500 dark:bg-gray-600 dark:text-gray-400'
+            }`}
+          >
+            Next
+          </button>
         </div>
       )}
     </div>

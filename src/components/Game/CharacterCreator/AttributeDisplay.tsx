@@ -74,13 +74,17 @@ const AttributeDisplay: React.FC<AttributeDisplayProps> = ({
   };
 
   return (
-    <div className={`w-full ${className}`}>
+    <div className={`w-full overflow-hidden ${className}`}>
       {title && (
-        <h3 className="mb-3 text-lg font-semibold text-gray-800">{title}</h3>
+        <h3 className="mb-3 text-lg font-semibold text-gray-800 dark:text-gray-200">
+          {title}
+        </h3>
       )}
 
       <div
-        className={`grid gap-3 ${compact ? 'grid-cols-2 sm:grid-cols-3' : 'grid-cols-1'}`}
+        className={`grid gap-2 ${
+          compact ? 'grid-cols-1 sm:grid-cols-2' : 'grid-cols-1'
+        }`}
       >
         {attributes.map((attribute, index) => {
           const max = attribute.max || defaultMax;
@@ -91,15 +95,18 @@ const AttributeDisplay: React.FC<AttributeDisplayProps> = ({
           const color = getAttributeColor(attribute);
 
           return (
-            <div key={`attr-${attribute.name}-${index}`} className="w-full">
+            <div
+              key={`attr-${attribute.name}-${index}`}
+              className="mb-3 w-full"
+            >
               {/* Attribute header with name and value */}
               {showLabels && (
                 <div className="mb-1 flex justify-between">
-                  <span className="text-sm font-medium text-gray-700">
+                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
                     {attribute.name}
                   </span>
                   {showValues && (
-                    <span className="text-sm text-gray-600">
+                    <span className="text-sm text-gray-600 dark:text-gray-400">
                       {attribute.value}
                       {attribute.max ? `/${attribute.max}` : ''}
                     </span>
@@ -108,7 +115,7 @@ const AttributeDisplay: React.FC<AttributeDisplayProps> = ({
               )}
 
               {/* Progress bar */}
-              <div className="h-2 w-full overflow-hidden rounded-full bg-gray-200">
+              <div className="h-2.5 w-full overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700">
                 <div
                   className={`h-full rounded-full ${color}`}
                   style={{ width: `${percentage}%` }}
@@ -122,7 +129,7 @@ const AttributeDisplay: React.FC<AttributeDisplayProps> = ({
 
               {/* Description (optional) */}
               {showDescriptions && attribute.description && (
-                <p className="mt-1 text-xs text-gray-500">
+                <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
                   {attribute.description}
                 </p>
               )}
