@@ -8,7 +8,7 @@ import { SocketEvents } from '../types/Socket';
  * Custom hook for managing socket connections and events
  *
  * This hook provides:
- * - Automatic connection when a token is available
+ * - Automatic connection when authentication is available
  * - Type-safe event listeners
  * - Connection status management
  * - Integration with game and player stores
@@ -31,8 +31,11 @@ export const useSocket = () => {
     emit,
   } = useSocketStore();
 
-  // Get player data
+  // Get player data and authentication status
   const player = usePlayerStore((state) => state.player);
+  const isPlayerAuthenticated = usePlayerStore(
+    (state) => state.isAuthenticated
+  );
   const setPlayer = usePlayerStore((state) => state.setPlayer);
 
   // Game state
@@ -80,20 +83,17 @@ export const useSocket = () => {
    * Initialize socket connection and event listeners
    */
   useEffect(() => {
-    // Skip if we've already attempted connection or don't have player data
-    if (connectionAttemptedRef.current || !player?.id || !player?.email) {
+    // Skip if we've already attempted connection or player isn't authenticated
+    if (connectionAttemptedRef.current || !isPlayerAuthenticated || !player) {
       return;
     }
 
     // Mark that we've attempted connection
     connectionAttemptedRef.current = true;
 
-    // Create simple token
-    const token = `${player.id}:${player.email}`;
-    console.log('Connecting with token:', token);
-
-    // Connect to socket
-    connectRef.current(token);
+    // Connect to socket using JWT token (now handled inside socketStore)
+    console.log('Initializing socket connection with authenticated player');
+    connectRef.current();
     setIsInitialized(true);
 
     // Set up event listeners
@@ -149,7 +149,7 @@ export const useSocket = () => {
         socket.disconnect();
       }
     };
-  }, [player, socket]);
+  }, [player, socket, isPlayerAuthenticated]);
 
   /**
    * Update game connection state when socket connection changes

@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { io, Socket } from 'socket.io-client';
+import { getAuthToken } from '@/stores/Player/playerStore';
 
 // Define the store state structure
 interface SocketState {
@@ -12,7 +13,7 @@ interface SocketState {
 
 // Define the store actions
 interface SocketActions {
-  connect: (token: string) => void;
+  connect: () => void;
   disconnect: () => void;
   on: <T>(event: string, callback: (data: T) => void) => void;
   off: <T>(event: string, callback: (data: T) => void) => void;
@@ -31,6 +32,10 @@ const initialState: SocketState = {
   isAuthenticated: false,
 };
 
+// Base URL for socket connection
+const SOCKET_URL =
+  process.env.NEXT_PUBLIC_GAME_SERVER_URL || 'http://localhost:3001';
+
 // Create the socket store with proper typing
 export const useSocketStore = create<SocketStore>((set, get) => {
   // Helper function to get typed state
@@ -38,22 +43,36 @@ export const useSocketStore = create<SocketStore>((set, get) => {
 
   // Define actions
   const actions: SocketActions = {
-    // Connect to the socket server with token
-    connect: (token) => {
+    // Connect to the socket server with JWT token
+    connect: () => {
       // Don't reconnect if already connected
       const state = getState();
       if (state.socket && state.isConnected) return;
+
+      // Get the JWT token
+      const token = getAuthToken();
+      if (!token) {
+        set({
+          connectionError:
+            'Authentication token required for socket connection',
+          isConnecting: false,
+          isConnected: false,
+          isAuthenticated: false,
+        });
+        return;
+      }
 
       // Update state to connecting
       set({ isConnecting: true, connectionError: null });
 
       try {
-        console.log('Initializing socket connection with token');
+        console.log('Initializing socket connection with JWT token');
 
-        // Pass the token directly in the URL as a query parameter
-        const socketUrl =
-          process.env.NEXT_PUBLIC_SOCKET_URL || 'ws://localhost:3001/game';
-        const socket = io(`${socketUrl}?token=${token}`, {
+        // Create the socket connection with auth header using JWT token
+        const socket = io(`${SOCKET_URL}/game`, {
+          auth: {
+            token: token,
+          },
           reconnection: true,
           reconnectionAttempts: 5,
           reconnectionDelay: 1000,

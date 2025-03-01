@@ -3,20 +3,28 @@ import { useGameStore } from '../../../stores/Game/gameStore';
 import { AnimatedDivider } from '@/components/AnimatedDivider';
 import { useGameInterfaceStore } from '@/stores/Game/gameInterfaceStore';
 import { usePlayerStore } from '@/stores/Player/playerStore';
+import authService from '@/services/api/authService';
+import { ApiRequestError } from '@/services/api/apiService';
 
 const AuthView: React.FC = () => {
   const setViewState = useGameStore((state) => state.setViewState);
   const [activeTab, setActiveTab] = useState<'signup' | 'login'>('signup');
 
   // Login form state
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [loginUsername, setLoginUsername] = useState('');
+  const [loginPassword, setLoginPassword] = useState('');
+  const [loginLoading, setLoginLoading] = useState(false);
+  const [loginError, setLoginError] = useState('');
+
+  // Signup form state
+  const [signupUsername, setSignupUsername] = useState('');
+  const [signupEmail, setSignupEmail] = useState('');
+  const [signupPassword, setSignupPassword] = useState('');
+  const [signupLoading, setSignupLoading] = useState(false);
+  const [signupError, setSignupError] = useState('');
+  const [signupSuccess, setSignupSuccess] = useState('');
 
   // Player store actions
-  const setToken = usePlayerStore((state) => state.setToken);
-  const setPlayer = usePlayerStore((state) => state.setPlayer);
   const setPlayerError = usePlayerStore((state) => state.setError);
 
   // Disable all keybinds when AuthView is shown
@@ -36,84 +44,69 @@ const AuthView: React.FC = () => {
     };
   }, [disableKeybinds, enableKeybinds]);
 
-  // Handle login with Payload CMS
+  // Handle login with our new auth service
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
-    setError('');
+    setLoginLoading(true);
+    setLoginError('');
     setPlayerError(null);
 
     try {
-      const response = await fetch('/api/players/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email, password }),
-        credentials: 'include',
-      });
+      // Use our auth service instead of direct fetch
+      await authService.login(loginUsername, loginPassword);
 
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.message || 'Login failed');
-      }
-
-      console.log('Login successful:', data);
-
-      // Extract token from response
-      let token: string | null = null;
-
-      if (data.token) {
-        token = data.token;
-      } else if (data.user?.token) {
-        token = data.user.token;
-      } else if (data.accessToken) {
-        token = data.accessToken;
+      // Transition to game view on successful login
+      setViewState('game');
+    } catch (err) {
+      // Handle API errors with proper type checking
+      if (err instanceof ApiRequestError) {
+        setLoginError(err.message);
+      } else if (err instanceof Error) {
+        setLoginError(err.message);
       } else {
-        const authHeader = response.headers.get('Authorization');
-        if (authHeader?.startsWith('Bearer ')) {
-          token = authHeader.substring(7);
-        }
+        setLoginError('An unknown error occurred');
       }
 
-      // Extract user ID
-      const userId = data.user?.id || data.id || '';
-
-      if (token) {
-        console.log('Token found and stored');
-        setToken(token);
-
-        // Store player data - make sure we have both ID and email
-        setPlayer({
-          id: userId,
-          email: data.user?.email || data.email || email,
-          username: data.user?.username || data.username || email.split('@')[0],
-        });
-
-        // Transition to game view on successful login
-        setViewState('game');
-      } else {
-        console.error('No token found in response:', data);
-        throw new Error('No authentication token received');
-      }
-    } catch (err: unknown) {
-      const errorMessage =
-        err instanceof Error ? err.message : 'Something went wrong';
-      setError(errorMessage);
-      setPlayerError(errorMessage);
+      setPlayerError(err instanceof Error ? err.message : 'Login failed');
       console.error('Login error:', err);
     } finally {
-      setLoading(false);
+      setLoginLoading(false);
     }
   };
 
-  // Placeholder signup handler (to be implemented later)
-  const handleSignup = (e: React.FormEvent) => {
+  // Handle signup with our new auth service
+  const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
-    // For now, just log a message and transition as if signup was successful
-    console.log('Signup functionality to be implemented');
-    setViewState('game');
+    setSignupLoading(true);
+    setSignupError('');
+    setSignupSuccess('');
+
+    try {
+      // Use our auth service for registration
+      await authService.register(signupUsername, signupEmail, signupPassword);
+
+      // Show success message and switch to login tab
+      setSignupSuccess('Account created successfully! Please log in.');
+      setActiveTab('login');
+
+      // Clear signup form
+      setSignupUsername('');
+      setSignupEmail('');
+      setSignupPassword('');
+    } catch (err) {
+      // Handle API errors with proper type checking
+      if (err instanceof ApiRequestError) {
+        setSignupError(err.message);
+      } else if (err instanceof Error) {
+        setSignupError(err.message);
+      } else {
+        setSignupError('An unknown error occurred');
+      }
+
+      console.error('Signup error:', err);
+    } finally {
+      setSignupLoading(false);
+    }
   };
 
   return (
@@ -148,16 +141,21 @@ const AuthView: React.FC = () => {
           </button>
         </div>
 
-        {/* Error message display */}
-        {error && (
-          <div className="col-span-2 rounded border border-red-400 bg-red-100 px-4 py-3 text-red-700">
-            {error}
-          </div>
-        )}
-
-        {/* Sign Up Form (placeholder) */}
+        {/* Sign Up Form */}
         {activeTab === 'signup' && (
           <div className="col-span-2">
+            {signupError && (
+              <div className="mb-4 rounded border border-red-400 bg-red-100 px-4 py-3 text-red-700">
+                {signupError}
+              </div>
+            )}
+
+            {signupSuccess && (
+              <div className="mb-4 rounded border border-green-400 bg-green-100 px-4 py-3 text-green-700">
+                {signupSuccess}
+              </div>
+            )}
+
             <form onSubmit={handleSignup} className="space-y-4">
               <div>
                 <label className="mb-1 block text-sm font-medium">
@@ -165,48 +163,19 @@ const AuthView: React.FC = () => {
                 </label>
                 <input
                   type="text"
+                  value={signupUsername}
+                  onChange={(e) => setSignupUsername(e.target.value)}
                   className="w-full rounded-lg border border-gray-300 p-2 dark:border-gray-700 dark:bg-gray-800"
                   placeholder="Choose a username"
+                  required
                 />
               </div>
               <div>
                 <label className="mb-1 block text-sm font-medium">Email</label>
                 <input
                   type="email"
-                  className="w-full rounded-lg border border-gray-300 p-2 dark:border-gray-700 dark:bg-gray-800"
-                  placeholder="Enter your email"
-                />
-              </div>
-              <div>
-                <label className="mb-1 block text-sm font-medium">
-                  Password
-                </label>
-                <input
-                  type="password"
-                  className="w-full rounded-lg border border-gray-300 p-2 dark:border-gray-700 dark:bg-gray-800"
-                  placeholder="Create a password"
-                />
-              </div>
-              <button
-                type="submit"
-                className="w-full rounded-lg bg-purple-600 py-2 font-bold text-white hover:bg-purple-700"
-              >
-                Sign Up
-              </button>
-            </form>
-          </div>
-        )}
-
-        {/* Login Form (with real authentication) */}
-        {activeTab === 'login' && (
-          <div className="col-span-2">
-            <form onSubmit={handleLogin} className="space-y-4">
-              <div>
-                <label className="mb-1 block text-sm font-medium">Email</label>
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  value={signupEmail}
+                  onChange={(e) => setSignupEmail(e.target.value)}
                   className="w-full rounded-lg border border-gray-300 p-2 dark:border-gray-700 dark:bg-gray-800"
                   placeholder="Enter your email"
                   required
@@ -218,8 +187,57 @@ const AuthView: React.FC = () => {
                 </label>
                 <input
                   type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  value={signupPassword}
+                  onChange={(e) => setSignupPassword(e.target.value)}
+                  className="w-full rounded-lg border border-gray-300 p-2 dark:border-gray-700 dark:bg-gray-800"
+                  placeholder="Create a password"
+                  required
+                />
+              </div>
+              <button
+                type="submit"
+                disabled={signupLoading}
+                className={`w-full rounded-lg bg-purple-600 py-2 font-bold text-white hover:bg-purple-700 ${
+                  signupLoading ? 'cursor-not-allowed opacity-50' : ''
+                }`}
+              >
+                {signupLoading ? 'Creating Account...' : 'Sign Up'}
+              </button>
+            </form>
+          </div>
+        )}
+
+        {/* Login Form */}
+        {activeTab === 'login' && (
+          <div className="col-span-2">
+            {loginError && (
+              <div className="mb-4 rounded border border-red-400 bg-red-100 px-4 py-3 text-red-700">
+                {loginError}
+              </div>
+            )}
+
+            <form onSubmit={handleLogin} className="space-y-4">
+              <div>
+                <label className="mb-1 block text-sm font-medium">
+                  Username
+                </label>
+                <input
+                  type="text"
+                  value={loginUsername}
+                  onChange={(e) => setLoginUsername(e.target.value)}
+                  className="w-full rounded-lg border border-gray-300 p-2 dark:border-gray-700 dark:bg-gray-800"
+                  placeholder="Enter your username"
+                  required
+                />
+              </div>
+              <div>
+                <label className="mb-1 block text-sm font-medium">
+                  Password
+                </label>
+                <input
+                  type="password"
+                  value={loginPassword}
+                  onChange={(e) => setLoginPassword(e.target.value)}
                   className="w-full rounded-lg border border-gray-300 p-2 dark:border-gray-700 dark:bg-gray-800"
                   placeholder="Enter your password"
                   required
@@ -227,12 +245,12 @@ const AuthView: React.FC = () => {
               </div>
               <button
                 type="submit"
-                disabled={loading}
+                disabled={loginLoading}
                 className={`w-full rounded-lg bg-purple-600 py-2 font-bold text-white hover:bg-purple-700 ${
-                  loading ? 'cursor-not-allowed opacity-50' : ''
+                  loginLoading ? 'cursor-not-allowed opacity-50' : ''
                 }`}
               >
-                {loading ? 'Logging in...' : 'Login'}
+                {loginLoading ? 'Logging in...' : 'Login'}
               </button>
             </form>
           </div>
