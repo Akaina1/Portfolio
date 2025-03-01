@@ -1,0 +1,79 @@
+---
+description: authentication implementation steps
+globs: 
+alwaysApply: false
+---
+<think>Based on the new information, I need to update the refactor plan. I'll incorporate:
+
+1. Keep the /services/socket folder for now (no changes needed there yet)
+2. Add support for the new NEXT_PUBLIC_GAME_SERVER_URL environment variable for backend requests
+
+Let me update the plan to reflect these requirements:</think># Updated Authentication System Refactor Plan
+
+Thanks for the additional details. I'll update the steps to include the new information:
+
+## Updated Step-by-Step Refactor Plan
+
+### Step 1: Update the Player Store
+
+The `playerStore` needs to properly handle and store the JWT token from the new authentication system.
+
+1. Update the `PlayerData` interface to match backend response
+2. Add methods for handling JWT tokens properly
+3. Add token persistence functionality (localStorage/sessionStorage)
+4. Ensure the store uses `NEXT_PUBLIC_GAME_SERVER_URL` for API requests
+
+### Step 2: Create API Service with Authentication
+
+Create a service to handle API requests to the game server.
+
+1. Implement a fetch wrapper that uses `NEXT_PUBLIC_GAME_SERVER_URL`
+2. Add automatic token inclusion for authenticated requests
+3. Handle authentication errors and token expiration
+4. Create specific methods for auth endpoints (login, register, profile)
+
+### Step 3: Update the Auth Components
+
+Modify `AuthView` to work with the new authentication endpoints.
+
+1. Update the login form to use `/auth/login` at the game server URL
+2. Create a proper registration form using `/auth/register`
+3. Update error handling and responses
+4. Adjust the form fields to match the API's expected format
+
+### Step 4: Update Socket Authentication
+
+The socket connection needs to use JWT tokens for authentication.
+
+1. Modify `socketStore` to use the JWT token for socket authentication
+2. Update socket URL to use `NEXT_PUBLIC_GAME_SERVER_URL`
+3. Adjust error handling for authentication failures
+
+### Step 5: Implement Token Management
+
+Add functionality to handle token expiration and renewal.
+
+1. Add token expiration checking
+2. Implement automatic token refresh if possible
+3. Handle session expiry gracefully
+
+### Step 6: Update Protected Route Handling
+
+Ensure all authenticated API calls include the token.
+
+1. Ensure all requests to protected endpoints include the token
+2. Handle authentication errors consistently
+3. Add logout functionality that clears tokens
+
+### Step 7: Testing and Verification
+
+Test the complete authentication flow.
+
+1. Test registration process
+2. Test login process
+3. Test protected route access
+4. Test WebSocket connection with authentication
+
+> Note: We'll keep the /services/socket folder for potential future use, but we won't focus on it in this refactor.
+
+Let's start with Step 1: Updating the Player Store to handle the new authentication approach.
