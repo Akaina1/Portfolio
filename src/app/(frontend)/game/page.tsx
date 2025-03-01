@@ -4,6 +4,8 @@ import React, { useState, useEffect } from 'react';
 import DeviceWarning from '@/components/Game/DeviceWarning';
 import AuthView from '@/components/Game/AuthView';
 import GameInterface from '@/components/Game/GameInterface';
+import CharacterCreator from '@/components/Game/CharacterCreator';
+import CharacterSelection from '@/components/Game/CharacterSelection';
 import { useGameStore } from '@/stores/Game/gameStore';
 import { usePathname } from 'next/navigation';
 import { useGameInterfaceStore } from '@/stores/Game/gameInterfaceStore';
@@ -11,6 +13,7 @@ import { useSocket } from '@/hooks/useSocket';
 import { usePlayerStore } from '@/stores/Player/playerStore';
 import authService from '@/services/api/authService';
 import { useSocketStore } from '@/stores/Game/socketStore';
+import characterService from '@/services/api/characterService';
 
 /**
  * Game Page Component
@@ -34,6 +37,12 @@ const GamePage: React.FC = () => {
   const disconnect = useSocketStore((state) => state.disconnect);
   const isAuthenticatedPlayer = usePlayerStore(
     (state) => state.isAuthenticated
+  );
+  const checkForCharacters = usePlayerStore(
+    (state) => state.checkForCharacters
+  );
+  const hasCheckedForCharacters = usePlayerStore(
+    (state) => state.hasCheckedForCharacters
   );
 
   // Track if this is the initial mount
@@ -64,6 +73,47 @@ const GamePage: React.FC = () => {
       }
     }
   }, [connectionError, viewState, setViewState]);
+
+  // Effect to check for player characters after authentication
+  useEffect(() => {
+    // If player is authenticated but we haven't checked for characters yet
+    if (isAuthenticatedPlayer && !hasCheckedForCharacters) {
+      // Check if player has characters and update the view state accordingly
+      checkForCharacters()
+        .then(async (hasCharacters) => {
+          // If player has characters, determine where to go based on count
+          if (hasCharacters) {
+            try {
+              const countResponse = await characterService.getCharacterCount();
+              const characterCount = countResponse.characterCount;
+
+              if (characterCount === 1) {
+                // If only one character, go directly to game
+                setViewState('game');
+              } else {
+                // If multiple characters, go to character selection
+                setViewState('characterSelection');
+              }
+            } catch (error) {
+              console.error('Error getting character count:', error);
+              // Default to character selection if there's an error
+              setViewState('characterSelection');
+            }
+          } else {
+            // If no characters, go to character creation
+            setViewState('characterCreation');
+          }
+        })
+        .catch((error) => {
+          console.error('Error checking for characters:', error);
+        });
+    }
+  }, [
+    isAuthenticatedPlayer,
+    hasCheckedForCharacters,
+    checkForCharacters,
+    setViewState,
+  ]);
 
   // Global keybind listener for settings
   useEffect(() => {
@@ -158,23 +208,52 @@ const GamePage: React.FC = () => {
     // No cleanup function here
   }, []);
 
-  // Add this effect to properly handle authentication state changes
-
   // Effect to reset view state when player authentication changes
   useEffect(() => {
-    // If player is not authenticated and view state is 'game', reset to 'auth'
-    if (!isAuthenticatedPlayer && viewState === 'game') {
+    // If player is not authenticated and view state is not 'auth', reset to 'auth'
+    if (
+      !isAuthenticatedPlayer &&
+      (viewState === 'game' ||
+        viewState === 'characterCreation' ||
+        viewState === 'characterSelection')
+    ) {
       console.log('Player not authenticated, returning to auth view');
       setViewState('auth');
     }
   }, [isAuthenticatedPlayer, viewState, setViewState]);
 
-  // Render the appropriate view based on auth state
+  // Render the appropriate view based on view state
   const renderView = () => {
     switch (viewState) {
       case 'auth':
         return <AuthView />;
+
+      case 'characterCreation':
+        // Ensure player is authenticated before showing character creation
+        if (!isAuthenticatedPlayer) {
+          // If not authenticated, redirect to auth view
+          setViewState('auth');
+          return <AuthView />;
+        }
+        return <CharacterCreator />;
+
+      case 'characterSelection':
+        // Ensure player is authenticated before showing character selection
+        if (!isAuthenticatedPlayer) {
+          // If not authenticated, redirect to auth view
+          setViewState('auth');
+          return <AuthView />;
+        }
+        return <CharacterSelection />;
+
       case 'game':
+        // Ensure player is authenticated before showing game
+        if (!isAuthenticatedPlayer) {
+          // If not authenticated, redirect to auth view
+          setViewState('auth');
+          return <AuthView />;
+        }
+
         // Show connection status if not connected
         if (!isConnected || !isAuthenticated) {
           return (
@@ -201,6 +280,7 @@ const GamePage: React.FC = () => {
           );
         }
         return <GameInterface />;
+
       default:
         return <AuthView />;
     }
@@ -222,7 +302,7 @@ const GamePage: React.FC = () => {
       {/* Device compatibility warning */}
       <DeviceWarning />
 
-      {/* Render based on auth state */}
+      {/* Render based on view state */}
       {renderView()}
     </div>
   );

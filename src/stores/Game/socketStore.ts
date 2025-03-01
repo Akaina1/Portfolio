@@ -62,16 +62,22 @@ export const useSocketStore = create<SocketStore>((set, get) => {
         return;
       }
 
+      // Remove 'Bearer ' prefix if it exists before using the token for socket connections
+      const socketToken = token.startsWith('Bearer ')
+        ? token.substring(7)
+        : token;
+      console.log(
+        'Initializing socket connection with JWT token (without Bearer prefix)'
+      );
+
       // Update state to connecting
       set({ isConnecting: true, connectionError: null });
 
       try {
-        console.log('Initializing socket connection with JWT token');
-
         // Create the socket connection with auth header using JWT token
         const socket = io(`${SOCKET_URL}/game`, {
           auth: {
-            token: token,
+            token: socketToken,
           },
           reconnection: true,
           reconnectionAttempts: 5,

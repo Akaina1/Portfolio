@@ -3,23 +3,6 @@ description: frontend details on implementing character creation steps
 globs: 
 alwaysApply: false
 ---
-<think>Let me analyze the provided information about character creation to create a comprehensive step-by-step breakdown for implementing it on the frontend.
-
-Based on the documentation:
-1. The backend has endpoints for character classes, character creation, and checking if a player has characters
-2. There are detailed data models for Character Class and Character with specific fields
-3. The authentication flow should check if a player has characters after login
-4. We need to create a multi-step character creation UI
-
-I'll structure my response to include:
-1. Overview of the workflow
-2. File structure changes needed
-3. Detailed step-by-step implementation process
-4. Integration with existing authentication flow
-5. State management considerations
-
-I'll make sure to include specific file paths where changes are needed based on the existing codebase structure mentioned in previous conversations.</think># Frontend Character Creation Implementation Plan
-
 ## Overview
 
 Based on the backend structure and requirements, we'll implement a character creation flow that integrates with the existing authentication system. After login, players without characters will be redirected to character creation, while those with characters will proceed to character selection or directly to the game.

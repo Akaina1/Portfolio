@@ -60,6 +60,10 @@ export async function apiRequest<T, D = Record<string, unknown>>(
   // Add auth token if required
   if (requiresAuth) {
     const token = getAuthToken();
+    console.log(
+      `API request to ${endpoint} requires auth:`,
+      token ? 'Token found' : 'No token'
+    );
 
     // Check if token exists
     if (!token) {
@@ -72,7 +76,28 @@ export async function apiRequest<T, D = Record<string, unknown>>(
       throw new ApiRequestError('Authentication required', 401);
     }
 
-    headers['Authorization'] = `Bearer ${token}`;
+    // Set the Authorization header with the Bearer token
+    // The backend will extract the player ID from this token
+    // Ensure token doesn't already have 'Bearer ' prefix
+    const formattedToken = token.startsWith('Bearer ')
+      ? token
+      : `Bearer ${token}`;
+    console.log('Setting Authorization header with token format:', {
+      length: formattedToken.length,
+      startsWithBearer: formattedToken.startsWith('Bearer '),
+      includesSpace: formattedToken.includes(' '),
+    });
+    headers['Authorization'] = formattedToken;
+
+    // Don't add player ID as a header - backend should extract it from the JWT token
+    const player = usePlayerStore.getState().player;
+    if (player && player.id) {
+      console.log(
+        `Player ID in store: ${player.id} (will be extracted from JWT by backend)`
+      );
+    } else {
+      console.warn('Player ID not available in store');
+    }
   }
 
   // Prepare request options
@@ -86,6 +111,12 @@ export async function apiRequest<T, D = Record<string, unknown>>(
   if (data && method !== 'GET') {
     requestOptions.body = JSON.stringify(data);
   }
+
+  // Log the request for debugging
+  console.log(`Making ${method} request to ${url}`, {
+    requiresAuth,
+    hasAuthHeader: !!headers['Authorization'],
+  });
 
   // Make the request
   try {

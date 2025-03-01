@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { useGameStore } from '../../../stores/Game/gameStore';
 import { AnimatedDivider } from '@/components/AnimatedDivider';
 import { useGameInterfaceStore } from '@/stores/Game/gameInterfaceStore';
 import { usePlayerStore } from '@/stores/Player/playerStore';
@@ -7,7 +6,6 @@ import authService from '@/services/api/authService';
 import { ApiRequestError } from '@/services/api/apiService';
 
 const AuthView: React.FC = () => {
-  const setViewState = useGameStore((state) => state.setViewState);
   const [activeTab, setActiveTab] = useState<'signup' | 'login'>('signup');
 
   // Login form state
@@ -52,11 +50,27 @@ const AuthView: React.FC = () => {
     setPlayerError(null);
 
     try {
-      // Use our auth service instead of direct fetch
-      await authService.login(loginUsername, loginPassword);
+      console.log('Attempting login with username:', loginUsername);
 
-      // Transition to game view on successful login
-      setViewState('game');
+      // Use our auth service for login
+      const loginResponse = await authService.login(
+        loginUsername,
+        loginPassword
+      );
+
+      console.log(
+        'Login successful, token received:',
+        !!loginResponse.access_token
+      );
+      console.log(
+        'Player data received:',
+        !!loginResponse.player,
+        'with ID:',
+        loginResponse.player?.id
+      );
+
+      // handlePostLogin is now called from within authService.login
+      // No need to call it here
     } catch (err) {
       // Handle API errors with proper type checking
       if (err instanceof ApiRequestError) {

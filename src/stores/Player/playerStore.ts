@@ -17,6 +17,7 @@ interface PlayerData {
     theme?: string;
     keybinds?: Record<string, unknown>;
   };
+  hasCharacters?: boolean;
 }
 
 /**
@@ -33,22 +34,28 @@ interface PlayerState {
   tokenExpiry: number | null;
   isAuthenticated: boolean;
 
+  // Character-related state
+  hasCheckedForCharacters: boolean;
+
   // Actions
   setPlayer: (player: PlayerData | null) => void;
   setToken: (token: string | null, expiresIn?: number) => void;
   clearPlayerData: () => void;
   setError: (error: string | null) => void;
   setLoading: (isLoading: boolean) => void;
+  setHasCharacters: (hasCharacters: boolean) => void;
 
   // API methods
-  login: (username: string, password: string) => Promise<void>;
   register: (
     username: string,
     email: string,
     password: string
   ) => Promise<void>;
-  logout: () => Promise<void>;
   getProfile: () => Promise<PlayerData | null>;
+
+  // Character-related methods
+  checkForCharacters: () => Promise<boolean>;
+  handlePostLogin: () => Promise<void>;
 }
 
 /**
@@ -70,6 +77,7 @@ const DEFAULT_TOKEN_EXPIRY = 30 * 24 * 60 * 60; // 30 days
  * - Authentication token management
  * - Loading and error states
  * - Authentication API interactions
+ * - Character status checking
  */
 export const usePlayerStore = create<PlayerState>()(
   persist(
@@ -81,6 +89,7 @@ export const usePlayerStore = create<PlayerState>()(
       token: null,
       tokenExpiry: null,
       isAuthenticated: false,
+      hasCheckedForCharacters: false,
 
       // Actions
       setPlayer: (player) => set({ player }),
@@ -103,59 +112,19 @@ export const usePlayerStore = create<PlayerState>()(
           token: null,
           tokenExpiry: null,
           isAuthenticated: false,
+          hasCheckedForCharacters: false,
         }),
 
       setError: (error) => set({ error }),
 
       setLoading: (isLoading) => set({ isLoading }),
 
+      setHasCharacters: (hasCharacters) =>
+        set((state) => ({
+          player: state.player ? { ...state.player, hasCharacters } : null,
+        })),
+
       // API Methods
-
-      /**
-       * Login method to authenticate with the server
-       */
-      login: async (username, password) => {
-        set({ isLoading: true, error: null });
-
-        try {
-          const response = await fetch(`${API_URL}/auth/login`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ username, password }),
-          });
-
-          if (!response.ok) {
-            const errorData = await response.json();
-            throw new Error(errorData.message || 'Login failed');
-          }
-
-          const data = await response.json();
-
-          // Store the access token with 30-day expiry
-          get().setToken(data.access_token, DEFAULT_TOKEN_EXPIRY);
-
-          // Store player data
-          const playerData: PlayerData = {
-            id: data.player.id,
-            username: data.player.username,
-            email: data.player.email,
-          };
-          set({ player: playerData, isAuthenticated: true });
-
-          return data;
-        } catch (error) {
-          const errorMessage =
-            error instanceof Error
-              ? error.message
-              : 'An unknown error occurred';
-          set({ error: errorMessage });
-          throw error;
-        } finally {
-          set({ isLoading: false });
-        }
-      },
 
       /**
        * Register a new player account
@@ -191,44 +160,6 @@ export const usePlayerStore = create<PlayerState>()(
           throw error;
         } finally {
           set({ isLoading: false });
-        }
-      },
-
-      /**
-       * Logout the current player
-       * Sends the token to the server blacklist before clearing local state
-       */
-      logout: async () => {
-        const token = get().token;
-
-        // Only attempt server logout if we have a token
-        if (token) {
-          try {
-            await fetch(`${API_URL}/auth/logout`, {
-              method: 'POST',
-              headers: {
-                Authorization: `Bearer ${token}`,
-                'Content-Type': 'application/json',
-              },
-            });
-          } catch (error) {
-            console.error('Error during server logout:', error);
-            // Continue with local logout even if server logout fails
-          }
-        }
-
-        // Clear local auth data regardless of server response
-        get().clearPlayerData();
-
-        // Reset game view state to auth when logging out
-        // This ensures the login screen appears when returning to game page
-        try {
-          const gameStore = useGameStore.getState();
-          if (gameStore && gameStore.setViewState) {
-            gameStore.setViewState('auth');
-          }
-        } catch (error) {
-          console.error('Error resetting game view state:', error);
         }
       },
 
@@ -287,6 +218,140 @@ export const usePlayerStore = create<PlayerState>()(
           set({ isLoading: false });
         }
       },
+
+      /**
+       * Check if the player has created any characters
+       *
+       * @returns True if the player has at least one character, false otherwise
+       */
+      checkForCharacters: async () => {
+        const { setHasCharacters, player } = get();
+
+        console.log(
+          'checkForCharacters called with player:',
+          player ? `ID: ${player.id}` : 'No player'
+        );
+
+        try {
+          // Import characterService dynamically to avoid circular dependencies
+          const characterService = await import(
+            '@/services/api/characterService'
+          ).then((module) => module.default);
+
+          console.log(
+            'Using characterService.hasCharacters() to check for characters'
+          );
+
+          // Use the characterService instead of direct fetch
+          const response = await characterService.hasCharacters();
+
+          console.log('Character check response from service:', response);
+
+          // Extract the boolean value from the response
+          const hasCharacters = response.hasCharacters;
+          setHasCharacters(hasCharacters);
+          set({ hasCheckedForCharacters: true });
+          return hasCharacters;
+        } catch (error) {
+          console.error('Error checking for characters:', error);
+          setHasCharacters(false);
+          set({ hasCheckedForCharacters: true });
+          return false;
+        }
+      },
+
+      /**
+       * Handle post-login flow
+       *
+       * This method:
+       * 1. Checks if the player has characters
+       * 2. Updates the game view state based on character status
+       *
+       * Should be called after successful login
+       */
+      handlePostLogin: async () => {
+        const { checkForCharacters, player, getProfile, token } = get();
+
+        console.log(
+          'handlePostLogin called with token:',
+          token ? `${token.substring(0, 10)}...` : 'No token',
+          'and player:',
+          player ? `ID: ${player.id}` : 'No player'
+        );
+
+        try {
+          // Ensure we have complete player data with ID
+          if (!player || !player.id) {
+            console.log(
+              'Player data missing or incomplete, fetching profile...'
+            );
+            const profileData = await getProfile();
+
+            // If we still don't have player data, we can't proceed
+            if (!profileData || !profileData.id) {
+              console.error('Failed to get player profile data');
+              throw new Error('Player data unavailable');
+            }
+          }
+
+          // Ensure we have a token
+          if (!token) {
+            console.error('No authentication token available');
+            throw new Error('Authentication token required');
+          }
+
+          console.log('Checking for characters with player ID:', player?.id);
+
+          // Check if player has characters
+          const hasCharacters = await checkForCharacters();
+          console.log('Has characters result:', hasCharacters);
+
+          // Get access to game store
+          const gameStore = useGameStore.getState();
+
+          // Get character count to determine next view
+          let characterCount = 0;
+          if (hasCharacters) {
+            try {
+              // Import characterService dynamically to avoid circular dependencies
+              const characterService = await import(
+                '@/services/api/characterService'
+              ).then((module) => module.default);
+
+              console.log(
+                'Using characterService.getCharacterCount() to get character count'
+              );
+
+              // Use the characterService instead of direct fetch
+              const countData = await characterService.getCharacterCount();
+              characterCount = countData.characterCount;
+              console.log('Character count from service:', characterCount);
+            } catch (error) {
+              console.error('Error getting character count:', error);
+            }
+          }
+
+          // Determine next view state based on character status and count
+          if (!hasCharacters) {
+            console.log('No characters, going to character creation');
+            // If player has no characters, go to character creation
+            gameStore.goToCharacterCreation();
+          } else if (characterCount === 1) {
+            console.log('One character, going directly to game');
+            // If player has exactly one character, go directly to game
+            gameStore.goToGame();
+          } else {
+            console.log('Multiple characters, going to character selection');
+            // If player has multiple characters, go to character selection
+            gameStore.goToCharacterSelection();
+          }
+        } catch (error) {
+          console.error('Error in post-login flow:', error);
+          // Default to auth view if there's an error
+          const gameStore = useGameStore.getState();
+          gameStore.goToAuth();
+        }
+      },
     }),
     {
       name: 'player-storage', // Name for localStorage/sessionStorage
@@ -295,6 +360,7 @@ export const usePlayerStore = create<PlayerState>()(
         token: state.token,
         tokenExpiry: state.tokenExpiry,
         isAuthenticated: state.isAuthenticated,
+        hasCheckedForCharacters: state.hasCheckedForCharacters,
       }),
     }
   )
@@ -315,6 +381,40 @@ export const isTokenExpired = (): boolean => {
  * @returns valid token or null if expired
  */
 export const getAuthToken = (): string | null => {
-  const { token } = usePlayerStore.getState();
-  return isTokenExpired() ? null : token;
+  const { token, tokenExpiry } = usePlayerStore.getState();
+
+  // Log token retrieval for debugging
+  console.log('Getting auth token:', token ? 'Token exists' : 'No token');
+
+  // Check if token exists
+  if (!token) {
+    console.log('No token found in store');
+    return null;
+  }
+
+  // Check if token is expired
+  if (tokenExpiry && Date.now() > tokenExpiry) {
+    console.log(
+      'Token is expired, expiry:',
+      new Date(tokenExpiry).toISOString()
+    );
+    return null;
+  }
+
+  // Log token details for debugging
+  console.log(
+    'Token is valid, returning token:',
+    token.substring(0, 10) + '...'
+  );
+
+  return token;
+};
+
+/**
+ * Check if the player is authenticated and has valid token
+ * @returns boolean indicating if player is authenticated with valid token
+ */
+export const isPlayerAuthenticated = (): boolean => {
+  const { isAuthenticated } = usePlayerStore.getState();
+  return isAuthenticated && !isTokenExpired();
 };
