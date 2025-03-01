@@ -1,0 +1,85 @@
+---
+description: for character creation logic
+globs: 
+alwaysApply: false
+---
+## 1. Setup Character API Service
+
+1. Create a character service module to handle API calls to the backend
+2. Implement methods to:
+   - Fetch available character classes
+   - Create a new character
+   - Get the player's existing characters
+   - Check if the player has any characters
+
+## 2. Create Character Creation UI Components
+
+1. Design a multi-step character creation form:
+   - Character name input
+   - Character class selection
+   - Review and confirm screen
+2. Build reusable UI components:
+   - Class selection cards with visual representation
+   - Attribute displays for each class
+   - Class description component
+   - Form validation components
+
+## 3. Implement Character Class Selection Page
+
+1. Create a character class selection page that:
+   - Fetches all character classes from the backend
+   - Displays each class with its image, name, and brief description
+   - Shows difficulty level and playstyle information
+   - Provides a way to view detailed information about each class
+   - Supports selecting a class to proceed
+
+## 4. Build Character Customization Screen
+
+1. Create form for entering character name
+2. Display the selected class attributes and bonuses
+3. Show a visual representation of the character if applicable
+4. Allow the player to review or go back to change class selection
+
+## 5. Create Confirmation & Submission Flow
+
+1. Implement a final review screen showing all selections
+2. Create submission logic to send character creation data to the backend
+3. Add loading state and error handling for submission
+4. Implement success feedback and redirection after character creation
+
+## 6. Update Authentication Flow
+
+1. Modify post-login flow to check if player has characters
+2. Add redirection logic:
+   - If player has no characters, redirect to character creation
+   - If player has characters, redirect to character selection or game
+3. Update any route protection to accommodate the character creation flow
+
+## 7. Implement Character Management
+
+1. Create a character selection screen to:
+   - Display all player characters
+   - Allow selection of a character to play
+   - Provide option to create additional characters
+   - Show basic character information (level, class, etc.)
+
+## 8. Design & Styling
+
+1. Create consistent styling for the character creation process
+2. Design visually appealing class cards and selection UI
+3. Implement responsive design for different screen sizes
+4. Add animations and transitions for a polished experience
+
+## 9. State Management
+
+1. Create state management solution for the character creation flow
+2. Store form data between steps
+3. Manage loading, error and success states
+4. Handle validation state
+
+## 10. Error Handling & Edge Cases
+
+1. Implement error feedback for API failures
+2. Add validation for character name and other inputs
+3. Handle session expiration during creation process
+4. Create fallbacks for missing class data

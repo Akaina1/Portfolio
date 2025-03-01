@@ -1,0 +1,186 @@
+---
+description: for backend details on character creation
+globs: 
+alwaysApply: false
+---
+<think>Let me provide a more detailed breakdown of the backend structure related to character creation, based on the conversation history and what I know so far. This will help provide better context for frontend implementation.
+
+Key aspects to cover:
+1. API endpoints and their structure
+2. Data models and their relationships
+3. Authentication flow
+4. Request/response formats
+5. Service functionality
+6. DTO structures
+
+From previous conversations, I know:
+- There's a player-state controller and module
+- There's an auth module with JWT-based authentication
+- There are character class and character models
+- There's a custom @GetUser decorator
+- The backend follows a NestJS structure</think># Backend Structure for Character Creation
+
+## 1. API Endpoints Structure
+
+### Player State Controller
+- Base URL: `/player-state`
+- Endpoints:
+  - `GET /character-classes` - Retrieves all available character classes
+  - `GET /character-classes/:id` - Retrieves a specific character class by ID
+  - `GET /character-classes/category/:category` - Filters character classes by category
+  - `POST /characters` - Creates a new character (JWT protected)
+  - `GET /characters` - Gets all characters for the authenticated player (JWT protected)
+  - `GET /characters/:id` - Gets specific character details (JWT protected)
+  - `GET /has-characters` - Checks if player has any characters (JWT protected)
+  - `GET /character-count` - Returns the number of characters a player has (JWT protected)
+
+### Auth Controller
+- Base URL: `/auth`
+- Endpoints:
+  - `POST /login` - Authenticates player and returns JWT token along with character status
+  - `GET /profile` - Returns player profile information with character status
+  - `GET /has-characters` - Direct endpoint to check if player has characters
+
+## 2. Data Models
+
+### Character Class Model
+- Fields:
+  - `_id` - MongoDB ObjectId
+  - `name` - Class name (Warrior, Mage, etc.)
+  - `description` - Detailed description
+  - `category` - Class category (Melee, Ranged, etc.)
+  - `difficulty` - Difficulty rating for new players
+  - `baseAttributes` - Starting attributes (strength, intelligence, etc.)
+  - `primaryResource` - Main resource (mana, rage, energy, etc.)
+  - `restrictions` - Equipment and ability restrictions
+  - `classFeatures` - Special abilities and traits
+  - Additional fields for special abilities, starting equipment, etc.
+
+### Character Model
+- Fields:
+  - `_id` - MongoDB ObjectId
+  - `playerId` - Reference to player's account
+  - `name` - Character name (unique per player)
+  - `characterClass` - Reference to character class
+  - `level` - Character level (starts at 1)
+  - `experience` - Current experience points
+  - `attributes` - Current character attributes
+  - `resources` - Character resources (health, mana, etc.)
+  - `inventory` - Character inventory items
+  - `equipment` - Currently equipped items
+  - `status` - Character status information
+  - `createdAt` - Creation timestamp
+  - `lastLogin` - Last played timestamp
+
+### Player Model (from Auth)
+- Fields:
+  - `_id` - MongoDB ObjectId
+  - `username` - Player's username
+  - `email` - Player's email
+  - `password` - Hashed password
+  - Additional authentication and profile fields
+
+## 3. Authentication System
+
+- JWT-based authentication
+- Custom `@GetUser()` decorator extracts user information from JWT token
+- User payload contains `{ id, username, email }`
+- All character-related endpoints are protected with JWT Guard
+- Character endpoints verify the requesting user owns the character
+
+## 4. Request/Response Formats
+
+### Create Character Request (POST /player-state/characters)
+```typescript
+// Request Body (CreateCharacterDto)
+{
+  "name": string,         // Character name
+  "characterClassId": string, // ID of the selected character class
+  // Optional customization fields may be included
+}
+
+// Response
+{
+  "id": string,           // ID of the created character
+  "name": string,         // Character name
+  "class": {              // Character class information
+    "id": string,
+    "name": string,
+    // Other class details...
+  },
+  "level": number,        // Starting level (1)
+  "attributes": {         // Character attributes
+    // Various attributes based on class...
+  },
+  "createdAt": string     // Creation timestamp
+}
+```
+
+### Get Character Classes Response (GET /player-state/character-classes)
+```typescript
+// Response
+[
+  {
+    "id": string,
+    "name": string,
+    "description": string,
+    "category": string,
+    "difficulty": number,
+    "baseAttributes": {
+      "strength": number,
+      "intelligence": number,
+      // Other attributes...
+    },
+    "primaryResource": {
+      "type": string,     // "mana", "rage", etc.
+      "max": number
+    },
+    // Other class details...
+  },
+  // More character classes...
+]
+```
+
+### Login Response (POST /auth/login)
+```typescript
+// Response
+{
+  "accessToken": string,  // JWT token
+  "player": {
+    "id": string,
+    "username": string,
+    "email": string
+  },
+  "hasCharacters": boolean, // Whether player has characters
+  "characterCount": number  // Number of characters
+}
+```
+
+## 5. Service Functionality
+
+### PlayerStateService
+- `createCharacter(playerId, characterData)` - Creates character and initializes based on class
+- `getCharacterClasses()` - Returns all character classes
+- `getCharacterClassById(id)` - Returns specific character class
+- `getCharactersByPlayerId(playerId)` - Returns all characters for a player
+- `getCharacterById(id, playerId)` - Returns specific character if owned by player
+- `playerHasCharacters(playerId)` - Checks if player has characters
+- `getCharacterCount(playerId)` - Returns number of characters for a player
+
+### AuthService
+- Integrates with PlayerStateService to check character status during login
+- Enhances login response with character information
+
+## 6. Data Transfer Objects (DTOs)
+
+### CreateCharacterDto
+- Validates character creation request data
+- Ensures character name meets requirements
+- Validates that characterClassId exists
+
+### PlayerResponse
+- Interface for player data returned to frontend
+- Includes player ID and profile information
+- Used by GetUser decorator to provide type safety
+
+This detailed overview should provide sufficient context for the frontend implementation, clarifying the structure and available endpoints for character creation functionality.
