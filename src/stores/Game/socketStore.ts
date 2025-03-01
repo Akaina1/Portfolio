@@ -9,6 +9,7 @@ interface SocketState {
   isConnected: boolean;
   connectionError: string | null;
   isAuthenticated: boolean;
+  shouldConnect: boolean;
 }
 
 // Define the store actions
@@ -18,6 +19,8 @@ interface SocketActions {
   on: <T>(event: string, callback: (data: T) => void) => void;
   off: <T>(event: string, callback: (data: T) => void) => void;
   emit: (event: string, ...args: unknown[]) => void;
+  resetSocket: () => void;
+  setShouldConnect: (shouldConnect: boolean) => void;
 }
 
 // Combined store type
@@ -30,6 +33,7 @@ const initialState: SocketState = {
   isConnected: false,
   connectionError: null,
   isAuthenticated: false,
+  shouldConnect: false,
 };
 
 // Base URL for socket connection
@@ -153,6 +157,15 @@ export const useSocketStore = create<SocketStore>((set, get) => {
       }
     },
 
+    resetSocket: () =>
+      set({
+        socket: null,
+        isConnected: false,
+        isAuthenticated: false,
+        connectionError: null,
+        shouldConnect: false,
+      }),
+
     // Utility methods for event handling
     on: (event, callback) => {
       const state = getState();
@@ -167,6 +180,16 @@ export const useSocketStore = create<SocketStore>((set, get) => {
     emit: (event, ...args) => {
       const state = getState();
       if (state.socket && state.isConnected) state.socket.emit(event, ...args);
+    },
+
+    // Set should connect flag
+    setShouldConnect: (shouldConnect: boolean) => {
+      set({ shouldConnect });
+
+      // If turning off, disconnect socket
+      if (!shouldConnect) {
+        get().disconnect();
+      }
     },
   };
 

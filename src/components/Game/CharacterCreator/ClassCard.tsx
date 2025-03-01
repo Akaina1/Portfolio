@@ -1,5 +1,4 @@
 import React from 'react';
-import Image from 'next/image';
 
 /**
  * Props for the ClassCard component
@@ -10,7 +9,7 @@ interface ClassCardProps {
   category: string;
   difficulty: number;
   description?: string;
-  iconUrl?: string;
+  iconUrl?: string; // Not used in ASCII version
   isSelected: boolean;
   onSelect: (id: string) => void;
 }
@@ -18,7 +17,7 @@ interface ClassCardProps {
 /**
  * ClassCard Component
  *
- * Displays a character class option in a card format.
+ * Displays a character class option in a card format with ASCII art.
  * Shows class name, category, difficulty rating, and optional description.
  * Highlights the card when selected.
  */
@@ -28,10 +27,19 @@ const ClassCard: React.FC<ClassCardProps> = ({
   category,
   difficulty,
   description,
-  iconUrl,
   isSelected,
   onSelect,
 }) => {
+  // Add this debug log to see what props the component receives
+  console.log(`ClassCard rendering for ${name || 'unknown'}:`, {
+    id,
+    name,
+    category,
+    difficulty,
+    description,
+    isSelected,
+  });
+
   // Generate difficulty stars
   const difficultyStars = () => {
     const maxDifficulty = 5;
@@ -40,7 +48,7 @@ const ClassCard: React.FC<ClassCardProps> = ({
     for (let i = 1; i <= maxDifficulty; i++) {
       stars.push(
         <svg
-          key={i}
+          key={`difficulty-star-${i}`}
           className={`h-4 w-4 ${i <= difficulty ? 'text-yellow-500' : 'text-gray-300'}`}
           fill="currentColor"
           viewBox="0 0 20 20"
@@ -54,17 +62,32 @@ const ClassCard: React.FC<ClassCardProps> = ({
     return stars;
   };
 
-  // Default placeholder image if none provided
-  const _defaultImage = '/images/class-placeholder.jpg';
+  // ASCII art characters based on class type
+  const getAsciiArt = () => {
+    // Simple default ASCII representation
+    const defaultAscii = `
+   /\\__/\\
+  ( ͡° ͜ʖ ͡°)
+  /      \\
+ /        \\
+/          \\`;
+
+    // You could customize this based on class name or category
+    return defaultAscii;
+  };
 
   return (
     <div
-      className={`relative flex flex-col overflow-hidden rounded-lg shadow-md transition-all duration-200 ${
+      className={`relative flex cursor-pointer flex-col overflow-hidden rounded-lg shadow-md transition-all duration-200 ${
         isSelected
           ? 'scale-105 transform border-2 border-blue-500 shadow-lg'
           : 'border border-gray-200 hover:border-blue-300 hover:shadow-lg'
       } `}
-      onClick={() => onSelect(id)}
+      onClick={() => {
+        // Add debug log for click events
+        console.log(`ClassCard clicked: id=${id}, name=${name}`);
+        onSelect(id);
+      }}
       role="button"
       aria-pressed={isSelected}
       tabIndex={0}
@@ -95,29 +118,19 @@ const ClassCard: React.FC<ClassCardProps> = ({
         </div>
       )}
 
-      {/* Class image */}
-      <div className="relative h-32 bg-gray-100">
-        {iconUrl ? (
-          <Image
-            src={iconUrl}
-            alt={`${name} class`}
-            fill
-            className="object-cover"
-            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-          />
-        ) : (
-          <div className="flex h-full items-center justify-center bg-gray-200">
-            <span className="text-lg font-semibold text-gray-500">{name}</span>
-          </div>
-        )}
+      {/* ASCII Art representation instead of image */}
+      <div className="flex h-32 items-center justify-center bg-gray-800 p-2">
+        <pre className="font-mono text-xs text-green-400">{getAsciiArt()}</pre>
       </div>
 
       {/* Class info */}
       <div className="flex-grow p-4">
         <div className="flex items-start justify-between">
-          <h3 className="text-lg font-semibold text-gray-800">{name}</h3>
+          <h3 className="text-lg font-semibold text-gray-800">
+            {name || 'Unknown Class'}
+          </h3>
           <span className="rounded-full bg-gray-100 px-2 py-1 text-xs text-gray-700">
-            {category}
+            {category || 'N/A'}
           </span>
         </div>
 
@@ -128,9 +141,13 @@ const ClassCard: React.FC<ClassCardProps> = ({
         </div>
 
         {/* Description (truncated) */}
-        {description && (
+        {description ? (
           <p className="mt-3 line-clamp-2 text-sm text-gray-600">
             {description}
+          </p>
+        ) : (
+          <p className="mt-3 text-sm italic text-gray-400">
+            No description available
           </p>
         )}
       </div>

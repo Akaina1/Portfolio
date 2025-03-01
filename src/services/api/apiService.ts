@@ -187,8 +187,16 @@ export const api = {
   /**
    * GET request
    */
-  get: <T>(endpoint: string, options?: ApiRequestOptions): Promise<T> => {
-    return apiRequest<T>(endpoint, 'GET', undefined, options);
+  get: async <T>(endpoint: string, options?: ApiRequestOptions): Promise<T> => {
+    console.log(`API GET request to ${endpoint} with options:`, options);
+    try {
+      const response = await apiRequest<T>(endpoint, 'GET', undefined, options);
+      console.log(`API GET response from ${endpoint}:`, response);
+      return response;
+    } catch (error) {
+      console.error(`API GET error for ${endpoint}:`, error);
+      throw error;
+    }
   },
 
   /**

@@ -106,14 +106,23 @@ export const usePlayerStore = create<PlayerState>()(
         set({ token, tokenExpiry, isAuthenticated: true });
       },
 
-      clearPlayerData: () =>
+      clearPlayerData: () => {
+        // Clear token from localStorage
+        if (typeof window !== 'undefined') {
+          localStorage.removeItem('auth_token');
+          localStorage.removeItem('token_expiry');
+        }
+
+        // Reset state
         set({
           player: null,
           token: null,
-          tokenExpiry: null,
           isAuthenticated: false,
+          error: null,
           hasCheckedForCharacters: false,
-        }),
+          // Reset other player-related state
+        });
+      },
 
       setError: (error) => set({ error }),
 

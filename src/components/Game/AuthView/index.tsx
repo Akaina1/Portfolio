@@ -4,6 +4,7 @@ import { useGameInterfaceStore } from '@/stores/Game/gameInterfaceStore';
 import { usePlayerStore } from '@/stores/Player/playerStore';
 import authService from '@/services/api/authService';
 import { ApiRequestError } from '@/services/api/apiService';
+import { useSocketStore } from '@/stores/Game/socketStore';
 
 const AuthView: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'signup' | 'login'>('signup');
@@ -24,6 +25,7 @@ const AuthView: React.FC = () => {
 
   // Player store actions
   const setPlayerError = usePlayerStore((state) => state.setError);
+  const clearPlayerData = usePlayerStore((state) => state.clearPlayerData);
 
   // Disable all keybinds when AuthView is shown
   const disableKeybinds = useGameInterfaceStore(
@@ -31,16 +33,39 @@ const AuthView: React.FC = () => {
   );
   const enableKeybinds = useGameInterfaceStore((state) => state.enableKeybinds);
 
-  // Disable keybinds on mount, enable on unmount
+  // Socket store actions
+  const { resetSocket, disconnect } = useSocketStore();
+
+  // On component mount, ensure socket is disconnected and player data is cleaned
   useEffect(() => {
-    // Disable keybinds when auth view is shown
+    console.log('AuthView mounted - ensuring clean socket state');
+
+    // First disconnect any existing socket connection
+    disconnect();
+
+    // Then reset socket state to prevent auto-authentication
+    resetSocket();
+
+    // Also ensure any leftover token is cleared
+    // This is critical to prevent auto-connection on page refresh
+    if (!window.location.pathname.includes('game')) {
+      clearPlayerData();
+    }
+
+    // Disable keybinds when AuthView is shown
     disableKeybinds();
 
     // Re-enable keybinds when auth view is unmounted
     return () => {
       enableKeybinds();
     };
-  }, [disableKeybinds, enableKeybinds]);
+  }, [
+    disableKeybinds,
+    enableKeybinds,
+    disconnect,
+    resetSocket,
+    clearPlayerData,
+  ]);
 
   // Handle login with our new auth service
   const handleLogin = async (e: React.FormEvent) => {

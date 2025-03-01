@@ -7,6 +7,7 @@ import {
   RegisterRequest,
   RegisterResponse,
 } from './types';
+import { useSocketStore } from '@/stores/Game/socketStore';
 
 /**
  * Authentication Service
@@ -159,6 +160,11 @@ const authService = {
   logout: async (): Promise<void> => {
     const playerStore = usePlayerStore.getState();
     const token = playerStore.token;
+
+    // Ensure socket is disconnected and reset
+    const socketStore = useSocketStore.getState();
+    socketStore.disconnect();
+    socketStore.resetSocket();
 
     // Only attempt server logout if we have a token
     if (token) {

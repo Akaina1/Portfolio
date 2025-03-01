@@ -48,6 +48,9 @@ const GamePage: React.FC = () => {
   // Track if this is the initial mount
   const isInitialMount = React.useRef(true);
 
+  // Add this line to get setShouldConnect
+  const setShouldConnect = useSocketStore((state) => state.setShouldConnect);
+
   // Simulate loading effect
   useEffect(() => {
     setIsLoaded(true);
@@ -222,10 +225,22 @@ const GamePage: React.FC = () => {
     }
   }, [isAuthenticatedPlayer, viewState, setViewState]);
 
+  // Add this effect to enable socket connection only when entering game view
+  useEffect(() => {
+    if (viewState === 'game' && isAuthenticatedPlayer) {
+      // Only enable socket connection when entering game view
+      setShouldConnect(true);
+    } else {
+      // Disable socket connection for other views
+      setShouldConnect(false);
+    }
+  }, [viewState, isAuthenticatedPlayer, setShouldConnect]);
+
   // Render the appropriate view based on view state
   const renderView = () => {
     switch (viewState) {
       case 'auth':
+        // Don't attempt socket connection in auth view
         return <AuthView />;
 
       case 'characterCreation':
@@ -254,7 +269,7 @@ const GamePage: React.FC = () => {
           return <AuthView />;
         }
 
-        // Show connection status if not connected
+        // Only check socket connection when in game view and authenticated
         if (!isConnected || !isAuthenticated) {
           return (
             <div className="flex h-screen w-full flex-col items-center justify-center">

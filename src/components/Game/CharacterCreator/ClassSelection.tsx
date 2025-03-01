@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { CharacterClassResponse } from '@/types/CharacterResponse';
 import ClassCard from './ClassCard';
 import ClassDetails from './ClassDetails';
+import characterService from '@/services/api/characterService';
 
 /**
  * Props for the ClassSelection component
@@ -24,34 +25,131 @@ interface ClassSelectionProps {
  */
 const ClassSelection: React.FC<ClassSelectionProps> = ({
   availableClasses,
-  selectedClassId,
+  selectedClassId: initialSelectedClassId,
   onClassSelect,
-  isLoading = false,
-  error = null,
+  isLoading: initialIsLoading = false,
+  error: initialError = null,
   className = '',
 }) => {
   // State to store the selected class details
   const [selectedClass, setSelectedClass] =
     useState<CharacterClassResponse | null>(null);
+  const [characterClasses, setCharacterClasses] =
+    useState<CharacterClassResponse[]>(availableClasses);
+  const [isDetailLoading, setIsDetailLoading] = useState(false);
+  const [detailError, setDetailError] = useState<string | null>(null);
+  const [selectedClassId, setSelectedClassId] = useState<string | null>(
+    initialSelectedClassId
+  );
 
-  // Update selected class when selectedClassId changes
+  // Add debug logging for component mounting and state changes
   useEffect(() => {
-    if (selectedClassId) {
-      const classDetails =
-        availableClasses.find((c) => c.id === selectedClassId) || null;
-      setSelectedClass(classDetails);
-    } else {
-      setSelectedClass(null);
-    }
-  }, [selectedClassId, availableClasses]);
+    console.log('ClassSelection mounted or state changed');
+    console.log('Current state:', {
+      characterClasses,
+      selectedClassId,
+      selectedClass,
+      initialIsLoading,
+      isDetailLoading,
+      initialError,
+      detailError,
+    });
+  }, [
+    characterClasses,
+    selectedClassId,
+    selectedClass,
+    initialIsLoading,
+    isDetailLoading,
+    initialError,
+    detailError,
+  ]);
 
-  // Handle class selection
-  const handleClassSelect = (classId: string) => {
-    onClassSelect(classId);
+  useEffect(() => {
+    const fetchClasses = async () => {
+      try {
+        setIsDetailLoading(true);
+        console.log('Fetching character classes...');
+        const classes = await characterService.getCharacterClasses();
+        console.log('Received character classes:', classes);
+
+        // Validate that classes is an array of the expected shape
+        if (Array.isArray(classes)) {
+          setCharacterClasses(classes);
+
+          // If we have classes but no selection, select the first one
+          if (
+            classes.length > 0 &&
+            !selectedClassId &&
+            classes[0].id &&
+            classes[0].name
+          ) {
+            console.log('Auto-selecting first class:', classes[0].id);
+            setSelectedClassId(classes[0].id);
+          }
+        } else {
+          console.error(
+            'Invalid data format received for character classes:',
+            classes
+          );
+          setDetailError('Received invalid data format for character classes.');
+        }
+      } catch (error: unknown) {
+        console.error('Error fetching character classes:', error);
+        setDetailError('Failed to load character classes. Please try again.');
+      } finally {
+        setIsDetailLoading(false);
+      }
+    };
+
+    fetchClasses();
+  }, [selectedClassId]);
+
+  const fetchClassDetails = async (id: string) => {
+    if (!id) {
+      console.log('fetchClassDetails called with empty id, skipping');
+      return;
+    }
+
+    try {
+      console.log(`Fetching details for class ID: ${id}`);
+      setIsDetailLoading(true);
+      const details = await characterService.getCharacterClassById(id);
+      console.log('Received class details:', details);
+      setSelectedClass(details);
+    } catch (error: unknown) {
+      console.error(`Error fetching details for class ID ${id}:`, error);
+      setDetailError('Failed to load class details. Please try again.');
+    } finally {
+      setIsDetailLoading(false);
+    }
   };
 
+  useEffect(() => {
+    // When selectedClassId changes, fetch the details
+    if (selectedClassId) {
+      console.log(
+        `selectedClassId changed to ${selectedClassId}, fetching details`
+      );
+      fetchClassDetails(selectedClassId);
+      // Call the parent's onClassSelect to propagate the change
+      onClassSelect(selectedClassId);
+    }
+  }, [selectedClassId, onClassSelect]);
+
+  const handleClassSelect = (id: string) => {
+    console.log(`handleClassSelect called with id: ${id}`);
+    setSelectedClassId(id);
+  };
+
+  // Add debug before rendering
+  console.log('ClassSelection rendering with:', {
+    characterClassesCount: characterClasses.length,
+    selectedClassId,
+    hasSelectedClass: !!selectedClass,
+  });
+
   // Loading state
-  if (isLoading) {
+  if (initialIsLoading || isDetailLoading) {
     return (
       <div
         className={`flex h-full w-full items-center justify-center ${className}`}
@@ -65,7 +163,8 @@ const ClassSelection: React.FC<ClassSelectionProps> = ({
   }
 
   // Error state
-  if (error) {
+  if (initialError || detailError) {
+    const errorMessage = initialError || detailError;
     return (
       <div
         className={`flex h-full w-full items-center justify-center ${className}`}
@@ -88,7 +187,7 @@ const ClassSelection: React.FC<ClassSelectionProps> = ({
           <h3 className="mt-3 text-lg font-medium text-red-800">
             Error Loading Classes
           </h3>
-          <p className="mt-2 text-sm text-red-600">{error}</p>
+          <p className="mt-2 text-sm text-red-600">{errorMessage}</p>
           <button
             className="mt-4 rounded-md bg-red-100 px-4 py-2 text-sm font-medium text-red-700 hover:bg-red-200"
             onClick={() => window.location.reload()}
@@ -101,7 +200,7 @@ const ClassSelection: React.FC<ClassSelectionProps> = ({
   }
 
   // No classes available
-  if (!availableClasses || availableClasses.length === 0) {
+  if (!characterClasses || characterClasses.length === 0) {
     return (
       <div
         className={`flex h-full w-full items-center justify-center ${className}`}
@@ -127,29 +226,54 @@ const ClassSelection: React.FC<ClassSelectionProps> = ({
         {/* Class cards grid */}
         <div className="md:col-span-2 lg:col-span-3">
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {availableClasses.map((characterClass) => (
-              <ClassCard
-                key={`class-card-${characterClass.id}`}
-                id={characterClass.id}
-                name={characterClass.name}
-                category={characterClass.category}
-                difficulty={characterClass.difficulty}
-                description={characterClass.description}
-                iconUrl={characterClass.iconUrl}
-                isSelected={selectedClassId === characterClass.id}
-                onSelect={handleClassSelect}
-              />
-            ))}
+            {characterClasses.map((characterClass) => {
+              // Validate that the character class has the required properties
+              const isValidClass =
+                characterClass &&
+                typeof characterClass === 'object' &&
+                'id' in characterClass &&
+                'name' in characterClass;
+
+              if (!isValidClass) {
+                console.error(
+                  'Invalid character class object:',
+                  characterClass
+                );
+                return null; // Skip rendering invalid classes
+              }
+
+              console.log(
+                `Rendering ClassCard for: ${characterClass.name}`,
+                characterClass
+              );
+              return (
+                <ClassCard
+                  key={`class-${characterClass.id}`}
+                  id={characterClass.id}
+                  name={characterClass.name}
+                  category={characterClass.category || 'Unknown'}
+                  difficulty={characterClass.difficulty || 1}
+                  description={
+                    characterClass.description || 'No description available.'
+                  }
+                  iconUrl={characterClass.iconUrl}
+                  isSelected={selectedClassId === characterClass.id}
+                  onSelect={handleClassSelect}
+                />
+              );
+            })}
           </div>
         </div>
 
         {/* Class details panel */}
         <div className="md:col-span-1 lg:col-span-1">
           <div className="sticky top-4">
-            <ClassDetails
-              key={`class-details-${selectedClassId || 'none'}`}
-              characterClass={selectedClass as CharacterClassResponse}
-            />
+            {selectedClass && (
+              <ClassDetails
+                key={`class-details-${selectedClassId || 'none'}`}
+                characterClass={selectedClass}
+              />
+            )}
           </div>
         </div>
       </div>
