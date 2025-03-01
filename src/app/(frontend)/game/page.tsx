@@ -9,6 +9,8 @@ import { usePathname } from 'next/navigation';
 import { useGameInterfaceStore } from '@/stores/Game/gameInterfaceStore';
 import { useSocket } from '@/hooks/useSocket';
 import { usePlayerStore } from '@/stores/Player/playerStore';
+import authService from '@/services/api/authService';
+import { useSocketStore } from '@/stores/Game/socketStore';
 
 /**
  * Game Page Component
@@ -29,6 +31,13 @@ const GamePage: React.FC = () => {
   // Socket connection
   const { isConnected, isAuthenticated, connectionError } = useSocket();
   const player = usePlayerStore((state) => state.player);
+  const disconnect = useSocketStore((state) => state.disconnect);
+  const isAuthenticatedPlayer = usePlayerStore(
+    (state) => state.isAuthenticated
+  );
+
+  // Track if this is the initial mount
+  const isInitialMount = React.useRef(true);
 
   // Simulate loading effect
   useEffect(() => {
@@ -110,6 +119,55 @@ const GamePage: React.FC = () => {
       enableKeybinds();
     }
   }, [viewState, enableKeybinds]);
+
+  // ONLY handle browser tab/window close
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      console.log('Browser tab closing, cleaning up...');
+      disconnect();
+
+      e.preventDefault();
+      e.returnValue = '';
+    };
+
+    // Add event listener for browser close/refresh only
+    window.addEventListener('beforeunload', handleBeforeUnload);
+
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+
+      // We ONLY disconnect if this isn't the initial mount
+      // and only when the component is truly unmounting due to navigation
+      if (!isInitialMount.current) {
+        console.log('Component unmounting due to navigation, cleaning up...');
+        disconnect();
+
+        if (isAuthenticatedPlayer) {
+          authService.logout().catch((err) => {
+            console.error('Error during logout:', err);
+          });
+        }
+      }
+    };
+  }, [disconnect, isAuthenticatedPlayer]); // Keep dependencies minimal
+
+  // Mark initial mount as complete after component mounts
+  useEffect(() => {
+    isInitialMount.current = false;
+
+    // No cleanup function here
+  }, []);
+
+  // Add this effect to properly handle authentication state changes
+
+  // Effect to reset view state when player authentication changes
+  useEffect(() => {
+    // If player is not authenticated and view state is 'game', reset to 'auth'
+    if (!isAuthenticatedPlayer && viewState === 'game') {
+      console.log('Player not authenticated, returning to auth view');
+      setViewState('auth');
+    }
+  }, [isAuthenticatedPlayer, viewState, setViewState]);
 
   // Render the appropriate view based on auth state
   const renderView = () => {

@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import { useGameStore } from '@/stores/Game/gameStore';
 
 /**
  * Interface defining the structure of player data
@@ -218,6 +219,17 @@ export const usePlayerStore = create<PlayerState>()(
 
         // Clear local auth data regardless of server response
         get().clearPlayerData();
+
+        // Reset game view state to auth when logging out
+        // This ensures the login screen appears when returning to game page
+        try {
+          const gameStore = useGameStore.getState();
+          if (gameStore && gameStore.setViewState) {
+            gameStore.setViewState('auth');
+          }
+        } catch (error) {
+          console.error('Error resetting game view state:', error);
+        }
       },
 
       /**
