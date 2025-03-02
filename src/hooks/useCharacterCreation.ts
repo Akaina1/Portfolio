@@ -161,7 +161,7 @@ export const useCharacterCreation = () => {
   const nextStep = useCallback(() => {
     if (!canProceed()) return;
 
-    if (step < 3) {
+    if (step < 4) {
       setStep(step + 1);
     }
   }, [canProceed, step, setStep]);

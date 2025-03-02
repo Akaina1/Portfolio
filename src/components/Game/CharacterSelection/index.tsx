@@ -1,11 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
 import { useCharacterStore } from '@/stores/Game/characterStore';
 import { useGameStore } from '@/stores/Game/gameStore';
 
 /**
- * Character display interface that maps from CharacterResponse
+ * Character display interface for the UI
  */
 interface CharacterDisplay {
   id: string;
@@ -13,7 +12,18 @@ interface CharacterDisplay {
   className: string;
   level: number;
   lastPlayed: string;
-  portraitUrl?: string;
+}
+
+/**
+ * Type for character data from backend
+ * This is a simplified version of what we receive
+ */
+interface BackendCharacter {
+  _id: string;
+  name: string;
+  level: number;
+  classId: string | { name: string; _id: string };
+  lastPlayed?: string | Date;
 }
 
 /**
@@ -23,7 +33,7 @@ interface CharacterDisplay {
  * Provides options to create a new character.
  */
 const CharacterSelection: React.FC = () => {
-  const { playerCharacters, fetchPlayerCharacters } = useCharacterStore();
+  const { fetchPlayerCharacters } = useCharacterStore();
   const { setCharacter, goToGame } = useGameStore();
 
   const [isLoading, setIsLoading] = useState(true);
@@ -42,17 +52,30 @@ const CharacterSelection: React.FC = () => {
 
         await fetchPlayerCharacters();
 
-        // Transform characters from store to display format
-        const formattedCharacters = playerCharacters.map((char) => ({
-          id: char._id,
-          name: char.name,
-          className: char.classId, // We would ideally map classId to class name
-          level: char.level,
-          lastPlayed: char.lastPlayed
-            ? new Date(char.lastPlayed).toLocaleDateString()
-            : '',
-          portraitUrl: undefined, // CharacterResponse doesn't have portraitUrl
-        }));
+        // Get the latest character data from the store
+        const characterData = useCharacterStore.getState()
+          .playerCharacters as BackendCharacter[];
+
+        // Transform characters to display format
+        const formattedCharacters: CharacterDisplay[] = characterData.map(
+          (char) => {
+            // Extract class name from classId which can be string or object
+            let className = 'Unknown';
+            if (typeof char.classId === 'object' && char.classId !== null) {
+              className = char.classId.name || 'Unknown';
+            }
+
+            return {
+              id: char._id,
+              name: char.name,
+              className,
+              level: char.level || 1,
+              lastPlayed: char.lastPlayed
+                ? new Date(char.lastPlayed).toLocaleDateString()
+                : '',
+            };
+          }
+        );
 
         setCharacterList(formattedCharacters);
       } catch (err) {
@@ -66,7 +89,7 @@ const CharacterSelection: React.FC = () => {
     };
 
     loadCharacters();
-  }, [fetchPlayerCharacters, playerCharacters]);
+  }, [fetchPlayerCharacters]); // Remove playerCharacters dependency
 
   // Handle character selection
   const handleSelectCharacter = (characterId: string) => {
@@ -100,7 +123,9 @@ const CharacterSelection: React.FC = () => {
       <div className="flex h-full w-full items-center justify-center py-16">
         <div className="text-center">
           <div className="mx-auto mb-4 h-12 w-12 animate-spin rounded-full border-4 border-gray-200 border-t-blue-600"></div>
-          <p className="text-gray-600">Loading your characters...</p>
+          <p className="text-gray-600 dark:text-gray-400">
+            Loading your characters...
+          </p>
         </div>
       </div>
     );
@@ -143,7 +168,9 @@ const CharacterSelection: React.FC = () => {
   return (
     <div className="container mx-auto max-w-6xl px-4 py-8">
       <div className="mb-8 flex items-center justify-between">
-        <h1 className="text-3xl font-bold text-gray-900">Your Characters</h1>
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">
+          Your Characters
+        </h1>
         <Link
           href="/game/characters/create"
           className="rounded-md bg-blue-600 px-4 py-2 text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
@@ -226,25 +253,6 @@ const CharacterSelection: React.FC = () => {
                     </div>
                   )}
 
-                  {/* Character portrait */}
-                  <div className="relative h-40 bg-gray-100">
-                    {character.portraitUrl ? (
-                      <Image
-                        src={character.portraitUrl}
-                        alt={`${character.name} portrait`}
-                        fill
-                        className="object-cover"
-                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                      />
-                    ) : (
-                      <div className="flex h-full items-center justify-center bg-gray-200">
-                        <span className="text-lg font-semibold text-gray-500">
-                          {character.name.charAt(0)}
-                        </span>
-                      </div>
-                    )}
-                  </div>
-
                   {/* Character info */}
                   <div className="flex-grow p-4">
                     <h3 className="text-lg font-semibold text-gray-800">
@@ -288,23 +296,6 @@ const CharacterSelection: React.FC = () => {
                       return (
                         <div className="space-y-4">
                           <div className="flex items-center space-x-4">
-                            <div className="relative h-16 w-16 overflow-hidden rounded-full bg-gray-100">
-                              {character.portraitUrl ? (
-                                <Image
-                                  src={character.portraitUrl}
-                                  alt={`${character.name} portrait`}
-                                  fill
-                                  className="object-cover"
-                                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                                />
-                              ) : (
-                                <div className="flex h-full w-full items-center justify-center bg-gray-200">
-                                  <span className="text-lg font-semibold text-gray-500">
-                                    {character.name.charAt(0)}
-                                  </span>
-                                </div>
-                              )}
-                            </div>
                             <div>
                               <h3 className="text-lg font-semibold text-gray-800">
                                 {character.name}

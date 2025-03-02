@@ -21,6 +21,19 @@ interface HasCharactersResponse {
 }
 
 /**
+ * Interface for paginated character response
+ */
+interface PaginatedCharactersResponse {
+  characters: CharacterResponse[];
+  pagination: {
+    total: number;
+    page: number;
+    limit: number;
+    pages: number;
+  };
+}
+
+/**
  * Character Service
  *
  * Handles API requests related to character management and creation
@@ -76,10 +89,10 @@ const characterService = {
   /**
    * Get all characters for the current player
    *
-   * @returns Array of player's characters
+   * @returns Paginated response with player's characters
    */
-  getPlayerCharacters: async (): Promise<CharacterResponse[]> => {
-    return api.get<CharacterResponse[]>('/player-state/characters', {
+  getPlayerCharacters: async (): Promise<PaginatedCharactersResponse> => {
+    return api.get<PaginatedCharactersResponse>('/player-state/characters', {
       requiresAuth: true,
     });
   },

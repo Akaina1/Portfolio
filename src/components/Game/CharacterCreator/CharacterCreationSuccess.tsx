@@ -1,6 +1,5 @@
 import React from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
 
 /**
  * Props for the CharacterCreationSuccess component
@@ -60,15 +59,6 @@ const CharacterCreationSuccess: React.FC<CharacterCreationSuccessProps> = ({
 
       {/* Character preview placeholder */}
       <div className="mb-8 overflow-hidden rounded-lg border border-gray-200 bg-gray-50 shadow-md">
-        <div className="relative h-64 w-64">
-          <Image
-            src="/images/character-placeholder.jpg"
-            alt={`${characterName} preview`}
-            fill
-            className="object-cover"
-            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-          />
-        </div>
         <div className="bg-white p-4 text-center">
           <h3 className="text-xl font-semibold text-gray-800">
             {characterName}

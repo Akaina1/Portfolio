@@ -219,7 +219,12 @@ export const useCharacterStore = create<CharacterState>((set, get) => ({
     setError(null);
 
     try {
-      const characters = await characterService.getPlayerCharacters();
+      const response = await characterService.getPlayerCharacters();
+
+      // Extract characters array from the response object
+      const characters = response?.characters || [];
+
+      // Set the characters array to state
       set({ playerCharacters: characters });
     } catch (error) {
       setError(
@@ -228,6 +233,8 @@ export const useCharacterStore = create<CharacterState>((set, get) => ({
           : 'Failed to fetch player characters'
       );
       console.error('Error fetching player characters:', error);
+      // Set an empty array on error
+      set({ playerCharacters: [] });
     } finally {
       setLoading(false);
     }
@@ -252,8 +259,8 @@ export const useCharacterStore = create<CharacterState>((set, get) => ({
       });
 
       // Update the player characters list with the new character
-      const characters = await characterService.getPlayerCharacters();
-      set({ playerCharacters: characters });
+      const response = await characterService.getPlayerCharacters();
+      set({ playerCharacters: response.characters });
 
       return newCharacter;
     } catch (error) {
