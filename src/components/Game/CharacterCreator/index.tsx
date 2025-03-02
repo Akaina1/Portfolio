@@ -228,51 +228,54 @@ const CharacterCreator: React.FC = () => {
   };
 
   return (
-    <div className="container mx-auto max-w-6xl rounded-lg bg-white/50 px-4 py-8 shadow-lg dark:bg-gray-900/70">
-      <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">
-        Create Your Character
-      </h1>
+    <div className="w-full max-w-none rounded-lg bg-white/50 px-4 py-8 shadow-lg dark:bg-gray-900/70">
+      {/* Header and Progress section with max width */}
+      <div className="mx-auto mb-6 max-w-6xl">
+        <div className="flex items-center justify-between">
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">
+            Create Your Character
+          </h1>
 
-      {/* Step progress indicator */}
-      <StepProgress
-        steps={CREATION_STEPS}
-        currentStep={currentStep}
-        onStepClick={handleStepClick}
-        className="mt-6"
-      />
+          {/* Navigation buttons moved to top right */}
+          {currentStep < 2 && (
+            <div className="flex space-x-4">
+              {currentStep > 0 && (
+                <button
+                  onClick={handleBack}
+                  className="rounded-md border border-gray-300 bg-white px-6 py-2 text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600 dark:focus:ring-offset-gray-800"
+                >
+                  Back
+                </button>
+              )}
 
-      {/* Step content */}
-      <div className="rounded-lg bg-white/80 px-6 py-2 shadow-inner dark:bg-gray-800/50">
-        {renderStepContent()}
+              <button
+                onClick={handleNext}
+                disabled={!isNextEnabled()}
+                className={`rounded-md px-6 py-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 ${
+                  isNextEnabled()
+                    ? 'bg-purple-600 text-white hover:bg-purple-700'
+                    : 'cursor-not-allowed bg-gray-300 text-gray-500 dark:bg-gray-600 dark:text-gray-400'
+                }`}
+              >
+                Next
+              </button>
+            </div>
+          )}
+        </div>
+
+        {/* Step progress indicator */}
+        <StepProgress
+          steps={CREATION_STEPS}
+          currentStep={currentStep}
+          onStepClick={handleStepClick}
+          className="mt-6"
+        />
       </div>
 
-      {/* Navigation buttons (only show on first two steps) */}
-      {currentStep < 2 && (
-        <div className="mt-8 flex justify-between">
-          {currentStep > 0 ? (
-            <button
-              onClick={handleBack}
-              className="rounded-md border border-gray-300 bg-white px-6 py-2 text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600 dark:focus:ring-offset-gray-800"
-            >
-              Back
-            </button>
-          ) : (
-            <div></div>
-          )}
-
-          <button
-            onClick={handleNext}
-            disabled={!isNextEnabled()}
-            className={`rounded-md px-6 py-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 ${
-              isNextEnabled()
-                ? 'bg-purple-600 text-white hover:bg-purple-700'
-                : 'cursor-not-allowed bg-gray-300 text-gray-500 dark:bg-gray-600 dark:text-gray-400'
-            }`}
-          >
-            Next
-          </button>
-        </div>
-      )}
+      {/* Step content - full width */}
+      <div className="w-full rounded-lg bg-white/80 px-6 py-2 shadow-inner dark:bg-gray-800/50">
+        {renderStepContent()}
+      </div>
     </div>
   );
 };

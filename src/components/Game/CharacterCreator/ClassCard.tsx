@@ -20,6 +20,7 @@ interface ClassCardProps {
  * Displays a character class option in a card format with ASCII art.
  * Shows class name, category, difficulty rating, and optional description.
  * Highlights the card when selected.
+ * Has fixed dimensions to ensure consistent layout in the grid.
  */
 const ClassCard: React.FC<ClassCardProps> = ({
   _id,
@@ -78,9 +79,9 @@ const ClassCard: React.FC<ClassCardProps> = ({
 
   return (
     <div
-      className={`relative flex cursor-pointer flex-col overflow-hidden rounded-lg shadow-md transition-all duration-200 ${
+      className={`relative flex h-[380px] w-full cursor-pointer flex-col overflow-hidden rounded-lg shadow-md transition-all duration-200 ${
         isSelected
-          ? 'scale-105 transform border-2 border-purple-500 shadow-lg'
+          ? 'border-2 border-purple-500 shadow-lg'
           : 'border border-gray-200 hover:border-purple-300 hover:shadow-lg dark:border-gray-700 dark:hover:border-purple-700'
       } `}
       onClick={() => {
@@ -119,12 +120,12 @@ const ClassCard: React.FC<ClassCardProps> = ({
       )}
 
       {/* ASCII Art representation instead of image */}
-      <div className="flex h-32 items-center justify-center bg-gray-800 p-2 dark:bg-gray-900">
+      <div className="flex h-32 min-h-[128px] items-center justify-center bg-gray-800 p-2 dark:bg-gray-900">
         <pre className="font-mono text-xs text-green-400">{getAsciiArt()}</pre>
       </div>
 
       {/* Class info */}
-      <div className="flex-grow bg-white p-4 dark:bg-gray-900/70">
+      <div className="flex h-[180px] flex-col bg-white p-4 dark:bg-gray-900/70">
         <div className="flex items-start justify-between">
           <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200">
             {name || 'Unknown Class'}
@@ -142,20 +143,22 @@ const ClassCard: React.FC<ClassCardProps> = ({
           <div className="flex">{difficultyStars()}</div>
         </div>
 
-        {/* Description (truncated) */}
-        {description ? (
-          <p className="mt-3 line-clamp-2 text-sm text-gray-600 dark:text-gray-400">
-            {description}
-          </p>
-        ) : (
-          <p className="mt-3 text-sm italic text-gray-400 dark:text-gray-500">
-            No description available
-          </p>
-        )}
+        {/* Description with fixed height and overflow handling */}
+        <div className="mt-3 flex-grow overflow-hidden">
+          {description ? (
+            <p className="line-clamp-3 text-sm text-gray-600 dark:text-gray-400">
+              {description}
+            </p>
+          ) : (
+            <p className="text-sm italic text-gray-400 dark:text-gray-500">
+              No description available
+            </p>
+          )}
+        </div>
       </div>
 
       {/* Call to action */}
-      <div className="border-t border-gray-100 bg-gray-50 px-4 py-3 dark:border-gray-700 dark:bg-gray-800">
+      <div className="mt-auto border-t border-gray-100 bg-gray-50 px-4 py-3 dark:border-gray-700 dark:bg-gray-800">
         <button
           className={`w-full rounded py-1.5 text-sm font-medium transition-colors ${
             isSelected

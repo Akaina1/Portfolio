@@ -65,7 +65,7 @@ const ClassDetails: React.FC<ClassDetailsProps> = ({
 
   return (
     <div
-      className={`overflow-hidden rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800/50 ${className}`}
+      className={`custom-scrollbar overflow-y-auto rounded-lg border border-gray-200 bg-white p-6 pr-2 shadow-sm dark:border-gray-700 dark:bg-gray-800/50 ${className}`}
     >
       {/* Class header */}
       <div className="mb-6 border-b border-gray-100 pb-4 dark:border-gray-700">

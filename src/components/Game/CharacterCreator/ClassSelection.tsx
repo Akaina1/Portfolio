@@ -220,62 +220,74 @@ const ClassSelection: React.FC<ClassSelectionProps> = ({
 
   return (
     <div className={`w-full ${className}`}>
-      <div className="mb-6">
-        <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-100">
-          Choose Your Class
-        </h2>
-        <p className="mt-2 text-gray-600 dark:text-gray-300">
-          Select a class that matches your preferred playstyle. Each class has
-          unique abilities, attributes, and resource systems.
-        </p>
-      </div>
+      <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
+        {/* Left column: Header and Class cards grid */}
+        <div className="w-full">
+          <div className="mb-6">
+            <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-100">
+              Choose Your Class
+            </h2>
+            <p className="mt-2 text-gray-600 dark:text-gray-300">
+              Select a class that matches your preferred playstyle. Each class
+              has unique abilities, attributes, and resource systems.
+            </p>
+          </div>
 
-      <div className="grid grid-cols-1 gap-8 md:grid-cols-5">
-        {/* Class cards grid */}
-        <div className="md:col-span-3">
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {characterClasses.map((characterClass) => {
-              // Validate that the character class has the required properties
-              const isValidClass =
-                characterClass &&
-                typeof characterClass === 'object' &&
-                '_id' in characterClass &&
-                'name' in characterClass;
+          {/* Wrapper with negative margin to preserve layout */}
+          <div className="-mx-2 -mt-2">
+            {/* Scrollable container with padding on all sides to prevent outline clipping */}
+            <div className="custom-scrollbar max-h-[600px] overflow-y-auto p-4 pr-2">
+              <div className="grid grid-cols-1 gap-8 sm:grid-cols-2">
+                {characterClasses.map((characterClass) => {
+                  // Validate that the character class has the required properties
+                  const isValidClass =
+                    characterClass &&
+                    typeof characterClass === 'object' &&
+                    '_id' in characterClass &&
+                    'name' in characterClass;
 
-              if (!isValidClass) {
-                console.error(
-                  'Invalid character class object:',
-                  characterClass
-                );
-                return null; // Skip rendering invalid classes
-              }
-
-              console.log(
-                `Rendering ClassCard for: ${characterClass.name}`,
-                characterClass
-              );
-              return (
-                <ClassCard
-                  key={`class-${characterClass._id}`}
-                  _id={characterClass._id}
-                  name={characterClass.name}
-                  category={characterClass.category || 'Unknown'}
-                  difficulty={characterClass.difficulty || 1}
-                  description={
-                    characterClass.description || 'No description available.'
+                  if (!isValidClass) {
+                    console.error(
+                      'Invalid character class object:',
+                      characterClass
+                    );
+                    return null; // Skip rendering invalid classes
                   }
-                  iconUrl={characterClass.iconUrl}
-                  isSelected={selectedClassId === characterClass._id}
-                  onSelect={handleClassSelect}
-                />
-              );
-            })}
+
+                  console.log(
+                    `Rendering ClassCard for: ${characterClass.name}`,
+                    characterClass
+                  );
+                  return (
+                    <div
+                      key={`class-container-${characterClass._id}`}
+                      className="p-2"
+                    >
+                      <ClassCard
+                        key={`class-${characterClass._id}`}
+                        _id={characterClass._id}
+                        name={characterClass.name}
+                        category={characterClass.category || 'Unknown'}
+                        difficulty={characterClass.difficulty || 1}
+                        description={
+                          characterClass.description ||
+                          'No description available.'
+                        }
+                        iconUrl={characterClass.iconUrl}
+                        isSelected={selectedClassId === characterClass._id}
+                        onSelect={handleClassSelect}
+                      />
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
           </div>
         </div>
 
-        {/* Class details panel */}
-        <div className="md:col-span-2">
-          <div className="sticky top-4 max-h-[calc(60vh-2rem)] overflow-y-auto">
+        {/* Right column: Class details panel */}
+        <div className="w-full">
+          <div className="custom-scrollbar sticky top-4 max-h-[700px] overflow-y-auto pr-2">
             {selectedClass && (
               <ClassDetails
                 key={`class-details-${selectedClassId || 'none'}`}
