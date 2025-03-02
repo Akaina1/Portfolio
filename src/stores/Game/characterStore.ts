@@ -248,7 +248,7 @@ export const useCharacterStore = create<CharacterState>((set, get) => ({
     try {
       const newCharacter = await characterService.createCharacter({
         name: characterName,
-        characterClassId: selectedClassId,
+        classId: selectedClassId,
       });
 
       // Update the player characters list with the new character

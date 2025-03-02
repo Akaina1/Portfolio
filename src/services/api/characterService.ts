@@ -9,7 +9,7 @@ import {
  */
 interface CreateCharacterRequest {
   name: string;
-  characterClassId: string;
+  classId: string;
 }
 
 /**

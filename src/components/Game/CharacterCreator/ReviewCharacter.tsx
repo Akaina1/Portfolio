@@ -20,7 +20,7 @@ interface ReviewCharacterProps {
  *
  * Third step in character creation process.
  * Displays a summary of the character for review before final submission.
- * Shows class details, character details, and appearance choices.
+ * Shows class details and character details.
  */
 const ReviewCharacter: React.FC<ReviewCharacterProps> = ({
   characterClass,
@@ -64,36 +64,46 @@ const ReviewCharacter: React.FC<ReviewCharacterProps> = ({
   return (
     <div className={`w-full ${className}`}>
       <div className="mb-6">
-        <h2 className="text-2xl font-bold text-gray-800">
+        <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-100">
           Review Your Character
         </h2>
-        <p className="mt-2 text-gray-600">
+        <p className="mt-2 text-gray-600 dark:text-gray-300">
           Review your character details before finalizing. Once created, some
           aspects cannot be changed.
         </p>
       </div>
 
-      <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
-        {/* Character summary */}
-        <div className="space-y-6">
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+        {/* Left column - Character summary */}
+        <div className="custom-scrollbar max-h-[600px] space-y-6 overflow-y-auto pr-2">
           {/* Basic info */}
-          <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
-            <h3 className="mb-4 text-lg font-semibold text-gray-800">
+          <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800/50">
+            <h3 className="mb-4 text-lg font-semibold text-gray-800 dark:text-gray-200">
               Character Summary
             </h3>
 
             <div className="space-y-3">
               <div className="flex justify-between">
-                <span className="font-medium text-gray-700">Name:</span>
-                <span className="text-gray-600">{characterDetails.name}</span>
+                <span className="font-medium text-gray-700 dark:text-gray-300">
+                  Name:
+                </span>
+                <span className="text-gray-600 dark:text-gray-400">
+                  {characterDetails.name}
+                </span>
               </div>
               <div className="flex justify-between">
-                <span className="font-medium text-gray-700">Class:</span>
-                <span className="text-gray-600">{characterClass.name}</span>
+                <span className="font-medium text-gray-700 dark:text-gray-300">
+                  Class:
+                </span>
+                <span className="text-gray-600 dark:text-gray-400">
+                  {characterClass.name}
+                </span>
               </div>
               <div className="flex justify-between">
-                <span className="font-medium text-gray-700">Gender:</span>
-                <span className="text-gray-600">
+                <span className="font-medium text-gray-700 dark:text-gray-300">
+                  Gender:
+                </span>
+                <span className="text-gray-600 dark:text-gray-400">
                   {characterDetails.gender.charAt(0).toUpperCase() +
                     characterDetails.gender.slice(1)}
                 </span>
@@ -101,93 +111,49 @@ const ReviewCharacter: React.FC<ReviewCharacterProps> = ({
             </div>
           </div>
 
-          {/* Appearance */}
-          <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
-            <h3 className="mb-4 text-lg font-semibold text-gray-800">
-              Appearance
-            </h3>
-
-            <div className="grid grid-cols-2 gap-3">
-              <div className="flex flex-col">
-                <span className="font-medium text-gray-700">Skin Tone:</span>
-                <span className="text-gray-600">
-                  {characterDetails.appearance.skinTone
-                    .charAt(0)
-                    .toUpperCase() +
-                    characterDetails.appearance.skinTone.slice(1)}
-                </span>
-              </div>
-              <div className="flex flex-col">
-                <span className="font-medium text-gray-700">Hair Style:</span>
-                <span className="text-gray-600">
-                  {characterDetails.appearance.hairStyle
-                    .charAt(0)
-                    .toUpperCase() +
-                    characterDetails.appearance.hairStyle.slice(1)}
-                </span>
-              </div>
-              <div className="flex flex-col">
-                <span className="font-medium text-gray-700">Hair Color:</span>
-                <span className="text-gray-600">
-                  {characterDetails.appearance.hairColor
-                    .charAt(0)
-                    .toUpperCase() +
-                    characterDetails.appearance.hairColor.slice(1)}
-                </span>
-              </div>
-              <div className="flex flex-col">
-                <span className="font-medium text-gray-700">Face Style:</span>
-                <span className="text-gray-600">
-                  {characterDetails.appearance.faceStyle
-                    .charAt(0)
-                    .toUpperCase() +
-                    characterDetails.appearance.faceStyle.slice(1)}
-                </span>
-              </div>
-            </div>
-          </div>
-
           {/* Backstory */}
           {characterDetails.backstory && (
-            <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
-              <h3 className="mb-4 text-lg font-semibold text-gray-800">
+            <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800/50">
+              <h3 className="mb-4 text-lg font-semibold text-gray-800 dark:text-gray-200">
                 Backstory
               </h3>
-              <p className="whitespace-pre-line text-gray-600">
+              <p className="whitespace-pre-line text-gray-600 dark:text-gray-400">
                 {characterDetails.backstory}
               </p>
             </div>
           )}
         </div>
 
-        {/* Class details */}
-        <div className="space-y-6">
+        {/* Right column - Class details */}
+        <div className="custom-scrollbar max-h-[600px] space-y-6 overflow-y-auto pr-2">
           {/* Class info */}
-          <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
-            <h3 className="mb-4 text-lg font-semibold text-gray-800">
+          <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800/50">
+            <h3 className="mb-4 text-lg font-semibold text-gray-800 dark:text-gray-200">
               Class Information
             </h3>
 
             <div className="mb-3">
-              <span className="font-medium text-gray-700">
+              <span className="font-medium text-gray-700 dark:text-gray-300">
                 {characterClass.name}
               </span>
-              <span className="ml-2 rounded-full bg-gray-100 px-2 py-1 text-xs text-gray-700">
+              <span className="ml-2 rounded-full bg-gray-100 px-2 py-1 text-xs text-gray-700 dark:bg-gray-700 dark:text-gray-300">
                 {characterClass.category}
               </span>
             </div>
 
-            <p className="mb-4 text-sm text-gray-600">
+            <p className="mb-4 text-sm text-gray-600 dark:text-gray-400">
               {characterClass.description}
             </p>
 
             <div className="flex items-center">
-              <span className="mr-2 text-sm text-gray-600">Difficulty:</span>
+              <span className="mr-2 text-sm text-gray-600 dark:text-gray-400">
+                Difficulty:
+              </span>
               <div className="flex">
                 {Array.from({ length: 5 }).map((_, i) => (
                   <svg
                     key={i}
-                    className={`h-4 w-4 ${i < characterClass.difficulty ? 'text-yellow-500' : 'text-gray-300'}`}
+                    className={`h-4 w-4 ${i < characterClass.difficulty ? 'text-yellow-500' : 'text-gray-300 dark:text-gray-600'}`}
                     fill="currentColor"
                     viewBox="0 0 20 20"
                     xmlns="http://www.w3.org/2000/svg"
@@ -200,8 +166,8 @@ const ReviewCharacter: React.FC<ReviewCharacterProps> = ({
           </div>
 
           {/* Attributes */}
-          <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
-            <h3 className="mb-4 text-lg font-semibold text-gray-800">
+          <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800/50">
+            <h3 className="mb-4 text-lg font-semibold text-gray-800 dark:text-gray-200">
               Attributes
             </h3>
             <AttributeDisplay
@@ -220,22 +186,22 @@ const ReviewCharacter: React.FC<ReviewCharacterProps> = ({
           </div>
 
           {/* Resource system */}
-          <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
-            <h3 className="mb-4 text-lg font-semibold text-gray-800">
+          <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800/50">
+            <h3 className="mb-4 text-lg font-semibold text-gray-800 dark:text-gray-200">
               Resource System
             </h3>
 
             <div className="space-y-4">
               <div>
                 <div className="mb-1 flex items-center justify-between">
-                  <span className="font-medium text-gray-700">
+                  <span className="font-medium text-gray-700 dark:text-gray-300">
                     {formatResourceType(characterClass.primaryResource.type)}
                   </span>
-                  <span className="text-sm text-gray-600">
+                  <span className="text-sm text-gray-600 dark:text-gray-400">
                     Base: {characterClass.primaryResource.baseValue}
                   </span>
                 </div>
-                <div className="h-2 w-full overflow-hidden rounded-full bg-gray-200">
+                <div className="h-2 w-full overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700">
                   <div
                     className={`h-full rounded-full ${getResourceColor(characterClass.primaryResource.type)}`}
                     style={{ width: '100%' }}
@@ -246,16 +212,16 @@ const ReviewCharacter: React.FC<ReviewCharacterProps> = ({
               {characterClass.secondaryResource && (
                 <div>
                   <div className="mb-1 flex items-center justify-between">
-                    <span className="font-medium text-gray-700">
+                    <span className="font-medium text-gray-700 dark:text-gray-300">
                       {formatResourceType(
                         characterClass.secondaryResource.type
                       )}
                     </span>
-                    <span className="text-sm text-gray-600">
+                    <span className="text-sm text-gray-600 dark:text-gray-400">
                       Base: {characterClass.secondaryResource.baseValue}
                     </span>
                   </div>
-                  <div className="h-2 w-full overflow-hidden rounded-full bg-gray-200">
+                  <div className="h-2 w-full overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700">
                     <div
                       className={`h-full rounded-full ${getResourceColor(characterClass.secondaryResource.type)}`}
                       style={{ width: '100%' }}
@@ -269,11 +235,11 @@ const ReviewCharacter: React.FC<ReviewCharacterProps> = ({
       </div>
 
       {/* Action buttons */}
-      <div className="mt-8 flex justify-between">
+      <div className="mt-6 flex justify-between">
         <button
           type="button"
           onClick={onBack}
-          className="rounded-md border border-gray-300 bg-white px-6 py-2 text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+          className="rounded-md border border-gray-300 bg-white px-6 py-2 text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600 dark:focus:ring-offset-gray-800"
           disabled={isSubmitting}
         >
           Back to Details
@@ -281,7 +247,7 @@ const ReviewCharacter: React.FC<ReviewCharacterProps> = ({
         <button
           type="button"
           onClick={handleSubmit}
-          className="rounded-md bg-blue-600 px-6 py-2 text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+          className="rounded-md bg-purple-600 px-6 py-2 text-white shadow-sm hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800"
           disabled={isSubmitting}
         >
           {isSubmitting ? (

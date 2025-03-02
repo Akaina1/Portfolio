@@ -18,12 +18,6 @@ interface CharacterDetailsProps {
 export interface CharacterFormValues {
   name: string;
   gender: 'male' | 'female' | 'other';
-  appearance: {
-    skinTone: string;
-    hairStyle: string;
-    hairColor: string;
-    faceStyle: string;
-  };
   backstory: string;
 }
 
@@ -33,12 +27,6 @@ export interface CharacterFormValues {
 const defaultFormValues: CharacterFormValues = {
   name: '',
   gender: 'male',
-  appearance: {
-    skinTone: 'medium',
-    hairStyle: 'short',
-    hairColor: 'brown',
-    faceStyle: 'neutral',
-  },
   backstory: '',
 };
 
@@ -46,7 +34,7 @@ const defaultFormValues: CharacterFormValues = {
  * CharacterDetails Component
  *
  * Second step in character creation process.
- * Allows customization of character name, appearance, and backstory.
+ * Allows customization of character name and backstory.
  * Shows base attributes from the selected class.
  */
 const CharacterDetails: React.FC<CharacterDetailsProps> = ({
@@ -69,25 +57,10 @@ const CharacterDetails: React.FC<CharacterDetailsProps> = ({
     >
   ) => {
     const { name, value } = e.target;
-
-    // Handle nested appearance properties
-    if (name.includes('.')) {
-      const [parent, child] = name.split('.');
-      if (parent === 'appearance') {
-        setFormValues((prev) => ({
-          ...prev,
-          appearance: {
-            ...prev.appearance,
-            [child]: value,
-          },
-        }));
-      }
-    } else {
-      setFormValues((prev) => ({
-        ...prev,
-        [name]: value,
-      }));
-    }
+    setFormValues((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
 
     // Clear error when field is edited
     if (errors[name as keyof CharacterFormValues]) {
@@ -134,37 +107,6 @@ const CharacterDetails: React.FC<CharacterDetailsProps> = ({
     })
   );
 
-  // Available options for customization
-  const skinTones = ['fair', 'light', 'medium', 'tan', 'dark', 'deep'];
-  const hairStyles = [
-    'short',
-    'long',
-    'curly',
-    'straight',
-    'bald',
-    'mohawk',
-    'ponytail',
-  ];
-  const hairColors = [
-    'black',
-    'brown',
-    'blonde',
-    'red',
-    'white',
-    'blue',
-    'green',
-    'purple',
-  ];
-  const faceStyles = [
-    'neutral',
-    'stern',
-    'friendly',
-    'wise',
-    'young',
-    'old',
-    'scarred',
-  ];
-
   // Common form input classes
   const inputBaseClass =
     'w-full rounded-md border px-4 py-2 focus:outline-none focus:ring-2';
@@ -178,8 +120,8 @@ const CharacterDetails: React.FC<CharacterDetailsProps> = ({
           Customize Your Character
         </h2>
         <p className="mt-2 text-gray-600 dark:text-gray-300">
-          Personalize your {selectedClass.name} with a unique name, appearance,
-          and backstory.
+          Personalize your {selectedClass.name} with a unique name and
+          backstory.
         </p>
       </div>
 
@@ -239,107 +181,6 @@ const CharacterDetails: React.FC<CharacterDetailsProps> = ({
               </div>
             </div>
 
-            {/* Appearance section */}
-            <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800/50">
-              <h3 className="mb-4 text-lg font-semibold text-gray-800 dark:text-gray-200">
-                Appearance
-              </h3>
-
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                {/* Skin tone */}
-                <div>
-                  <label
-                    htmlFor="appearance.skinTone"
-                    className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300"
-                  >
-                    Skin Tone
-                  </label>
-                  <select
-                    id="appearance.skinTone"
-                    name="appearance.skinTone"
-                    value={formValues.appearance.skinTone}
-                    onChange={handleInputChange}
-                    className={inputClass}
-                  >
-                    {skinTones.map((tone) => (
-                      <option key={tone} value={tone}>
-                        {tone.charAt(0).toUpperCase() + tone.slice(1)}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                {/* Hair style */}
-                <div>
-                  <label
-                    htmlFor="appearance.hairStyle"
-                    className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300"
-                  >
-                    Hair Style
-                  </label>
-                  <select
-                    id="appearance.hairStyle"
-                    name="appearance.hairStyle"
-                    value={formValues.appearance.hairStyle}
-                    onChange={handleInputChange}
-                    className={inputClass}
-                  >
-                    {hairStyles.map((style) => (
-                      <option key={style} value={style}>
-                        {style.charAt(0).toUpperCase() + style.slice(1)}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                {/* Hair color */}
-                <div>
-                  <label
-                    htmlFor="appearance.hairColor"
-                    className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300"
-                  >
-                    Hair Color
-                  </label>
-                  <select
-                    id="appearance.hairColor"
-                    name="appearance.hairColor"
-                    value={formValues.appearance.hairColor}
-                    onChange={handleInputChange}
-                    className={inputClass}
-                  >
-                    {hairColors.map((color) => (
-                      <option key={color} value={color}>
-                        {color.charAt(0).toUpperCase() + color.slice(1)}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                {/* Face style */}
-                <div>
-                  <label
-                    htmlFor="appearance.faceStyle"
-                    className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300"
-                  >
-                    Face Style
-                  </label>
-                  <select
-                    id="appearance.faceStyle"
-                    name="appearance.faceStyle"
-                    value={formValues.appearance.faceStyle}
-                    onChange={handleInputChange}
-                    className={inputClass}
-                  >
-                    {faceStyles.map((style) => (
-                      <option key={style} value={style}>
-                        {style.charAt(0).toUpperCase() + style.slice(1)}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-            </div>
-
             {/* Backstory section */}
             <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800/50">
               <h3 className="mb-4 text-lg font-semibold text-gray-800 dark:text-gray-200">
@@ -358,8 +199,8 @@ const CharacterDetails: React.FC<CharacterDetailsProps> = ({
                   name="backstory"
                   value={formValues.backstory}
                   onChange={handleInputChange}
-                  rows={4}
-                  className={inputClass}
+                  rows={3}
+                  className={`${inputClass} max-h-[120px]`}
                   placeholder="Write a brief backstory for your character..."
                 />
               </div>
