@@ -1,9 +1,13 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import TimeBar from '../../TimeBar';
 import SectionHeader from '../../../../utilities/sectionHeader';
 import KeybindButton from '../../KeybindButton';
 import SettingsModal from '../SettingsModal';
 import { useGameInterfaceStore } from '../../../../stores/Game/gameInterfaceStore';
+import { useSocketStore } from '../../../../stores/Game/socketStore';
+import { usePlayerStore } from '../../../../stores/Player/playerStore';
+import { useGameStore } from '../../../../stores/Game/gameStore';
+import { useCharacterStore } from '../../../../stores/Game/characterStore';
 
 const CommandConsole: React.FC = () => {
   const {
@@ -21,7 +25,50 @@ const CommandConsole: React.FC = () => {
     keybinds,
     showKeybindLabels,
     toggleSettingsModal,
+    resetStore,
   } = useGameInterfaceStore();
+
+  // Get socket store functions
+  const { disconnect: disconnectSocket, resetSocket } = useSocketStore();
+
+  // Get player store functions
+  const { clearPlayerData } = usePlayerStore();
+
+  // Get game store functions
+  const { goToAuth, setCharacter } = useGameStore();
+
+  // Get character store functions
+  const { resetForm } = useCharacterStore();
+
+  // Create logout function that coordinates all store actions
+  const handleLogout = useCallback(() => {
+    console.log('Logging out player...');
+
+    // 1. Disconnect from socket
+    disconnectSocket();
+    resetSocket();
+
+    // 2. Reset stores
+    resetStore(); // Reset game interface store
+    resetForm(); // Reset character creation form
+    setCharacter(null); // Clear selected character
+
+    // 3. Clear player data (tokens, etc.)
+    clearPlayerData();
+
+    // 4. Navigate to auth screen
+    goToAuth();
+
+    console.log('Logout complete');
+  }, [
+    disconnectSocket,
+    resetSocket,
+    resetStore,
+    resetForm,
+    setCharacter,
+    clearPlayerData,
+    goToAuth,
+  ]);
 
   // Get keybind for a specific action
   const getKeybind = (actionId: string) => {
@@ -242,14 +289,14 @@ const CommandConsole: React.FC = () => {
               Load
             </KeybindButton>
             <KeybindButton
-              actionId="exit"
-              label="Exit"
-              keybind={getKeybind('exit')}
-              onAction={() => console.log('Exit')}
+              actionId="logout"
+              label="Logout"
+              keybind={getKeybind('logout')}
+              onAction={handleLogout}
               className={utilityButtonClass}
               showKeybindLabel={showKeybindLabels}
             >
-              Exit
+              Logout
             </KeybindButton>
           </div>
         </div>
