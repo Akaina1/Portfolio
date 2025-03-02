@@ -228,9 +228,9 @@ const CharacterCreator: React.FC = () => {
   };
 
   return (
-    <div className="w-full max-w-none rounded-lg bg-white/50 px-4 py-8 shadow-lg dark:bg-gray-900/70">
+    <div className="w-full max-w-none rounded-lg bg-white/50 p-8 shadow-lg dark:bg-gray-900/70">
       {/* Header and Progress section with max width */}
-      <div className="mx-auto mb-6 max-w-6xl">
+      <div className="mx-auto max-w-9xl">
         <div className="flex items-center justify-between">
           <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">
             Create Your Character
@@ -273,7 +273,7 @@ const CharacterCreator: React.FC = () => {
       </div>
 
       {/* Step content - full width */}
-      <div className="w-full rounded-lg bg-white/80 px-6 py-2 shadow-inner dark:bg-gray-800/50">
+      <div className="h-[800px] w-full rounded-lg bg-white/80 px-6 py-2 shadow-inner dark:bg-gray-800/50">
         {renderStepContent()}
       </div>
     </div>

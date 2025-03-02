@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { CharacterClassResponse } from '@/types/CharacterResponse';
-import ClassCard from './ClassCard';
-import ClassDetails from './ClassDetails';
 import characterService from '@/services/api/characterService';
+import ClassList from './ClassList';
+import ClassDetailsPanel from './ClassDetailsPanel';
 
 /**
  * Props for the ClassSelection component
@@ -36,11 +36,16 @@ const ClassSelection: React.FC<ClassSelectionProps> = ({
     useState<CharacterClassResponse | null>(null);
   const [characterClasses, setCharacterClasses] =
     useState<CharacterClassResponse[]>(availableClasses);
+  const [isClassesLoading, setIsClassesLoading] = useState(initialIsLoading);
   const [isDetailLoading, setIsDetailLoading] = useState(false);
+  const [classesError, setClassesError] = useState<string | null>(initialError);
   const [detailError, setDetailError] = useState<string | null>(null);
   const [selectedClassId, setSelectedClassId] = useState<string | null>(
     initialSelectedClassId
   );
+
+  // Ref to track if classes have been fetched
+  const classesLoadedRef = React.useRef(false);
 
   // Add debug logging for component mounting and state changes
   useEffect(() => {
@@ -50,8 +55,10 @@ const ClassSelection: React.FC<ClassSelectionProps> = ({
       selectedClassId,
       selectedClass,
       initialIsLoading,
+      isClassesLoading,
       isDetailLoading,
       initialError,
+      classesError,
       detailError,
     });
   }, [
@@ -59,18 +66,33 @@ const ClassSelection: React.FC<ClassSelectionProps> = ({
     selectedClassId,
     selectedClass,
     initialIsLoading,
+    isClassesLoading,
     isDetailLoading,
     initialError,
+    classesError,
     detailError,
   ]);
 
+  // Fetch classes only once when component mounts
   useEffect(() => {
     const fetchClasses = async () => {
+      // Skip fetching if we already have classes or if we've already loaded them
+      if (
+        (characterClasses.length > 0 && !initialIsLoading) ||
+        classesLoadedRef.current
+      ) {
+        console.log('Classes already loaded, skipping fetch');
+        return;
+      }
+
       try {
-        setIsDetailLoading(true);
+        setIsClassesLoading(true);
         console.log('Fetching character classes...');
         const classes = await characterService.getCharacterClasses();
         console.log('Received character classes:', classes);
+
+        // Mark that we've loaded classes
+        classesLoadedRef.current = true;
 
         // Validate that classes is an array of the expected shape
         if (Array.isArray(classes)) {
@@ -91,18 +113,20 @@ const ClassSelection: React.FC<ClassSelectionProps> = ({
             'Invalid data format received for character classes:',
             classes
           );
-          setDetailError('Received invalid data format for character classes.');
+          setClassesError(
+            'Received invalid data format for character classes.'
+          );
         }
       } catch (error: unknown) {
         console.error('Error fetching character classes:', error);
-        setDetailError('Failed to load character classes. Please try again.');
+        setClassesError('Failed to load character classes. Please try again.');
       } finally {
-        setIsDetailLoading(false);
+        setIsClassesLoading(false);
       }
     };
 
     fetchClasses();
-  }, [selectedClassId]);
+  }, [characterClasses.length, initialIsLoading, selectedClassId]);
 
   const fetchClassDetails = async (id: string) => {
     if (!id) {
@@ -148,8 +172,8 @@ const ClassSelection: React.FC<ClassSelectionProps> = ({
     hasSelectedClass: !!selectedClass,
   });
 
-  // Loading state
-  if (initialIsLoading || isDetailLoading) {
+  // Loading state - only for initial class list load
+  if (isClassesLoading) {
     return (
       <div
         className={`flex h-full w-full items-center justify-center ${className}`}
@@ -164,9 +188,8 @@ const ClassSelection: React.FC<ClassSelectionProps> = ({
     );
   }
 
-  // Error state
-  if (initialError || detailError) {
-    const errorMessage = initialError || detailError;
+  // Error state for classes list loading
+  if (classesError) {
     return (
       <div
         className={`flex h-full w-full items-center justify-center ${className}`}
@@ -190,7 +213,7 @@ const ClassSelection: React.FC<ClassSelectionProps> = ({
             Error Loading Classes
           </h3>
           <p className="mt-2 text-sm text-red-600 dark:text-red-400">
-            {errorMessage}
+            {classesError}
           </p>
           <button
             className="mt-4 rounded-md bg-red-100 px-4 py-2 text-sm font-medium text-red-700 hover:bg-red-200 dark:bg-red-800/30 dark:text-red-300 dark:hover:bg-red-800/50"
@@ -235,66 +258,49 @@ const ClassSelection: React.FC<ClassSelectionProps> = ({
 
           {/* Wrapper with negative margin to preserve layout */}
           <div className="-mx-2 -mt-2">
-            {/* Scrollable container with padding on all sides to prevent outline clipping */}
-            <div className="custom-scrollbar max-h-[600px] overflow-y-auto p-4 pr-2">
-              <div className="grid grid-cols-1 gap-8 sm:grid-cols-2">
-                {characterClasses.map((characterClass) => {
-                  // Validate that the character class has the required properties
-                  const isValidClass =
-                    characterClass &&
-                    typeof characterClass === 'object' &&
-                    '_id' in characterClass &&
-                    'name' in characterClass;
-
-                  if (!isValidClass) {
-                    console.error(
-                      'Invalid character class object:',
-                      characterClass
-                    );
-                    return null; // Skip rendering invalid classes
-                  }
-
-                  console.log(
-                    `Rendering ClassCard for: ${characterClass.name}`,
-                    characterClass
-                  );
-                  return (
-                    <div
-                      key={`class-container-${characterClass._id}`}
-                      className="p-2"
-                    >
-                      <ClassCard
-                        key={`class-${characterClass._id}`}
-                        _id={characterClass._id}
-                        name={characterClass.name}
-                        category={characterClass.category || 'Unknown'}
-                        difficulty={characterClass.difficulty || 1}
-                        description={
-                          characterClass.description ||
-                          'No description available.'
-                        }
-                        iconUrl={characterClass.iconUrl}
-                        isSelected={selectedClassId === characterClass._id}
-                        onSelect={handleClassSelect}
-                      />
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
+            {/* The ClassList remains visible even when details are loading */}
+            <ClassList
+              classes={characterClasses}
+              selectedClassId={selectedClassId}
+              onClassSelect={handleClassSelect}
+            />
           </div>
         </div>
 
-        {/* Right column: Class details panel */}
+        {/* Right column: Class details panel - this is the only part that shows loading spinner */}
         <div className="w-full">
-          <div className="custom-scrollbar sticky top-4 max-h-[700px] overflow-y-auto pr-2">
-            {selectedClass && (
-              <ClassDetails
-                key={`class-details-${selectedClassId || 'none'}`}
-                characterClass={selectedClass}
-              />
-            )}
-          </div>
+          {/* Error message for details, if any */}
+          {detailError && !isDetailLoading && (
+            <div className="mb-4 rounded-md bg-red-50 p-4 dark:bg-red-900/20">
+              <div className="flex">
+                <div className="flex-shrink-0">
+                  <svg
+                    className="h-5 w-5 text-red-400"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                </div>
+                <div className="ml-3">
+                  <p className="text-sm text-red-700 dark:text-red-400">
+                    {detailError}
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* The ClassDetailsPanel handles its own loading state */}
+          <ClassDetailsPanel
+            selectedClass={selectedClass}
+            isLoading={isDetailLoading}
+            selectedClassId={selectedClassId}
+          />
         </div>
       </div>
     </div>
