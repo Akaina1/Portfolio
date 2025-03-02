@@ -275,7 +275,7 @@ const ClassSelection: React.FC<ClassSelectionProps> = ({
 
         {/* Class details panel */}
         <div className="md:col-span-2">
-          <div className="sticky top-4 max-h-[calc(100vh-2rem)] overflow-y-auto">
+          <div className="sticky top-4 max-h-[calc(60vh-2rem)] overflow-y-auto">
             {selectedClass && (
               <ClassDetails
                 key={`class-details-${selectedClassId || 'none'}`}

@@ -10,10 +10,10 @@ import CharacterCreationSuccess from './CharacterCreationSuccess';
  * Steps in the character creation process
  */
 const CREATION_STEPS = [
-  { label: 'Class Selection', description: 'Choose your character class' },
+  { label: 'Class Selection', description: 'Choose class' },
   {
     label: 'Character Details',
-    description: 'Customize appearance and backstory',
+    description: 'Customize backstory',
   },
   { label: 'Review', description: 'Review and confirm' },
   { label: 'Complete', description: 'Character created' },
@@ -242,7 +242,7 @@ const CharacterCreator: React.FC = () => {
       />
 
       {/* Step content */}
-      <div className="rounded-lg bg-white/80 p-6 shadow-inner dark:bg-gray-800/50">
+      <div className="rounded-lg bg-white/80 px-6 py-2 shadow-inner dark:bg-gray-800/50">
         {renderStepContent()}
       </div>
 

@@ -236,7 +236,7 @@ export const useCharacterCreation = () => {
       if (characterCount === 1 && createdCharacter) {
         // If only one character, set it and go directly to game
         useGameStore.getState().setCharacter({
-          id: createdCharacter.id,
+          id: createdCharacter._id,
           name: createdCharacter.name,
         });
         goToGame();

@@ -44,9 +44,9 @@ const StepProgress: React.FC<StepProgressProps> = ({
   };
 
   return (
-    <div className={`w-full px-14 py-4 ${className}`}>
+    <div className={`w-full px-14 ${className}`}>
       {/* Main container with relative positioning */}
-      <div className="relative h-36">
+      <div className="relative h-28">
         {/* Horizontal line for the progress indicator */}
         <div className="absolute left-0 right-0 top-5 h-0.5 bg-gray-300 dark:bg-gray-600" />
 
@@ -75,7 +75,7 @@ const StepProgress: React.FC<StepProgressProps> = ({
             // Circle background and border classes based on status
             const circleBgClass =
               isCompleted || isCurrent
-                ? 'bg-purple-100 dark:bg-purple-900/30 border-2 border-purple-600 dark:border-purple-500'
+                ? 'bg-purple-100 dark:bg-purple-900 border-2 border-purple-600 dark:border-purple-500'
                 : 'bg-gray-100 dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-600';
 
             return (
@@ -112,11 +112,13 @@ const StepProgress: React.FC<StepProgressProps> = ({
 
                 {/* Label - positioned below circle with consistent spacing */}
                 <div className="absolute left-1/2 top-12 mt-2 w-28 -translate-x-1/2 text-center">
-                  <div className="text-sm font-medium">{step.label}</div>
+                  <div className="text-nowrap text-sm font-medium">
+                    {step.label}
+                  </div>
 
                   {/* Description - optional */}
                   {step.description && (
-                    <div className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                    <div className="mt-1 text-nowrap text-center text-xs text-gray-500 dark:text-gray-400">
                       {step.description}
                     </div>
                   )}
