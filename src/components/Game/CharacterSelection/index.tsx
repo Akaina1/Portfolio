@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useCharacterStore } from '@/stores/Game/characterStore';
 import { useGameStore } from '@/stores/Game/gameStore';
+import SectionHeader from '@/utilities/sectionHeader';
 
 /**
  * Character display interface for the UI
@@ -166,14 +167,12 @@ const CharacterSelection: React.FC = () => {
   }
 
   return (
-    <div className="container mx-auto max-w-6xl px-4 py-8">
-      <div className="mb-8 flex items-center justify-between">
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">
-          Your Characters
-        </h1>
+    <div className="m-4 mx-auto w-[95%] rounded-lg bg-white p-4 shadow-lg dark:bg-gray-900/70">
+      <div className="mb-8 flex items-center justify-between p-14">
+        <SectionHeader text="Your Characters" icon="👤" version="v1.0" />
         <Link
           href="/game/characters/create"
-          className="rounded-md bg-blue-600 px-4 py-2 text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+          className="rounded-button bg-blue-600 px-4 py-2 text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
         >
           Create New Character
         </Link>
@@ -204,20 +203,20 @@ const CharacterSelection: React.FC = () => {
           </p>
           <Link
             href="/game/characters/create"
-            className="mt-6 inline-block rounded-md bg-blue-600 px-6 py-3 text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+            className="mt-6 inline-block rounded-button bg-blue-600 px-6 py-3 text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
           >
             Create Your First Character
           </Link>
         </div>
       ) : (
-        <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
+        <div className="grid grid-cols-1 p-14 md:grid-cols-3">
           {/* Character list */}
           <div className="md:col-span-2">
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="grid grid-cols-1 gap-14 sm:grid-cols-2 lg:grid-cols-5">
               {characterList.map((character) => (
                 <div
                   key={character.id}
-                  className={`relative flex flex-col overflow-hidden rounded-lg shadow-md transition-all duration-200 ${
+                  className={`relative flex flex-col overflow-hidden rounded-button border border-gray-200 bg-black/5 drop-shadow-dark-outline-white transition-all duration-200 hover:scale-125 dark:border-gray-700 dark:bg-neutral-800 ${
                     selectedCharacterId === character.id
                       ? 'scale-105 transform border-2 border-blue-500 shadow-lg'
                       : 'border border-gray-200 hover:border-blue-300 hover:shadow-lg'
@@ -255,14 +254,14 @@ const CharacterSelection: React.FC = () => {
 
                   {/* Character info */}
                   <div className="flex-grow p-4">
-                    <h3 className="text-lg font-semibold text-gray-800">
+                    <h3 className="text-lg font-bold text-gray-800 dark:text-gray-100">
                       {character.name}
                     </h3>
                     <div className="mt-1 flex items-center justify-between">
-                      <span className="text-sm text-gray-600">
+                      <span className="text-md text-yellow-500">
                         Level {character.level}
                       </span>
-                      <span className="rounded-full bg-gray-100 px-2 py-1 text-xs text-gray-700">
+                      <span className="rounded-full bg-orange-300 px-2 py-1 text-sm font-bold text-black">
                         {character.className}
                       </span>
                     </div>
@@ -282,8 +281,8 @@ const CharacterSelection: React.FC = () => {
             <div className="sticky top-4 space-y-6">
               {selectedCharacterId ? (
                 <>
-                  <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
-                    <h2 className="mb-4 text-xl font-semibold text-gray-800">
+                  <div className="rounded-button border border-gray-200 bg-black/5 p-6 shadow-sm">
+                    <h2 className="mb-4 text-xl font-semibold text-gray-800 dark:text-gray-100">
                       Selected Character
                     </h2>
 
@@ -297,17 +296,17 @@ const CharacterSelection: React.FC = () => {
                         <div className="space-y-4">
                           <div className="flex items-center space-x-4">
                             <div>
-                              <h3 className="text-lg font-semibold text-gray-800">
+                              <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100">
                                 {character.name}
                               </h3>
-                              <p className="text-sm text-gray-600">
+                              <p className="text-sm text-gray-600 dark:text-gray-400">
                                 Level {character.level} {character.className}
                               </p>
                             </div>
                           </div>
 
                           {character.lastPlayed && (
-                            <div className="rounded-md bg-gray-50 p-3 text-sm text-gray-600">
+                            <div className="rounded-md bg-gray-50 p-3 text-sm text-gray-600 dark:bg-gray-800 dark:text-gray-300">
                               <span className="font-medium">Last played:</span>{' '}
                               {character.lastPlayed}
                             </div>
@@ -319,20 +318,20 @@ const CharacterSelection: React.FC = () => {
 
                   <button
                     onClick={handlePlayCharacter}
-                    className="w-full rounded-md bg-green-600 py-3 text-center text-white shadow-sm hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
+                    className="w-full rounded-button bg-green-600 py-3 text-center text-white shadow-sm hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
                   >
                     Play Now
                   </button>
                 </>
               ) : (
-                <div className="rounded-lg border border-gray-200 bg-gray-50 p-6 text-center">
+                <div className="rounded-button border border-gray-200 bg-gray-50 p-6 text-center">
                   <p className="text-gray-600">Select a character to play</p>
                 </div>
               )}
 
               <Link
                 href="/game/characters/create"
-                className="block w-full rounded-md border border-blue-500 bg-white py-3 text-center text-blue-600 shadow-sm hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                className="block w-full rounded-button border border-blue-500 bg-white py-3 text-center text-blue-600 shadow-sm hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
               >
                 Create New Character
               </Link>

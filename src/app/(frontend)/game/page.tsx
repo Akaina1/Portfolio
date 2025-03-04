@@ -180,7 +180,6 @@ const GamePage: React.FC = () => {
       disconnect();
 
       e.preventDefault();
-      e.returnValue = '';
     };
 
     // Add event listener for browser close/refresh only
