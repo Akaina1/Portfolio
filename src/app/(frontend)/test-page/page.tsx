@@ -4,7 +4,7 @@ import { AreaMap } from '@/Game/components/GameInterface/AreaMap';
 import {
   getTerrainByCode,
   terrainRegistry,
-} from '@/Game/components/GameInterface/ASCII/terrainSymbols';
+} from '@/Game/utilities/terrainSymbols';
 import { AreaService } from '@/services/game/areaService';
 import { MapData } from '@/Game/types/AreaMap.types';
 

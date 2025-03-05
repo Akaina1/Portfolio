@@ -2,7 +2,7 @@ import { MapData, MapError, MapDimensions } from '../../types/AreaMap.types';
 import {
   getTerrainByKey,
   getTerrainByCode,
-} from '../../components/GameInterface/ASCII/terrainSymbols';
+} from '../../utilities/terrainSymbols';
 import {
   isValidTerrainCode,
   validateDimensions,

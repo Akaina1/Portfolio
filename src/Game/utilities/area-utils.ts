@@ -5,7 +5,7 @@ import {
   MAX_MAP_DIMENSIONS,
   TerrainProperties,
 } from '@/Game/types/AreaMap.types';
-import { terrainRegistry } from '@/Game/components/GameInterface/ASCII/terrainSymbols';
+import { terrainRegistry } from '@/Game/utilities/terrainSymbols';
 
 /**
  * Type guard to check if a number is a valid terrain code

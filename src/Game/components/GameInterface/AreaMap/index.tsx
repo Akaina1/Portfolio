@@ -1,5 +1,8 @@
 import { useMemo } from 'react';
-import { terrainRegistry, getTerrainByCode } from '../ASCII/terrainSymbols';
+import {
+  terrainRegistry,
+  getTerrainByCode,
+} from '../../../utilities/terrainSymbols';
 import { AreaMapProps } from '@/Game/types/AreaMap.types';
 
 /**

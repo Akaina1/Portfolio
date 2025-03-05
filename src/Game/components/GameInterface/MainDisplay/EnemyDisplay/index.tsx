@@ -1,5 +1,5 @@
 import { EnemyDisplayProps } from '@/Game/types/EnemyDisplay.types';
-import { enemyArtCollection } from '../../ASCII/enemyArt';
+import { enemyArtCollection } from '../../../../utilities/enemyArt';
 
 export const EnemyDisplay: React.FC<EnemyDisplayProps> = ({
   type,

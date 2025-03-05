@@ -6,7 +6,7 @@ import React, {
   useCallback,
   useMemo,
 } from 'react';
-import { terrainRegistry } from '@/Game/components/GameInterface/ASCII/terrainSymbols';
+import { terrainRegistry } from '@/Game/utilities/terrainSymbols';
 import { AreaMap } from '@/Game/components/GameInterface/AreaMap';
 import { AreaService } from '@/Game/services/area/areaService';
 import { MapData } from '@/Game/types/AreaMap.types';
@@ -15,8 +15,8 @@ console.log('Available terrain types:', Object.keys(terrainRegistry));
 
 export default function MapCreator() {
   // State for map dimensions
-  const [mapWidth, setMapWidth] = useState(10);
-  const [mapHeight, setMapHeight] = useState(10);
+  const [mapWidth, setMapWidth] = useState(11);
+  const [mapHeight, setMapHeight] = useState(11);
 
   // State for the map data
   const [mapData, setMapData] = useState<MapData | null>(null);
@@ -72,6 +72,36 @@ export default function MapCreator() {
 
     return legendMapData;
   }, []);
+
+  // Update the dimension change handlers to properly reset the map
+  const handleDimensionChange = useCallback(
+    (newWidth: number, newHeight: number) => {
+      // Validate dimensions
+      if (newWidth < 1 || newHeight < 1 || newWidth > 50 || newHeight > 50) {
+        return;
+      }
+
+      // Create new map with new dimensions
+      try {
+        const newMapData = AreaService.createWalledMap({
+          width: newWidth,
+          height: newHeight,
+        });
+
+        // Reset history and set new map
+        setMapData(newMapData);
+        setHistory([newMapData]);
+        setHistoryIndex(0);
+
+        // Update dimensions
+        setMapWidth(newWidth);
+        setMapHeight(newHeight);
+      } catch (error) {
+        console.error('Failed to resize map:', error);
+      }
+    },
+    []
+  );
 
   // Initialize map with default terrain
   const initializeMap = useCallback(() => {
@@ -435,10 +465,13 @@ export default function MapCreator() {
             <label className="block text-sm font-medium">Width:</label>
             <input
               type="number"
-              min="0"
+              min="1"
               max="50"
               value={mapWidth}
-              onChange={(e) => setMapWidth(parseInt(e.target.value) || 10)}
+              onChange={(e) => {
+                const newWidth = parseInt(e.target.value) || 1;
+                handleDimensionChange(newWidth, mapHeight);
+              }}
               className="mt-1 w-20 rounded border border-gray-600 bg-gray-700 px-2 py-1 text-white"
             />
           </div>
@@ -447,10 +480,13 @@ export default function MapCreator() {
             <label className="block text-sm font-medium">Height:</label>
             <input
               type="number"
-              min="0"
+              min="1"
               max="50"
               value={mapHeight}
-              onChange={(e) => setMapHeight(parseInt(e.target.value) || 10)}
+              onChange={(e) => {
+                const newHeight = parseInt(e.target.value) || 1;
+                handleDimensionChange(mapWidth, newHeight);
+              }}
               className="mt-1 w-20 rounded border border-gray-600 bg-gray-700 px-2 py-1 text-white"
             />
           </div>
