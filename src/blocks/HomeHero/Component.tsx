@@ -5,7 +5,7 @@ import type { HomeHeroBlock as HomeHeroProps } from '@/payload-types';
 import { CMSLink } from '@/components/Link';
 import { cn } from '@/utilities/cn';
 import { secretCodes, type SecretData, type MediaData } from './secrets';
-import { useAchievementStore } from '@/stores/Achievement/useAchievementStore';
+import { useAchievementStore } from '@/Game/stores/Achievement/useAchievementStore';
 import Image from 'next/image';
 import { EXPANDED_TEXT_OPTIONS } from './expandedText';
 import { AnimatedDivider } from '@/components/AnimatedDivider';
