@@ -5,7 +5,7 @@ import {
   getTerrainByCode,
   terrainRegistry,
 } from '@/Game/utilities/terrainSymbols';
-import { AreaService } from '@/services/game/areaService';
+import { AreaService } from '@/Game/services/area/areaService';
 import { MapData } from '@/Game/types/AreaMap.types';
 
 /**
@@ -113,7 +113,7 @@ export default function TestPage() {
         setLastAction(
           `Moved to ${terrain?.name.toLowerCase() ?? 'unknown terrain'}`
         );
-        setMovementCooldown(5);
+        setMovementCooldown(1);
       } else {
         setLastAction(`Cannot move: ${validation.reason}`);
       }
