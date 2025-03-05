@@ -43,7 +43,7 @@ const terrainRegistry: Record<string, TerrainDefinition> = {
   water: {
     code: TILE_RANGES.BASE_TERRAIN.start + 2,
     type: 'base',
-    symbol: '~',
+    symbol: '≋',
     color: 'text-blue-400',
     name: 'Water',
     properties: {
@@ -55,7 +55,7 @@ const terrainRegistry: Record<string, TerrainDefinition> = {
   tree: {
     code: TILE_RANGES.NATURAL.start,
     type: 'natural',
-    symbol: '♣',
+    symbol: '🌲',
     color: 'text-green-700',
     name: 'Tree',
     properties: {
@@ -66,7 +66,7 @@ const terrainRegistry: Record<string, TerrainDefinition> = {
   grass: {
     code: TILE_RANGES.NATURAL.start + 1,
     type: 'natural',
-    symbol: '"',
+    symbol: '░',
     color: 'text-green-500',
     name: 'Grass',
     properties: {
@@ -76,7 +76,7 @@ const terrainRegistry: Record<string, TerrainDefinition> = {
   mountain: {
     code: TILE_RANGES.NATURAL.start + 2,
     type: 'natural',
-    symbol: '▲',
+    symbol: '🗻',
     color: 'text-gray-600',
     name: 'Mountain',
     properties: {
@@ -88,9 +88,9 @@ const terrainRegistry: Record<string, TerrainDefinition> = {
   door: {
     code: TILE_RANGES.STRUCTURES.start,
     type: 'structure',
-    symbol: '◙',
-    color: 'text-yellow-800',
-    name: 'Door',
+    symbol: '🏰',
+    color: '',
+    name: 'Castle',
     properties: {
       passable: true,
       interactive: true,
@@ -99,7 +99,7 @@ const terrainRegistry: Record<string, TerrainDefinition> = {
   bridge: {
     code: TILE_RANGES.STRUCTURES.start + 1,
     type: 'structure',
-    symbol: '=',
+    symbol: '⌧',
     color: 'text-yellow-700',
     name: 'Bridge',
     properties: {
@@ -163,12 +163,23 @@ const terrainRegistry: Record<string, TerrainDefinition> = {
       interactive: true,
     },
   },
+  volcano: {
+    code: TILE_RANGES.OBJECTS.start + 3,
+    type: 'object',
+    symbol: '🌋',
+    color: 'text-red-400',
+    name: 'Volcano',
+    properties: {
+      passable: true,
+      interactive: true,
+    },
+  },
 
   // Entities (2048-4095)
   player: {
     code: TILE_RANGES.ENTITIES.start,
     type: 'entity',
-    symbol: '@',
+    symbol: '👤',
     color: 'text-blue-500 font-bold',
     name: 'Player',
     properties: {
@@ -179,7 +190,7 @@ const terrainRegistry: Record<string, TerrainDefinition> = {
   enemy: {
     code: TILE_RANGES.ENTITIES.start + 1,
     type: 'entity',
-    symbol: 'E',
+    symbol: '👹',
     color: 'text-red-500',
     name: 'Enemy',
     properties: {
@@ -190,9 +201,20 @@ const terrainRegistry: Record<string, TerrainDefinition> = {
   npc: {
     code: TILE_RANGES.ENTITIES.start + 2,
     type: 'entity',
-    symbol: 'N',
+    symbol: '🧑🏻',
     color: 'text-purple-500',
     name: 'NPC',
+    properties: {
+      passable: false,
+      interactive: true,
+    },
+  },
+  rock: {
+    code: TILE_RANGES.ENTITIES.start + 3,
+    type: 'entity',
+    symbol: '⛰',
+    color: 'text-neutral-500',
+    name: 'Rock',
     properties: {
       passable: false,
       interactive: true,

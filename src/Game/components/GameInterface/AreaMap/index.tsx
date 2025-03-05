@@ -83,7 +83,7 @@ export const AreaMap: React.FC<AreaMapProps> = ({
   return (
     <div className={`flex flex-col items-center ${className}`}>
       <h3 className="mb-4 text-lg font-bold">Current Location: {roomName}</h3>
-      <div className="mb-4 border-2 border-gray-700 bg-gray-900 p-2">
+      <div className="mb-4 border-2 border-gray-700 bg-gray-200 p-2 dark:bg-gray-900">
         <div className="font-mono text-sm leading-none">{mapGrid}</div>
       </div>
       {legendElement}

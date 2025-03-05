@@ -1,34 +1,20 @@
 import React, { useMemo, useState } from 'react';
-import { messages, currentEnemy } from '../../../data/MainDisplay.data';
-import { renderMessage } from './renderMessage';
+import { currentEnemy } from '../../../data/MainDisplay.data';
 import SectionHeader from '@/Game/utilities/sectionHeader';
 import { ZoomableWorldMap } from '../WorldMap';
 import { EnemyDisplay } from './EnemyDisplay';
 import { AreaMap } from '../AreaMap';
 import { MapData } from '@/Game/types/AreaMap.types';
 import { AreaService } from '@/Game/services/area/areaService';
+import { mapData } from '../../../data/MainDisplay.data';
 
-type DisplayMode = 'messages' | 'map' | 'worldmap' | 'combat';
+type DisplayMode = 'map' | 'worldmap' | 'combat';
 
 const MainDisplay: React.FC = () => {
-  const [displayMode, setDisplayMode] = useState<DisplayMode>('messages');
+  const [displayMode, setDisplayMode] = useState<DisplayMode>('map');
 
-  // Example map data - more complex village with different terrain types
-  const mapData = useMemo<MapData>(() => {
-    const NewMapData = {
-      tiles: [
-        1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 257, 257, 257, 257, 257, 2, 2, 2, 1, 1,
-        257, 257, 257, 257, 257, 257, 2, 2, 1, 1, 257, 257, 257, 257, 257, 257,
-        257, 2, 1, 1, 257, 257, 256, 257, 257, 257, 257, 257, 1, 1, 257, 257,
-        257, 256, 256, 256, 257, 257, 1, 1, 257, 257, 257, 257, 256, 256, 257,
-        257, 1, 1, 258, 257, 257, 257, 257, 257, 257, 257, 1, 1, 258, 258, 257,
-        257, 257, 257, 257, 257, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-      ],
-      dimensions: { width: 10, height: 10 },
-      version: 1,
-    };
-
-    // Parse the map data using AreaService
+  const NewMapData = useMemo<MapData>(() => {
+    const NewMapData = mapData;
     return AreaService.deserializeMap(JSON.stringify(NewMapData));
   }, []);
 
@@ -37,16 +23,6 @@ const MainDisplay: React.FC = () => {
       <div className="flex items-center justify-between">
         <SectionHeader text="Main Display" icon="📺" version="v1.0" />
         <div className="flex space-x-2">
-          <button
-            className={`rounded px-2 py-1 text-xs ${
-              displayMode === 'messages'
-                ? 'bg-purple-500 text-white'
-                : 'bg-gray-200 text-gray-700 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600'
-            }`}
-            onClick={() => setDisplayMode('messages')}
-          >
-            Messages
-          </button>
           <button
             className={`rounded px-2 py-1 text-xs ${
               displayMode === 'map'
@@ -85,10 +61,8 @@ const MainDisplay: React.FC = () => {
 
       {/* Display content based on mode */}
       <div className="custom-scrollbar flex-1 overflow-y-auto pr-2">
-        {displayMode === 'messages' && messages.map(renderMessage)}
-
         {displayMode === 'map' && (
-          <AreaMap mapData={mapData} roomName="Meadowbrook Village" />
+          <AreaMap mapData={NewMapData} roomName="Meadowbrook Village" />
         )}
 
         {displayMode === 'worldmap' && <ZoomableWorldMap />}

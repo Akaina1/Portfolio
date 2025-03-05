@@ -1,10 +1,33 @@
 import type { ChatChannel } from '@/Game/types/ChatChannel.types';
 import SectionHeader from '@/Game/utilities/sectionHeader';
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import { renderMessage } from '../MainDisplay/renderMessage';
+import { useMessageStore } from '@/Game/stores/Messages/messageStore';
 
 const ChatConsole: React.FC = () => {
   const [message, setMessage] = useState('');
-  const [activeChannel, setActiveChannel] = useState<ChatChannel>('world');
+  const [activeChannel, setActiveChannel] = useState<ChatChannel>('general');
+  const { messages, simulateMessages, stopSimulation } = useMessageStore();
+  const messagesContainerRef = useRef<HTMLDivElement>(null);
+
+  // Auto-scroll to bottom when new messages arrive
+  const scrollToBottom = () => {
+    if (messagesContainerRef.current) {
+      const container = messagesContainerRef.current;
+      container.scrollTop = container.scrollHeight;
+    }
+  };
+
+  // Scroll when messages update
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
+
+  // Start message simulation when component mounts
+  useEffect(() => {
+    simulateMessages();
+    return () => stopSimulation();
+  }, [simulateMessages, stopSimulation]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -15,6 +38,7 @@ const ChatConsole: React.FC = () => {
 
   // Define all available channels
   const allChannels: ChatChannel[] = [
+    'general',
     'world',
     'local',
     'party',
@@ -71,11 +95,16 @@ const ChatConsole: React.FC = () => {
         )}
       </div>
 
-      <div className="flex-1 overflow-y-auto rounded bg-white/30 p-2 dark:bg-black/30">
-        <div className="text-sm text-gray-500">
-          Welcome to the {activeChannel} chat.
-        </div>
-        {/* Chat messages would be rendered here */}
+      <div
+        ref={messagesContainerRef}
+        className="custom-scrollbar flex-1 overflow-y-auto rounded bg-white/30 p-2 dark:bg-black/30"
+      >
+        {activeChannel === 'general' && messages.map(renderMessage)}
+        {activeChannel !== 'general' && (
+          <div className="text-sm text-gray-500">
+            Welcome to the {activeChannel} chat.
+          </div>
+        )}
       </div>
 
       <form onSubmit={handleSubmit} className="mt-2 flex">
