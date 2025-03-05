@@ -15,7 +15,7 @@ import { draftMode } from 'next/headers';
 
 import './globals.css';
 import { getServerSideURL } from '@/utilities/getURL';
-import { GameInterfaceProvider } from '@/providers/GameInterfaceProvider';
+import { GameInterfaceProvider } from '@/Game/providers/GameInterfaceProvider';
 
 export default async function RootLayout({
   children,

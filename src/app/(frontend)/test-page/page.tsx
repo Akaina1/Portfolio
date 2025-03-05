@@ -1,12 +1,12 @@
 'use client';
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import { AreaMap } from '@/components/Game/GameInterface/AreaMap';
+import { AreaMap } from '@/Game/components/GameInterface/AreaMap';
 import {
   getTerrainByCode,
   terrainRegistry,
-} from '@/components/Game/GameInterface/ASCII/terrainSymbols';
+} from '@/Game/components/GameInterface/ASCII/terrainSymbols';
 import { AreaService } from '@/services/game/areaService';
-import { MapData } from '@/types/AreaMap.types';
+import { MapData } from '@/Game/types/AreaMap.types';
 
 /**
  * Test Page Component

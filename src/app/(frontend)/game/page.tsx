@@ -1,15 +1,15 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import DeviceWarning from '@/components/Game/DeviceWarning';
-import AuthView from '@/components/Game/AuthView';
-import GameInterface from '@/components/Game/GameInterface';
-import CharacterCreator from '@/components/Game/CharacterCreator';
-import CharacterSelection from '@/components/Game/CharacterSelection';
+import DeviceWarning from '@/Game/components/DeviceWarning';
+import AuthView from '@/Game/components/AuthView';
+import GameInterface from '@/Game/components/GameInterface';
+import CharacterCreator from '@/Game/components/CharacterCreator';
+import CharacterSelection from '@/Game/components/CharacterSelection';
 import { useGameStore } from '@/stores/Game/gameStore';
 import { usePathname } from 'next/navigation';
 import { useGameInterfaceStore } from '@/stores/Game/gameInterfaceStore';
-import { useSocket } from '@/hooks/useSocket';
+import { useSocket } from '@/Game/hooks/useSocket';
 import { usePlayerStore } from '@/stores/Player/playerStore';
 import authService from '@/services/api/authService';
 import { useSocketStore } from '@/stores/Game/socketStore';

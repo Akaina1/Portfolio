@@ -6,10 +6,10 @@ import React, {
   useCallback,
   useMemo,
 } from 'react';
-import { terrainRegistry } from '@/components/Game/GameInterface/ASCII/terrainSymbols';
-import { AreaMap } from '@/components/Game/GameInterface/AreaMap';
+import { terrainRegistry } from '@/Game/components/GameInterface/ASCII/terrainSymbols';
+import { AreaMap } from '@/Game/components/GameInterface/AreaMap';
 import { AreaService } from '@/services/game/areaService';
-import { MapData } from '@/types/AreaMap.types';
+import { MapData } from '@/Game/types/AreaMap.types';
 
 console.log('Available terrain types:', Object.keys(terrainRegistry));
 
