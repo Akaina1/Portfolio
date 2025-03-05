@@ -19,11 +19,10 @@ export default function MapCreator() {
   const [mapHeight, setMapHeight] = useState(10);
 
   // State for the map data
-  const [mapData, setMapData] = useState<string[][]>([]);
-  const [encodedMap, setEncodedMap] = useState<MapData | null>(null);
+  const [mapData, setMapData] = useState<MapData | null>(null);
 
   // History for undo functionality
-  const [history, setHistory] = useState<string[][][]>([]);
+  const [history, setHistory] = useState<MapData[]>([]);
   const [historyIndex, setHistoryIndex] = useState(-1);
 
   // State for the currently selected terrain type
@@ -56,19 +55,25 @@ export default function MapCreator() {
   const [endPoint, setEndPoint] = useState<{ x: number; y: number } | null>(
     null
   );
-  const [previewMap, setPreviewMap] = useState<string[][] | null>(null);
+  const [previewMap, setPreviewMap] = useState<MapData | null>(null);
 
   // Create a static map for legend generation
   // This adds all terrain types to a small map
-  const legendMap = useMemo(() => {
-    // Get all terrain keys
-    const terrainKeys = Object.keys(terrainRegistry);
+  const legendMap = useMemo<MapData>(() => {
+    const terrainCodes = Object.values(terrainRegistry).map((t) => t.code);
+    const legendMapData = AreaService.createEmptyMap({
+      width: terrainCodes.length,
+      height: 1,
+    });
 
-    // Create a 1xN map with one cell for each terrain type
-    return [terrainKeys];
+    terrainCodes.forEach((code, index) => {
+      AreaService.setTile(legendMapData, index, 0, code);
+    });
+
+    return legendMapData;
   }, []);
 
-  // Initialize map with default terrain (floor surrounded by walls)
+  // Initialize map with default terrain
   const initializeMap = useCallback(() => {
     try {
       const newMapData = AreaService.createWalledMap({
@@ -76,22 +81,18 @@ export default function MapCreator() {
         height: mapHeight,
       });
 
-      // Decode for string[][] compatibility
-      const decodedMap = AreaService.decodeMapData(newMapData);
-      setMapData(decodedMap.tiles);
-      setEncodedMap(newMapData);
-
-      // Update history
-      setHistory([JSON.parse(JSON.stringify(decodedMap.tiles))]);
+      setMapData(newMapData);
+      setHistory([newMapData]);
       setHistoryIndex(0);
     } catch (error) {
       console.error('Failed to initialize map:', error);
-      // Fallback to a basic empty map if initialization fails
-      const emptyMap = Array(mapHeight)
-        .fill(null)
-        .map(() => Array(mapWidth).fill('empty'));
+      // Fallback to empty map
+      const emptyMap = AreaService.createEmptyMap({
+        width: mapWidth,
+        height: mapHeight,
+      });
       setMapData(emptyMap);
-      setHistory([JSON.parse(JSON.stringify(emptyMap))]);
+      setHistory([emptyMap]);
       setHistoryIndex(0);
     }
   }, [mapHeight, mapWidth]);
@@ -102,50 +103,45 @@ export default function MapCreator() {
   }, [mapWidth, mapHeight, initializeMap]);
 
   // Save current state to history before making changes
-  const saveToHistory = (newMapData: string[][]) => {
-    // If we're not at the end of the history, remove future states
+  const saveToHistory = (newMapData: MapData) => {
     const newHistory = history.slice(0, historyIndex + 1);
-    // Add the new state
-    newHistory.push(JSON.parse(JSON.stringify(newMapData)));
-    // Update history and index
+    // Create a new MapData object to ensure immutability
+    const mapCopy = AreaService.deserializeMap(
+      AreaService.serializeMap(newMapData)
+    );
+    newHistory.push(mapCopy);
     setHistory(newHistory);
     setHistoryIndex(newHistory.length - 1);
   };
 
   // Handle cell click to change terrain
-  const handleCellClick = (rowIndex: number, colIndex: number) => {
-    if (drawingTool === 'single') {
-      // Save current state to history before making changes
-      saveToHistory(mapData);
+  const handleCellClick = (x: number, y: number) => {
+    if (!mapData || drawingTool !== 'single') return;
 
-      // Update the map
-      const newMapData = JSON.parse(JSON.stringify(mapData));
-      newMapData[rowIndex][colIndex] = selectedTerrain;
-      setMapData(newMapData);
+    saveToHistory(mapData);
 
-      // Update encoded map
-      try {
-        const newEncodedMap = AreaService.encodeMapData(newMapData);
-        setEncodedMap(newEncodedMap);
-      } catch (error) {
-        console.error('Error encoding map:', error);
-      }
-    }
+    // Create a new MapData object
+    const newMapData = AreaService.deserializeMap(
+      AreaService.serializeMap(mapData)
+    );
+    const terrainCode = terrainRegistry[selectedTerrain].code;
+    AreaService.setTile(newMapData, x, y, terrainCode);
+    setMapData(newMapData);
   };
 
   // Undo the last action
   const handleUndo = () => {
     if (historyIndex > 0) {
       setHistoryIndex(historyIndex - 1);
-      setMapData(JSON.parse(JSON.stringify(history[historyIndex - 1])));
+      setMapData(history[historyIndex - 1]);
     }
   };
 
   // Generate code for the map
   const generateCode = () => {
-    if (!encodedMap) return '';
+    if (!mapData) return '';
 
-    const serialized = AreaService.serializeMap(encodedMap);
+    const serialized = AreaService.serializeMap(mapData);
     return (
       `// Map: ${mapName}\n` +
       `// Dimensions: ${mapWidth}x${mapHeight}\n\n` +
@@ -164,16 +160,20 @@ export default function MapCreator() {
 
   // Fill area with selected terrain
   const fillArea = () => {
+    if (!mapData) return;
+
     // Save current state to history before making changes
     saveToHistory(mapData);
 
     try {
-      const newEncodedMap = AreaService.encodeMapData(mapData);
+      const newMapData = AreaService.deserializeMap(
+        AreaService.serializeMap(mapData)
+      );
       const terrainCode = terrainRegistry[selectedTerrain].code;
 
       // Fill the interior while preserving walls
       AreaService.fillArea(
-        newEncodedMap,
+        newMapData,
         1,
         1,
         mapWidth - 2,
@@ -181,10 +181,7 @@ export default function MapCreator() {
         terrainCode
       );
 
-      // Decode back for display
-      const decodedMap = AreaService.decodeMapData(newEncodedMap);
-      setMapData(decodedMap.tiles);
-      setEncodedMap(newEncodedMap);
+      setMapData(newMapData);
     } catch (error) {
       console.error('Error filling area:', error);
     }
@@ -208,10 +205,10 @@ export default function MapCreator() {
     y0: number,
     x1: number,
     y1: number,
-    map: string[][],
-    terrain: string
-  ) => {
-    const newMap = JSON.parse(JSON.stringify(map));
+    map: MapData,
+    terrainCode: number
+  ): MapData => {
+    const newMap = AreaService.deserializeMap(AreaService.serializeMap(map));
 
     const dx = Math.abs(x1 - x0);
     const dy = Math.abs(y1 - y0);
@@ -221,7 +218,7 @@ export default function MapCreator() {
 
     while (true) {
       if (x0 >= 0 && x0 < mapWidth && y0 >= 0 && y0 < mapHeight) {
-        newMap[y0][x0] = terrain;
+        AreaService.setTile(newMap, x0, y0, terrainCode);
       }
 
       if (x0 === x1 && y0 === y1) break;
@@ -245,11 +242,11 @@ export default function MapCreator() {
     y0: number,
     x1: number,
     y1: number,
-    map: string[][],
-    terrain: string,
+    map: MapData,
+    terrainCode: number,
     fill: boolean
-  ) => {
-    const newMap = JSON.parse(JSON.stringify(map));
+  ): MapData => {
+    const newMap = AreaService.deserializeMap(AreaService.serializeMap(map));
 
     // Ensure x0,y0 is the top-left and x1,y1 is the bottom-right
     const [startX, endX] = [Math.min(x0, x1), Math.max(x0, x1)];
@@ -260,7 +257,7 @@ export default function MapCreator() {
         // For outline, only draw if on the perimeter
         if (fill || y === startY || y === endY || x === startX || x === endX) {
           if (x >= 0 && x < mapWidth && y >= 0 && y < mapHeight) {
-            newMap[y][x] = terrain;
+            AreaService.setTile(newMap, x, y, terrainCode);
           }
         }
       }
@@ -274,11 +271,11 @@ export default function MapCreator() {
     centerX: number,
     centerY: number,
     radius: number,
-    map: string[][],
-    terrain: string,
+    map: MapData,
+    terrainCode: number,
     fill: boolean
-  ) => {
-    const newMap = JSON.parse(JSON.stringify(map));
+  ): MapData => {
+    const newMap = AreaService.deserializeMap(AreaService.serializeMap(map));
 
     // Calculate radius based on the distance between start and end points
     for (let y = 0; y < mapHeight; y++) {
@@ -294,7 +291,7 @@ export default function MapCreator() {
           (fill && distance <= radius) ||
           (!fill && Math.abs(distance - radius) < 0.5)
         ) {
-          newMap[y][x] = terrain;
+          AreaService.setTile(newMap, x, y, terrainCode);
         }
       }
     }
@@ -304,8 +301,10 @@ export default function MapCreator() {
 
   // Handle mouse down to start drawing
   const handleMouseDown = (rowIndex: number, colIndex: number) => {
+    if (!mapData) return;
+
     if (drawingTool === 'single') {
-      handleCellClick(rowIndex, colIndex);
+      handleCellClick(colIndex, rowIndex);
       return;
     }
 
@@ -313,40 +312,44 @@ export default function MapCreator() {
     setStartPoint({ x: colIndex, y: rowIndex });
     setEndPoint({ x: colIndex, y: rowIndex });
 
-    // Show preview for initial point
-    const preview = JSON.parse(JSON.stringify(mapData));
-    preview[rowIndex][colIndex] = selectedTerrain;
+    // Create preview map
+    const preview = AreaService.deserializeMap(
+      AreaService.serializeMap(mapData)
+    );
+    const terrainCode = terrainRegistry[selectedTerrain].code;
+    AreaService.setTile(preview, colIndex, rowIndex, terrainCode);
     setPreviewMap(preview);
   };
 
   // Handle mouse move during drawing
-  const handleMouseMove = (rowIndex: number, colIndex: number) => {
-    if (!isDrawing || !startPoint) return;
+  const handleMouseMove = (x: number, y: number) => {
+    if (!isDrawing || !startPoint || !mapData) return;
 
-    setEndPoint({ x: colIndex, y: rowIndex });
+    setEndPoint({ x, y });
 
     // Create a preview based on the current tool
-    let preview = JSON.parse(JSON.stringify(mapData));
+    const terrainCode = terrainRegistry[selectedTerrain].code;
+    let preview = AreaService.deserializeMap(AreaService.serializeMap(mapData));
 
     switch (drawingTool) {
       case 'line':
         preview = drawLine(
           startPoint.x,
           startPoint.y,
-          colIndex,
-          rowIndex,
+          x,
+          y,
           preview,
-          selectedTerrain
+          terrainCode
         );
         break;
       case 'rectangle':
         preview = drawRectangle(
           startPoint.x,
           startPoint.y,
-          colIndex,
-          rowIndex,
+          x,
+          y,
           preview,
-          selectedTerrain,
+          terrainCode,
           false
         );
         break;
@@ -354,28 +357,27 @@ export default function MapCreator() {
         preview = drawRectangle(
           startPoint.x,
           startPoint.y,
-          colIndex,
-          rowIndex,
+          x,
+          y,
           preview,
-          selectedTerrain,
+          terrainCode,
           true
         );
         break;
       case 'circle':
       case 'circle-fill': {
-        const centerX = (startPoint.x + colIndex) / 2;
-        const centerY = (startPoint.y + rowIndex) / 2;
+        const centerX = (startPoint.x + x) / 2;
+        const centerY = (startPoint.y + y) / 2;
         const radius =
           Math.sqrt(
-            Math.pow(colIndex - startPoint.x, 2) +
-              Math.pow(rowIndex - startPoint.y, 2)
+            Math.pow(x - startPoint.x, 2) + Math.pow(y - startPoint.y, 2)
           ) / 2;
         preview = drawCircle(
           centerX,
           centerY,
           radius,
           preview,
-          selectedTerrain,
+          terrainCode,
           drawingTool === 'circle-fill'
         );
         break;
@@ -387,7 +389,8 @@ export default function MapCreator() {
 
   // Handle mouse up to complete drawing
   const handleMouseUp = () => {
-    if (!isDrawing || !startPoint || !endPoint || !previewMap) return;
+    if (!isDrawing || !startPoint || !endPoint || !previewMap || !mapData)
+      return;
 
     // Save current state to history before making changes
     saveToHistory(mapData);
@@ -395,19 +398,22 @@ export default function MapCreator() {
     // Apply the preview to the actual map
     setMapData(previewMap);
 
-    // Update encoded map
-    try {
-      const newEncodedMap = AreaService.encodeMapData(previewMap);
-      setEncodedMap(newEncodedMap);
-    } catch (error) {
-      console.error('Error encoding map:', error);
-    }
-
     // Reset drawing state
     setIsDrawing(false);
     setStartPoint(null);
     setEndPoint(null);
     setPreviewMap(null);
+  };
+
+  // Add this helper function at the top of the component
+  const getDisplayMap = (mapData: MapData | null) => {
+    if (!mapData) return [];
+    try {
+      return AreaService.decodeMapData(mapData).tiles;
+    } catch (error) {
+      console.error('Error decoding map:', error);
+      return [];
+    }
   };
 
   return (
@@ -594,7 +600,7 @@ export default function MapCreator() {
 
         <div className="overflow-auto">
           <div className="inline-block border-2 border-gray-600">
-            {(previewMap || mapData).map((row, rowIndex) => (
+            {getDisplayMap(previewMap || mapData).map((row, rowIndex) => (
               <div key={rowIndex} className="flex">
                 {row.map((cell, colIndex) => {
                   const terrain = terrainRegistry[cell];
@@ -605,12 +611,11 @@ export default function MapCreator() {
                         terrain.color
                       } hover:bg-gray-700`}
                       onMouseDown={() => handleMouseDown(rowIndex, colIndex)}
-                      onMouseMove={() => handleMouseMove(rowIndex, colIndex)}
+                      onMouseMove={() => handleMouseMove(colIndex, rowIndex)}
                       onMouseUp={handleMouseUp}
                       onMouseLeave={() => {
-                        // Optional: handle mouse leaving the cell during drawing
                         if (isDrawing) {
-                          handleMouseMove(rowIndex, colIndex);
+                          handleMouseMove(colIndex, rowIndex);
                         }
                       }}
                       title={`${terrain.name} (${rowIndex}, ${colIndex})`}
@@ -645,12 +650,16 @@ export default function MapCreator() {
 
         <div className="overflow-auto">
           <AreaMap
-            mapData={previewMap || mapData}
+            mapData={
+              previewMap ||
+              mapData ||
+              AreaService.createEmptyMap({ width: mapWidth, height: mapHeight })
+            }
             roomName={mapName}
             legend={true}
             legendData={legendMap}
-            onCellClick={handleCellClick}
-            onCellHover={(x, y) => handleMouseMove(y, x)}
+            onCellClick={(x, y) => handleCellClick(x, y)}
+            onCellHover={(x, y) => handleMouseMove(x, y)}
           />
         </div>
 

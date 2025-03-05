@@ -1,7 +1,10 @@
 'use client';
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { AreaMap } from '@/components/Game/GameInterface/AreaMap';
-import { terrainRegistry } from '@/components/Game/GameInterface/ASCII/terrainSymbols';
+import {
+  getTerrainByCode,
+  terrainRegistry,
+} from '@/components/Game/GameInterface/ASCII/terrainSymbols';
 import { AreaService } from '@/services/game/areaService';
 import { MapData } from '@/types/AreaMap';
 
@@ -35,29 +38,32 @@ export default function TestPage() {
   const [movementCooldown, setMovementCooldown] = useState(0);
   const [lastAction, setLastAction] = useState('');
 
+  // Add new state for enemy position
+  const [enemyPosition, setEnemyPosition] = useState({ x: 2, y: 2 });
+  const [enemyLastMove, setEnemyLastMove] = useState('');
+
   // First, let's define the return type for validateMove
   type MoveValidation =
     | { valid: false; reason: string }
-    | { valid: true; terrainKey: string };
+    | { valid: true; terrainCode: number };
 
-  // Update validateMove to explicitly return this type
+  // Update validateMove to work with codes directly
   const validateMove = useCallback(
     (newX: number, newY: number): MoveValidation => {
       try {
         // Check if position is in bounds and passable
         if (!AreaService.isPassable(mapData, newX, newY)) {
-          const terrainKey =
-            AreaService.decodeMapData(mapData).tiles[newY][newX];
-          const terrain = terrainRegistry[terrainKey];
+          const code = AreaService.getTile(mapData, newX, newY);
+          const terrain = getTerrainByCode(code);
           return {
             valid: false,
-            reason: `Cannot move through ${terrain.name.toLowerCase()}`,
+            reason: `Cannot move through ${terrain?.name.toLowerCase() ?? 'invalid terrain'}`,
           };
         }
 
         return {
           valid: true,
-          terrainKey: AreaService.decodeMapData(mapData).tiles[newY][newX],
+          terrainCode: AreaService.getTile(mapData, newX, newY),
         };
       } catch {
         return { valid: false, reason: 'Invalid position' };
@@ -66,7 +72,7 @@ export default function TestPage() {
     [mapData]
   );
 
-  // Update processMove to use type guard
+  // Update processMove to use terrain codes
   const processMove = useCallback(
     async (direction: 'up' | 'down' | 'left' | 'right') => {
       if (isProcessing || movementCooldown > 0) {
@@ -97,21 +103,18 @@ export default function TestPage() {
           break;
       }
 
-      // Validate move
       const validation = validateMove(newX, newY);
 
-      // Simulate server processing
       await new Promise((resolve) => setTimeout(resolve, 200));
 
       if (validation.valid) {
-        // TypeScript now knows validation.terrainKey exists when valid is true
         setPlayerPosition({ x: newX, y: newY });
+        const terrain = getTerrainByCode(validation.terrainCode);
         setLastAction(
-          `Moved to ${terrainRegistry[validation.terrainKey].name.toLowerCase()}`
+          `Moved to ${terrain?.name.toLowerCase() ?? 'unknown terrain'}`
         );
         setMovementCooldown(5);
       } else {
-        // TypeScript now knows validation.reason exists when valid is false
         setLastAction(`Cannot move: ${validation.reason}`);
       }
 
@@ -158,31 +161,98 @@ export default function TestPage() {
     return () => clearTimeout(timer);
   }, [movementCooldown]);
 
-  // Create renderable map with player
+  // Add enemy movement logic
+  const moveEnemy = useCallback(() => {
+    // Get possible directions
+    const directions: ('up' | 'down' | 'left' | 'right')[] = [
+      'up',
+      'down',
+      'left',
+      'right',
+    ];
+    const randomDirection =
+      directions[Math.floor(Math.random() * directions.length)];
+
+    // Calculate new position
+    let newX = enemyPosition.x;
+    let newY = enemyPosition.y;
+
+    switch (randomDirection) {
+      case 'up':
+        newY -= 1;
+        break;
+      case 'down':
+        newY += 1;
+        break;
+      case 'left':
+        newX -= 1;
+        break;
+      case 'right':
+        newX += 1;
+        break;
+    }
+
+    // Validate move using the same logic as player
+    const validation = validateMove(newX, newY);
+
+    if (validation.valid) {
+      setEnemyPosition({ x: newX, y: newY });
+      setEnemyLastMove(`Moved ${randomDirection}`);
+    } else {
+      setEnemyLastMove(`Failed to move: ${validation.reason}`);
+    }
+  }, [enemyPosition, validateMove]);
+
+  // Add enemy movement interval
+  useEffect(() => {
+    const interval = setInterval(() => {
+      moveEnemy();
+    }, 2000); // Move every 2 seconds
+
+    return () => clearInterval(interval);
+  }, [moveEnemy]);
+
+  // Update renderableMap to include both player and enemy
   const renderableMap = useMemo(() => {
-    // Create a copy of the map data
-    const mapWithPlayer = AreaService.createEmptyMap(mapData.dimensions);
+    const mapWithEntities = AreaService.createEmptyMap(mapData.dimensions);
 
     // Copy all tiles
-    mapWithPlayer.tiles.set(mapData.tiles);
+    mapWithEntities.tiles.set(mapData.tiles);
 
-    // Add player by getting the code for 'player' terrain
+    // Add enemy
+    const enemyCode = terrainRegistry.enemy.code;
+    AreaService.setTile(
+      mapWithEntities,
+      enemyPosition.x,
+      enemyPosition.y,
+      enemyCode
+    );
+
+    // Add player (last to ensure player is always visible)
     const playerCode = terrainRegistry.player.code;
     AreaService.setTile(
-      mapWithPlayer,
+      mapWithEntities,
       playerPosition.x,
       playerPosition.y,
       playerCode
     );
 
-    return mapWithPlayer;
-  }, [mapData, playerPosition]);
+    return mapWithEntities;
+  }, [mapData, playerPosition, enemyPosition]);
 
-  // Create legend map
-  const legendMap = useMemo(() => {
-    // Get all unique terrain types from the registry
-    const terrainKeys = Object.keys(terrainRegistry);
-    return [terrainKeys];
+  // Create legend map with codes
+  const legendMap = useMemo<MapData>(() => {
+    const terrainCodes = Object.values(terrainRegistry).map((t) => t.code);
+    const legendMapData = AreaService.createEmptyMap({
+      width: terrainCodes.length,
+      height: 1,
+    });
+
+    terrainCodes.forEach((code, index) => {
+      AreaService.setTile(legendMapData, index, 0, code);
+    });
+
+    return legendMapData;
   }, []);
 
   return (
@@ -204,34 +274,29 @@ export default function TestPage() {
             legendData={legendMap}
           />
 
-          {/* Hidden map just for legend generation */}
-          <div className="sr-only">
-            <AreaMap mapData={legendMap} roomName="Legend" legend={true} />
-          </div>
-
-          {/* Extract and display just the legend from the hidden map */}
+          {/* Legend display */}
           <div className="mt-4 grid grid-cols-4 gap-x-4 gap-y-1 text-sm">
-            {Array.from(new Set(legendMap[0])).map((terrainType) => {
-              // Import terrainSymbols directly here to access the data
-              const terrain = terrainRegistry[terrainType];
-              return (
-                <div key={terrainType} className="flex items-center">
-                  <span className={`mr-2 font-mono ${terrain.color}`}>
-                    {terrain.symbol}
-                  </span>
-                  <span>{terrain.name}</span>
-                </div>
-              );
-            })}
+            {Object.values(terrainRegistry).map((terrain) => (
+              <div key={terrain.code} className="flex items-center">
+                <span className={`mr-2 font-mono ${terrain.color}`}>
+                  {terrain.symbol}
+                </span>
+                <span>{terrain.name}</span>
+              </div>
+            ))}
           </div>
 
           <div className="mt-4 rounded bg-gray-800 p-4 text-white">
             <p>
-              Position: ({playerPosition.x}, {playerPosition.y})
+              Player Position: ({playerPosition.x}, {playerPosition.y})
             </p>
-            <p>Cooldown: {movementCooldown}</p>
+            <p>
+              Enemy Position: ({enemyPosition.x}, {enemyPosition.y})
+            </p>
+            <p>Player Cooldown: {movementCooldown}</p>
             <p>Status: {isProcessing ? 'Processing...' : 'Ready'}</p>
-            <p>Last Action: {lastAction}</p>
+            <p>Player Last Action: {lastAction}</p>
+            <p>Enemy Last Move: {enemyLastMove}</p>
           </div>
         </div>
       </div>
