@@ -1,5 +1,5 @@
 import React, { memo } from 'react';
-import { CharacterClassResponse } from '@/types/CharacterResponse';
+import { CharacterClassResponse } from '@/types/CharacterResponse.types';
 import ClassCard from './ClassCard';
 
 /**

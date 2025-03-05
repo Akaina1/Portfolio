@@ -1,6 +1,18 @@
-import { TerrainDefinition, TILE_RANGES } from '@/types/AreaMap';
+import { TerrainDefinition, TILE_RANGES } from '@/types/AreaMap.types';
 
 console.log('Terrain module initialization');
+
+// terrain symbols to consider:
+// ░ ▒ ▓ - rock
+// ¿ - unique?
+// ? - quest giver?
+// ╬ - cross?
+// ■ - floor?
+
+// unicode symbols instead?
+// https://www.unicode.org/charts/nameslist/
+// https://symbl.cc/en/unicode-table/
+//
 
 /**
  * Complete terrain registry using new TerrainDefinition format
@@ -15,7 +27,6 @@ const terrainRegistry: Record<string, TerrainDefinition> = {
     name: 'Floor',
     properties: {
       passable: true,
-      blocksVision: false,
     },
   },
   wall: {
@@ -26,7 +37,6 @@ const terrainRegistry: Record<string, TerrainDefinition> = {
     name: 'Wall',
     properties: {
       passable: false,
-      blocksVision: true,
       destructible: false,
     },
   },
@@ -38,7 +48,6 @@ const terrainRegistry: Record<string, TerrainDefinition> = {
     name: 'Water',
     properties: {
       passable: false,
-      blocksVision: false,
     },
   },
 
@@ -51,7 +60,6 @@ const terrainRegistry: Record<string, TerrainDefinition> = {
     name: 'Tree',
     properties: {
       passable: false,
-      blocksVision: true,
       destructible: true,
     },
   },
@@ -63,7 +71,6 @@ const terrainRegistry: Record<string, TerrainDefinition> = {
     name: 'Grass',
     properties: {
       passable: true,
-      blocksVision: false,
     },
   },
   mountain: {
@@ -74,7 +81,6 @@ const terrainRegistry: Record<string, TerrainDefinition> = {
     name: 'Mountain',
     properties: {
       passable: false,
-      blocksVision: true,
     },
   },
 
@@ -87,7 +93,6 @@ const terrainRegistry: Record<string, TerrainDefinition> = {
     name: 'Door',
     properties: {
       passable: true,
-      blocksVision: true,
       interactive: true,
     },
   },
@@ -99,7 +104,6 @@ const terrainRegistry: Record<string, TerrainDefinition> = {
     name: 'Bridge',
     properties: {
       passable: true,
-      blocksVision: false,
     },
   },
   stairs_up: {
@@ -135,7 +139,6 @@ const terrainRegistry: Record<string, TerrainDefinition> = {
     properties: {
       passable: false,
       interactive: true,
-      lootable: true,
     },
   },
   altar: {
@@ -158,7 +161,6 @@ const terrainRegistry: Record<string, TerrainDefinition> = {
     properties: {
       passable: true,
       interactive: true,
-      hidden: true,
     },
   },
 
@@ -183,7 +185,6 @@ const terrainRegistry: Record<string, TerrainDefinition> = {
     properties: {
       passable: false,
       interactive: true,
-      hostile: true,
     },
   },
   npc: {
@@ -195,7 +196,6 @@ const terrainRegistry: Record<string, TerrainDefinition> = {
     properties: {
       passable: false,
       interactive: true,
-      friendly: true,
     },
   },
 
@@ -208,7 +208,6 @@ const terrainRegistry: Record<string, TerrainDefinition> = {
     name: 'Empty',
     properties: {
       passable: true,
-      blocksVision: false,
     },
   },
 };

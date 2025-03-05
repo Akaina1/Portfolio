@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { terrainRegistry, getTerrainByCode } from '../ASCII/terrainSymbols';
-import { MapData } from '@/types/AreaMap';
+import { MapData } from '@/types/AreaMap.types';
 
 interface AreaMapProps {
   /** Map data in MapData format */

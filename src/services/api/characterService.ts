@@ -2,7 +2,7 @@ import { api } from './apiService';
 import {
   CharacterClassResponse,
   CharacterResponse,
-} from '@/types/CharacterResponse';
+} from '@/types/CharacterResponse.types';
 
 /**
  * Interface for character creation request

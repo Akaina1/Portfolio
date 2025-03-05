@@ -4,7 +4,7 @@ import {
   MapDimensions,
   MAX_MAP_DIMENSIONS,
   TerrainProperties,
-} from '@/types/AreaMap';
+} from '@/types/AreaMap.types';
 import { terrainRegistry } from '@/components/Game/GameInterface/ASCII/terrainSymbols';
 
 /**

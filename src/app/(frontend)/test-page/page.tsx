@@ -6,7 +6,7 @@ import {
   terrainRegistry,
 } from '@/components/Game/GameInterface/ASCII/terrainSymbols';
 import { AreaService } from '@/services/game/areaService';
-import { MapData } from '@/types/AreaMap';
+import { MapData } from '@/types/AreaMap.types';
 
 /**
  * Test Page Component

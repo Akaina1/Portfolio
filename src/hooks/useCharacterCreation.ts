@@ -1,7 +1,7 @@
 import { useState, useCallback, useEffect } from 'react';
 import { useCharacterStore } from '@/stores/Game/characterStore';
 import { useGameStore } from '@/stores/Game/gameStore';
-import { CharacterResponse } from '@/types/CharacterResponse';
+import { CharacterResponse } from '@/types/CharacterResponse.types';
 import characterService from '@/services/api/characterService';
 
 /**

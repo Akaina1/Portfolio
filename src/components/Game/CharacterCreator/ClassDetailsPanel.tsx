@@ -1,6 +1,6 @@
 import React, { memo } from 'react';
 import ClassDetails from './ClassDetails';
-import { CharacterClassResponse } from '@/types/CharacterResponse';
+import { CharacterClassResponse } from '@/types/CharacterResponse.types';
 
 /**
  * Props for the ClassDetailsPanel component

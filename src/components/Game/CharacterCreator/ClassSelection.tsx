@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { CharacterClassResponse } from '@/types/CharacterResponse';
+import { CharacterClassResponse } from '@/types/CharacterResponse.types';
 import characterService from '@/services/api/characterService';
 import ClassList from './ClassList';
 import ClassDetailsPanel from './ClassDetailsPanel';

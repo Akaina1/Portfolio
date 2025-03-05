@@ -1,4 +1,4 @@
-import { MapData, MapError, MapDimensions } from '@/types/AreaMap';
+import { MapData, MapError, MapDimensions } from '@/types/AreaMap.types';
 import {
   getTerrainByKey,
   getTerrainByCode,

@@ -1,5 +1,5 @@
 import React from 'react';
-import { CharacterClassResponse } from '@/types/CharacterResponse';
+import { CharacterClassResponse } from '@/types/CharacterResponse.types';
 import AttributeDisplay from './AttributeDisplay';
 
 /**

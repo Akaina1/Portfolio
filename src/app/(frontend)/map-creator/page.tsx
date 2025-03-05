@@ -9,7 +9,7 @@ import React, {
 import { terrainRegistry } from '@/components/Game/GameInterface/ASCII/terrainSymbols';
 import { AreaMap } from '@/components/Game/GameInterface/AreaMap';
 import { AreaService } from '@/services/game/areaService';
-import { MapData } from '@/types/AreaMap';
+import { MapData } from '@/types/AreaMap.types';
 
 console.log('Available terrain types:', Object.keys(terrainRegistry));
 

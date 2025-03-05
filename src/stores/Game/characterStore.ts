@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import {
   CharacterClassResponse,
   CharacterResponse,
-} from '@/types/CharacterResponse';
+} from '@/types/CharacterResponse.types';
 import characterService from '@/services/api/characterService';
 
 /**
