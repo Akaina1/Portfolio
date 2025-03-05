@@ -15,8 +15,8 @@ console.log('Available terrain types:', Object.keys(terrainRegistry));
 
 export default function MapCreator() {
   // State for map dimensions
-  const [mapWidth, setMapWidth] = useState(11);
-  const [mapHeight, setMapHeight] = useState(11);
+  const [mapWidth, setMapWidth] = useState(10);
+  const [mapHeight, setMapHeight] = useState(10);
 
   // State for the map data
   const [mapData, setMapData] = useState<MapData | null>(null);
@@ -77,7 +77,7 @@ export default function MapCreator() {
   const handleDimensionChange = useCallback(
     (newWidth: number, newHeight: number) => {
       // Validate dimensions
-      if (newWidth < 1 || newHeight < 1 || newWidth > 50 || newHeight > 50) {
+      if (newWidth < 1 || newHeight < 1 || newWidth > 70 || newHeight > 50) {
         return;
       }
 
@@ -180,11 +180,18 @@ export default function MapCreator() {
   };
 
   // Copy code to clipboard
-  const copyCodeToClipboard = () => {
+  const copyCodeToClipboard = async () => {
     if (codeRef.current) {
-      codeRef.current.select();
-      document.execCommand('copy');
-      alert('Code copied to clipboard!');
+      try {
+        // Select the text content
+        codeRef.current.select();
+        // Use the modern Clipboard API instead of deprecated execCommand
+        await navigator.clipboard.writeText(codeRef.current.value);
+        alert('Code copied to clipboard!');
+      } catch (error) {
+        console.error('Failed to copy code to clipboard:', error);
+        alert('Failed to copy code. Please try again or copy manually.');
+      }
     }
   };
 
@@ -447,7 +454,7 @@ export default function MapCreator() {
       <h1 className="mb-4 text-3xl font-bold">ASCII Map Creator</h1>
 
       {/* Map Configuration */}
-      <div className="mb-6 rounded-lg border border-gray-700 bg-gray-800 p-4">
+      <div className="mb-6 rounded-lg border border-gray-700 bg-gray-200 p-4 dark:bg-gray-800">
         <h2 className="mb-2 text-xl font-semibold">Map Configuration</h2>
 
         <div className="flex flex-wrap gap-4">
@@ -457,7 +464,7 @@ export default function MapCreator() {
               type="text"
               value={mapName}
               onChange={(e) => setMapName(e.target.value)}
-              className="mt-1 rounded border border-gray-600 bg-gray-700 px-2 py-1 text-white"
+              className="mt-1 rounded border border-gray-600 bg-white px-2 py-1 text-black dark:bg-gray-700 dark:text-white"
             />
           </div>
 
@@ -466,13 +473,13 @@ export default function MapCreator() {
             <input
               type="number"
               min="1"
-              max="50"
+              max="70"
               value={mapWidth}
               onChange={(e) => {
                 const newWidth = parseInt(e.target.value) || 1;
                 handleDimensionChange(newWidth, mapHeight);
               }}
-              className="mt-1 w-20 rounded border border-gray-600 bg-gray-700 px-2 py-1 text-white"
+              className="mt-1 w-20 rounded border border-gray-600 bg-white px-2 py-1 text-black dark:bg-gray-700 dark:text-white"
             />
           </div>
 
@@ -487,7 +494,7 @@ export default function MapCreator() {
                 const newHeight = parseInt(e.target.value) || 1;
                 handleDimensionChange(mapWidth, newHeight);
               }}
-              className="mt-1 w-20 rounded border border-gray-600 bg-gray-700 px-2 py-1 text-white"
+              className="mt-1 w-20 rounded border border-gray-600 bg-white px-2 py-1 text-black dark:bg-gray-700 dark:text-white"
             />
           </div>
 
@@ -526,7 +533,7 @@ export default function MapCreator() {
       </div>
 
       {/* Drawing Tools */}
-      <div className="mb-6 rounded-lg border border-gray-700 bg-gray-800 p-4">
+      <div className="mb-6 rounded-lg border border-gray-700 bg-gray-200 p-4 dark:bg-gray-800">
         <h2 className="mb-2 text-xl font-semibold">Drawing Tools</h2>
         <div className="flex flex-wrap gap-2">
           <button
@@ -593,7 +600,7 @@ export default function MapCreator() {
       </div>
 
       {/* Terrain Selection */}
-      <div className="mb-6 rounded-lg border border-gray-700 bg-gray-800 p-4">
+      <div className="mb-6 rounded-lg border border-gray-700 bg-gray-200 p-4 dark:bg-gray-800">
         <h2 className="mb-2 text-xl font-semibold">Terrain Selection</h2>
 
         <div className="grid grid-cols-3 gap-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8">
@@ -603,8 +610,8 @@ export default function MapCreator() {
               onClick={() => setSelectedTerrain(key)}
               className={`flex min-h-16 w-full flex-col items-center justify-center rounded border p-2 ${
                 selectedTerrain === key
-                  ? 'border-yellow-400 bg-gray-700'
-                  : 'border-gray-600 bg-gray-800 hover:bg-gray-700'
+                  ? 'border-green-400 bg-green-100 dark:bg-gray-900'
+                  : 'border-gray-600 bg-white hover:bg-gray-200 dark:bg-black dark:hover:bg-gray-800'
               }`}
               title={`${terrain.name}${
                 terrain.properties.passable ? ' (Passable)' : ''
@@ -622,7 +629,7 @@ export default function MapCreator() {
       </div>
 
       {/* Map Editor */}
-      <div className="mb-6 rounded-lg border border-gray-700 bg-gray-800 p-4">
+      <div className="mb-6 rounded-lg border border-gray-700 bg-gray-200 p-4 dark:bg-gray-800">
         <h2 className="mb-2 text-xl font-semibold">Map Editor</h2>
         <p className="mb-4 text-sm text-gray-400">
           {drawingTool === 'single'
@@ -693,7 +700,7 @@ export default function MapCreator() {
       </div>
 
       {/* Map Preview */}
-      <div className="rounded-lg border border-gray-700 bg-gray-800 p-4">
+      <div className="rounded-lg border border-gray-700 bg-gray-200 p-4 dark:bg-gray-800">
         <h2 className="mb-2 text-xl font-semibold">Map Preview</h2>
 
         <div className="overflow-auto">
