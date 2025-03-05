@@ -6,14 +6,14 @@ import AuthView from '@/Game/components/AuthView';
 import GameInterface from '@/Game/components/GameInterface';
 import CharacterCreator from '@/Game/components/CharacterCreator';
 import CharacterSelection from '@/Game/components/CharacterSelection';
-import { useGameStore } from '@/stores/Game/gameStore';
+import { useGameStore } from '@/Game/stores/Game/gameStore';
 import { usePathname } from 'next/navigation';
-import { useGameInterfaceStore } from '@/stores/Game/gameInterfaceStore';
+import { useGameInterfaceStore } from '@/Game/stores/Game/gameInterfaceStore';
 import { useSocket } from '@/Game/hooks/useSocket';
-import { usePlayerStore } from '@/stores/Player/playerStore';
-import authService from '@/services/api/authService';
-import { useSocketStore } from '@/stores/Game/socketStore';
-import characterService from '@/services/api/characterService';
+import { usePlayerStore } from '@/Game/stores/Player/playerStore';
+import authService from '@/Game/services/api/authService';
+import { useSocketStore } from '@/Game/stores/Game/socketStore';
+import characterService from '@/Game/services/character/characterService';
 
 /**
  * Game Page Component
@@ -33,7 +33,7 @@ const GamePage: React.FC = () => {
 
   // Socket connection
   const { isConnected, isAuthenticated, connectionError } = useSocket();
-  const player = usePlayerStore((state) => state.player);
+  //const player = usePlayerStore((state) => state.player);
   const disconnect = useSocketStore((state) => state.disconnect);
   const isAuthenticatedPlayer = usePlayerStore(
     (state) => state.isAuthenticated
@@ -50,6 +50,9 @@ const GamePage: React.FC = () => {
 
   // Add this line to get setShouldConnect
   const setShouldConnect = useSocketStore((state) => state.setShouldConnect);
+
+  // Add this at the top with other state declarations
+  const devMode = true; // Set this to false when you need normal authentication
 
   // Simulate loading effect
   useEffect(() => {
@@ -235,40 +238,38 @@ const GamePage: React.FC = () => {
     }
   }, [viewState, isAuthenticatedPlayer, setShouldConnect]);
 
-  // Render the appropriate view based on view state
+  // Modify renderView to bypass all auth checks in dev mode
   const renderView = () => {
+    // If in dev mode, go straight to game interface
+    if (devMode) {
+      return <GameInterface />;
+    }
+
+    // Normal authentication flow
     switch (viewState) {
       case 'auth':
-        // Don't attempt socket connection in auth view
         return <AuthView />;
 
       case 'characterCreation':
-        // Ensure player is authenticated before showing character creation
         if (!isAuthenticatedPlayer) {
-          // If not authenticated, redirect to auth view
           setViewState('auth');
           return <AuthView />;
         }
         return <CharacterCreator />;
 
       case 'characterSelection':
-        // Ensure player is authenticated before showing character selection
         if (!isAuthenticatedPlayer) {
-          // If not authenticated, redirect to auth view
           setViewState('auth');
           return <AuthView />;
         }
         return <CharacterSelection />;
 
       case 'game':
-        // Ensure player is authenticated before showing game
         if (!isAuthenticatedPlayer) {
-          // If not authenticated, redirect to auth view
           setViewState('auth');
           return <AuthView />;
         }
 
-        // Only check socket connection when in game view and authenticated
         if (!isConnected || !isAuthenticated) {
           return (
             <div className="flex h-screen w-full flex-col items-center justify-center">
@@ -280,16 +281,14 @@ const GamePage: React.FC = () => {
                   {connectionError}
                 </div>
               )}
-              {player && (
-                <div className="mt-4">
-                  <button
-                    className="rounded bg-purple-600 px-4 py-2 text-white hover:bg-purple-700"
-                    onClick={() => window.location.reload()} // Simple refresh to retry
-                  >
-                    Retry Connection
-                  </button>
-                </div>
-              )}
+              <div className="mt-4">
+                <button
+                  className="rounded bg-purple-600 px-4 py-2 text-white hover:bg-purple-700"
+                  onClick={() => window.location.reload()}
+                >
+                  Retry Connection
+                </button>
+              </div>
             </div>
           );
         }
@@ -313,10 +312,12 @@ const GamePage: React.FC = () => {
       suppressHydrationWarning={true}
       key={pathname}
     >
-      {/* Device compatibility warning */}
+      {devMode && (
+        <div className="fixed right-0 top-0 z-50 m-4 rounded bg-yellow-600 px-2 py-1 text-xs text-white">
+          Dev Mode Active
+        </div>
+      )}
       <DeviceWarning />
-
-      {/* Render based on view state */}
       {renderView()}
     </div>
   );
