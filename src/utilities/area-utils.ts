@@ -84,7 +84,6 @@ export function getAdjacentPositions(
   dimensions: MapDimensions,
   includeDiagonals = false
 ): { x: number; y: number }[] {
-  const positions: { x: number; y: number }[] = [];
   const directions = includeDiagonals
     ? [
         [-1, -1],
@@ -103,13 +102,7 @@ export function getAdjacentPositions(
         [0, 1],
       ];
 
-  for (const [dx, dy] of directions) {
-    const newX = x + dx;
-    const newY = y + dy;
-    if (isValidPosition(newX, newY, dimensions)) {
-      positions.push({ x: newX, y: newY });
-    }
-  }
-
-  return positions;
+  return directions
+    .map(([dx, dy]) => ({ x: x + dx, y: y + dy }))
+    .filter((pos) => isValidPosition(pos.x, pos.y, dimensions));
 }

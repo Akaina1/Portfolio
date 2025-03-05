@@ -406,14 +406,10 @@ export default function MapCreator() {
   };
 
   // Add this helper function at the top of the component
-  const getDisplayMap = (mapData: MapData | null) => {
-    if (!mapData) return [];
-    try {
-      return AreaService.decodeMapData(mapData).tiles;
-    } catch (error) {
-      console.error('Error decoding map:', error);
-      return [];
-    }
+  const getTerrainByCode = (code: number) => {
+    return Object.values(terrainRegistry).find(
+      (terrain) => terrain.code === code
+    );
   };
 
   return (
@@ -600,10 +596,26 @@ export default function MapCreator() {
 
         <div className="overflow-auto">
           <div className="inline-block border-2 border-gray-600">
-            {getDisplayMap(previewMap || mapData).map((row, rowIndex) => (
+            {Array.from({ length: mapHeight }, (_, rowIndex) => (
               <div key={rowIndex} className="flex">
-                {row.map((cell, colIndex) => {
-                  const terrain = terrainRegistry[cell];
+                {Array.from({ length: mapWidth }, (_, colIndex) => {
+                  const currentMap = previewMap || mapData;
+                  if (!currentMap) return null;
+
+                  const code = AreaService.getTile(
+                    currentMap,
+                    colIndex,
+                    rowIndex
+                  );
+                  const terrain = getTerrainByCode(code);
+
+                  if (!terrain) {
+                    console.error(
+                      `Invalid terrain code ${code} at (${colIndex}, ${rowIndex})`
+                    );
+                    return null;
+                  }
+
                   return (
                     <button
                       key={`${rowIndex}-${colIndex}`}

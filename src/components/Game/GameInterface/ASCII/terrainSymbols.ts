@@ -232,25 +232,6 @@ if (!terrainRegistry.wall || !terrainRegistry.floor) {
 }
 
 /**
- * Legacy support: Create a simplified version of the terrain symbols
- * for backward compatibility with existing components
- */
-export const terrainSymbols: Record<
-  string,
-  { symbol: string; color: string; name: string }
-> = Object.entries(terrainRegistry).reduce(
-  (acc, [key, terrain]) => {
-    acc[key] = {
-      symbol: terrain.symbol,
-      color: terrain.color,
-      name: terrain.name,
-    };
-    return acc;
-  },
-  {} as Record<string, { symbol: string; color: string; name: string }>
-);
-
-/**
  * Get terrain definition by code
  */
 export function getTerrainByCode(code: number): TerrainDefinition | undefined {
