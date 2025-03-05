@@ -1,4 +1,9 @@
 ---
+description: 
+globs: 
+alwaysApply: false
+---
+---
 description: for refactoring the area data logic
 globs: 
 alwaysApply: false
