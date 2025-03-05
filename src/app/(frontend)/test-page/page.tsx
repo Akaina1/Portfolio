@@ -1,145 +1,33 @@
 'use client';
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { AreaMap } from '@/components/Game/GameInterface/AreaMap';
-import { terrainSymbols } from '@/components/Game/GameInterface/ASCII/terrainSymbols';
+import { terrainRegistry } from '@/components/Game/GameInterface/ASCII/terrainSymbols';
+import { AreaService } from '@/services/game/areaService';
+import { MapData } from '@/types/AreaMap';
 
 /**
  * Test Page Component
  * A blank page for testing components and layouts
  */
 export default function TestPage() {
-  // Original map data - never changes
-  // Define the map data with useMemo to prevent unnecessary recreations
-  const originalMapData = useMemo(
-    () => [
-      [
-        'wall',
-        'wall',
-        'wall',
-        'wall',
-        'wall',
-        'wall',
-        'wall',
-        'wall',
-        'wall',
-        'wall',
+  // Example map data - you can replace this with any map from the creator
+  const mapData = useMemo<MapData>(() => {
+    const NewMapData = {
+      tiles: [
+        1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 257, 257, 257, 257, 257, 2, 2, 2, 1, 1,
+        257, 257, 257, 257, 257, 257, 2, 2, 1, 1, 257, 257, 257, 257, 257, 257,
+        257, 2, 1, 1, 257, 257, 256, 257, 257, 257, 257, 257, 1, 1, 257, 257,
+        257, 256, 256, 256, 257, 257, 1, 1, 257, 257, 257, 257, 256, 256, 257,
+        257, 1, 1, 258, 257, 257, 257, 257, 257, 257, 257, 1, 1, 258, 258, 257,
+        257, 257, 257, 257, 257, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
       ],
-      [
-        'wall',
-        'floor',
-        'floor',
-        'floor',
-        'floor',
-        'floor',
-        'floor',
-        'floor',
-        'floor',
-        'wall',
-      ],
-      [
-        'wall',
-        'floor',
-        'floor',
-        'water',
-        'water',
-        'water',
-        'floor',
-        'floor',
-        'floor',
-        'wall',
-      ],
-      [
-        'wall',
-        'floor',
-        'floor',
-        'water',
-        'water',
-        'water',
-        'floor',
-        'floor',
-        'floor',
-        'wall',
-      ],
-      [
-        'wall',
-        'floor',
-        'floor',
-        'floor',
-        'bridge',
-        'floor',
-        'floor',
-        'floor',
-        'floor',
-        'wall',
-      ],
-      [
-        'wall',
-        'floor',
-        'floor',
-        'floor',
-        'floor',
-        'floor',
-        'floor',
-        'floor',
-        'floor',
-        'wall',
-      ],
-      [
-        'wall',
-        'floor',
-        'tree',
-        'tree',
-        'floor',
-        'floor',
-        'floor',
-        'chest',
-        'floor',
-        'wall',
-      ],
-      [
-        'wall',
-        'floor',
-        'tree',
-        'tree',
-        'floor',
-        'floor',
-        'floor',
-        'floor',
-        'floor',
-        'wall',
-      ],
-      [
-        'wall',
-        'floor',
-        'floor',
-        'floor',
-        'floor',
-        'floor',
-        'floor',
-        'floor',
-        'floor',
-        'wall',
-      ],
-      [
-        'wall',
-        'wall',
-        'wall',
-        'wall',
-        'door',
-        'door',
-        'wall',
-        'wall',
-        'wall',
-        'wall',
-      ],
-    ],
-    []
-  );
+      dimensions: { width: 10, height: 10 },
+      version: 1,
+    };
 
-  // Use the original map data for game logic
-  // setMapData not used in this component - fix later
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [mapData, setMapData] = useState<string[][]>(originalMapData);
+    // Parse the map data using AreaService
+    return AreaService.deserializeMap(JSON.stringify(NewMapData));
+  }, []);
 
   // Player state
   const [playerPosition, setPlayerPosition] = useState({ x: 5, y: 5 });
@@ -147,39 +35,38 @@ export default function TestPage() {
   const [movementCooldown, setMovementCooldown] = useState(0);
   const [lastAction, setLastAction] = useState('');
 
-  // Movement validation - check if the target position is valid
+  // First, let's define the return type for validateMove
+  type MoveValidation =
+    | { valid: false; reason: string }
+    | { valid: true; terrainKey: string };
+
+  // Update validateMove to explicitly return this type
   const validateMove = useCallback(
-    (newX: number, newY: number) => {
-      // Check bounds
-      if (
-        newX < 0 ||
-        newY < 0 ||
-        newX >= mapData[0].length ||
-        newY >= mapData.length
-      ) {
-        return { valid: false, reason: 'Out of bounds' };
+    (newX: number, newY: number): MoveValidation => {
+      try {
+        // Check if position is in bounds and passable
+        if (!AreaService.isPassable(mapData, newX, newY)) {
+          const terrainKey =
+            AreaService.decodeMapData(mapData).tiles[newY][newX];
+          const terrain = terrainRegistry[terrainKey];
+          return {
+            valid: false,
+            reason: `Cannot move through ${terrain.name.toLowerCase()}`,
+          };
+        }
+
+        return {
+          valid: true,
+          terrainKey: AreaService.decodeMapData(mapData).tiles[newY][newX],
+        };
+      } catch {
+        return { valid: false, reason: 'Invalid position' };
       }
-
-      // Check terrain
-      const targetTerrain = mapData[newY][newX];
-
-      // Basic collision rules
-      if (targetTerrain === 'wall') {
-        return { valid: false, reason: 'Cannot move through walls' };
-      }
-
-      // Special terrain rules
-      if (targetTerrain === 'water') {
-        return { valid: false, reason: 'Cannot walk on water' };
-      }
-
-      // Valid move
-      return { valid: true, terrain: targetTerrain };
     },
     [mapData]
   );
 
-  // Process movement with simulated server delay
+  // Update processMove to use type guard
   const processMove = useCallback(
     async (direction: 'up' | 'down' | 'left' | 'right') => {
       if (isProcessing || movementCooldown > 0) {
@@ -217,13 +104,15 @@ export default function TestPage() {
       await new Promise((resolve) => setTimeout(resolve, 200));
 
       if (validation.valid) {
+        // TypeScript now knows validation.terrainKey exists when valid is true
         setPlayerPosition({ x: newX, y: newY });
-        setLastAction(`Moved ${direction} to ${validation.terrain}`);
-
-        // Set cooldown based on terrain
+        setLastAction(
+          `Moved to ${terrainRegistry[validation.terrainKey].name.toLowerCase()}`
+        );
         setMovementCooldown(5);
       } else {
-        setLastAction(`Cannot move ${direction}: ${validation.reason}`);
+        // TypeScript now knows validation.reason exists when valid is false
+        setLastAction(`Cannot move: ${validation.reason}`);
       }
 
       setIsProcessing(false);
@@ -271,39 +160,30 @@ export default function TestPage() {
 
   // Create renderable map with player
   const renderableMap = useMemo(() => {
-    // Clone the map
-    const mapWithPlayer = mapData.map((row) => [...row]);
+    // Create a copy of the map data
+    const mapWithPlayer = AreaService.createEmptyMap(mapData.dimensions);
 
-    // Add player to the map
-    mapWithPlayer[playerPosition.y][playerPosition.x] = 'player';
+    // Copy all tiles
+    mapWithPlayer.tiles.set(mapData.tiles);
+
+    // Add player by getting the code for 'player' terrain
+    const playerCode = terrainRegistry.player.code;
+    AreaService.setTile(
+      mapWithPlayer,
+      playerPosition.x,
+      playerPosition.y,
+      playerCode
+    );
 
     return mapWithPlayer;
   }, [mapData, playerPosition]);
 
-  // Create a static map for legend generation
-  // This adds all terrain types including player to a small map
-  // that won't change when the player moves
+  // Create legend map
   const legendMap = useMemo(() => {
-    // Create a small map with one of each terrain type from the original map
-    // plus the player type
-    const uniqueTerrains = new Set<string>();
-
-    // Add all terrain types from the original map
-    originalMapData.forEach((row) => {
-      row.forEach((cell) => {
-        uniqueTerrains.add(cell);
-      });
-    });
-
-    // Add player type
-    uniqueTerrains.add('player');
-
-    // Convert to array
-    const terrainArray = Array.from(uniqueTerrains);
-
-    // Create a 1xN map with one cell for each terrain type
-    return [terrainArray];
-  }, [originalMapData]);
+    // Get all unique terrain types from the registry
+    const terrainKeys = Object.keys(terrainRegistry);
+    return [terrainKeys];
+  }, []);
 
   return (
     <div className="container mx-auto min-h-screen p-8">
@@ -333,7 +213,7 @@ export default function TestPage() {
           <div className="mt-4 grid grid-cols-4 gap-x-4 gap-y-1 text-sm">
             {Array.from(new Set(legendMap[0])).map((terrainType) => {
               // Import terrainSymbols directly here to access the data
-              const terrain = terrainSymbols[terrainType];
+              const terrain = terrainRegistry[terrainType];
               return (
                 <div key={terrainType} className="flex items-center">
                   <span className={`mr-2 font-mono ${terrain.color}`}>

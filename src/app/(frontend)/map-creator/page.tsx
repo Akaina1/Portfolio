@@ -1,7 +1,17 @@
 'use client';
-import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { terrainSymbols } from '@/components/Game/GameInterface/ASCII/terrainSymbols';
+import React, {
+  useState,
+  useEffect,
+  useRef,
+  useCallback,
+  useMemo,
+} from 'react';
+import { terrainRegistry } from '@/components/Game/GameInterface/ASCII/terrainSymbols';
 import { AreaMap } from '@/components/Game/GameInterface/AreaMap';
+import { AreaService } from '@/services/game/areaService';
+import { MapData } from '@/types/AreaMap';
+
+console.log('Available terrain types:', Object.keys(terrainRegistry));
 
 export default function MapCreator() {
   // State for map dimensions
@@ -10,6 +20,7 @@ export default function MapCreator() {
 
   // State for the map data
   const [mapData, setMapData] = useState<string[][]>([]);
+  const [encodedMap, setEncodedMap] = useState<MapData | null>(null);
 
   // History for undo functionality
   const [history, setHistory] = useState<string[][][]>([]);
@@ -47,27 +58,42 @@ export default function MapCreator() {
   );
   const [previewMap, setPreviewMap] = useState<string[][] | null>(null);
 
+  // Create a static map for legend generation
+  // This adds all terrain types to a small map
+  const legendMap = useMemo(() => {
+    // Get all terrain keys
+    const terrainKeys = Object.keys(terrainRegistry);
+
+    // Create a 1xN map with one cell for each terrain type
+    return [terrainKeys];
+  }, []);
+
   // Initialize map with default terrain (floor surrounded by walls)
   const initializeMap = useCallback(() => {
-    const newMap: string[][] = [];
+    try {
+      const newMapData = AreaService.createWalledMap({
+        width: mapWidth,
+        height: mapHeight,
+      });
 
-    for (let y = 0; y < mapHeight; y++) {
-      const row: string[] = [];
-      for (let x = 0; x < mapWidth; x++) {
-        // Create walls around the perimeter, floor elsewhere
-        if (y === 0 || y === mapHeight - 1 || x === 0 || x === mapWidth - 1) {
-          row.push('wall');
-        } else {
-          row.push('floor');
-        }
-      }
-      newMap.push(row);
+      // Decode for string[][] compatibility
+      const decodedMap = AreaService.decodeMapData(newMapData);
+      setMapData(decodedMap.tiles);
+      setEncodedMap(newMapData);
+
+      // Update history
+      setHistory([JSON.parse(JSON.stringify(decodedMap.tiles))]);
+      setHistoryIndex(0);
+    } catch (error) {
+      console.error('Failed to initialize map:', error);
+      // Fallback to a basic empty map if initialization fails
+      const emptyMap = Array(mapHeight)
+        .fill(null)
+        .map(() => Array(mapWidth).fill('empty'));
+      setMapData(emptyMap);
+      setHistory([JSON.parse(JSON.stringify(emptyMap))]);
+      setHistoryIndex(0);
     }
-
-    setMapData(newMap);
-    // Reset history when initializing a new map
-    setHistory([JSON.parse(JSON.stringify(newMap))]);
-    setHistoryIndex(0);
   }, [mapHeight, mapWidth]);
 
   // Initialize the map with empty cells
@@ -88,13 +114,23 @@ export default function MapCreator() {
 
   // Handle cell click to change terrain
   const handleCellClick = (rowIndex: number, colIndex: number) => {
-    // Save current state to history before making changes
-    saveToHistory(mapData);
+    if (drawingTool === 'single') {
+      // Save current state to history before making changes
+      saveToHistory(mapData);
 
-    // Update the map
-    const newMapData = JSON.parse(JSON.stringify(mapData));
-    newMapData[rowIndex][colIndex] = selectedTerrain;
-    setMapData(newMapData);
+      // Update the map
+      const newMapData = JSON.parse(JSON.stringify(mapData));
+      newMapData[rowIndex][colIndex] = selectedTerrain;
+      setMapData(newMapData);
+
+      // Update encoded map
+      try {
+        const newEncodedMap = AreaService.encodeMapData(newMapData);
+        setEncodedMap(newEncodedMap);
+      } catch (error) {
+        console.error('Error encoding map:', error);
+      }
+    }
   };
 
   // Undo the last action
@@ -107,18 +143,14 @@ export default function MapCreator() {
 
   // Generate code for the map
   const generateCode = () => {
-    let code = `const ${mapName.replace(/\s+/g, '')}Data = [\n`;
+    if (!encodedMap) return '';
 
-    mapData.forEach((row, rowIndex) => {
-      code += '  [\n';
-      row.forEach((cell, cellIndex) => {
-        code += `    '${cell}'${cellIndex < row.length - 1 ? ',' : ''}\n`;
-      });
-      code += `  ]${rowIndex < mapData.length - 1 ? ',' : ''}\n`;
-    });
-
-    code += '];\n';
-    return code;
+    const serialized = AreaService.serializeMap(encodedMap);
+    return (
+      `// Map: ${mapName}\n` +
+      `// Dimensions: ${mapWidth}x${mapHeight}\n\n` +
+      `const ${mapName.replace(/\s+/g, '')}Data = ${serialized};\n`
+    );
   };
 
   // Copy code to clipboard
@@ -135,15 +167,27 @@ export default function MapCreator() {
     // Save current state to history before making changes
     saveToHistory(mapData);
 
-    const newMapData = mapData.map((row, y) =>
-      row.map(
-        (cell, x) =>
-          y === 0 || y === mapHeight - 1 || x === 0 || x === mapWidth - 1
-            ? cell // Keep the borders
-            : selectedTerrain // Fill the interior
-      )
-    );
-    setMapData(newMapData);
+    try {
+      const newEncodedMap = AreaService.encodeMapData(mapData);
+      const terrainCode = terrainRegistry[selectedTerrain].code;
+
+      // Fill the interior while preserving walls
+      AreaService.fillArea(
+        newEncodedMap,
+        1,
+        1,
+        mapWidth - 2,
+        mapHeight - 2,
+        terrainCode
+      );
+
+      // Decode back for display
+      const decodedMap = AreaService.decodeMapData(newEncodedMap);
+      setMapData(decodedMap.tiles);
+      setEncodedMap(newEncodedMap);
+    } catch (error) {
+      console.error('Error filling area:', error);
+    }
   };
 
   // Clear map (reset to initial state)
@@ -261,7 +305,6 @@ export default function MapCreator() {
   // Handle mouse down to start drawing
   const handleMouseDown = (rowIndex: number, colIndex: number) => {
     if (drawingTool === 'single') {
-      // For single cell placement, just update directly
       handleCellClick(rowIndex, colIndex);
       return;
     }
@@ -351,6 +394,14 @@ export default function MapCreator() {
 
     // Apply the preview to the actual map
     setMapData(previewMap);
+
+    // Update encoded map
+    try {
+      const newEncodedMap = AreaService.encodeMapData(previewMap);
+      setEncodedMap(newEncodedMap);
+    } catch (error) {
+      console.error('Error encoding map:', error);
+    }
 
     // Reset drawing state
     setIsDrawing(false);
@@ -508,7 +559,7 @@ export default function MapCreator() {
         <h2 className="mb-2 text-xl font-semibold">Terrain Selection</h2>
 
         <div className="grid grid-cols-3 gap-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8">
-          {Object.entries(terrainSymbols).map(([key, terrain]) => (
+          {Object.entries(terrainRegistry).map(([key, terrain]) => (
             <button
               key={key}
               onClick={() => setSelectedTerrain(key)}
@@ -517,7 +568,9 @@ export default function MapCreator() {
                   ? 'border-yellow-400 bg-gray-700'
                   : 'border-gray-600 bg-gray-800 hover:bg-gray-700'
               }`}
-              title={terrain.name}
+              title={`${terrain.name}${
+                terrain.properties.passable ? ' (Passable)' : ''
+              }`}
             >
               <span className={`font-mono text-xl ${terrain.color}`}>
                 {terrain.symbol}
@@ -544,7 +597,7 @@ export default function MapCreator() {
             {(previewMap || mapData).map((row, rowIndex) => (
               <div key={rowIndex} className="flex">
                 {row.map((cell, colIndex) => {
-                  const terrain = terrainSymbols[cell];
+                  const terrain = terrainRegistry[cell];
                   return (
                     <button
                       key={`${rowIndex}-${colIndex}`}
@@ -575,12 +628,12 @@ export default function MapCreator() {
           <p className="text-sm">
             Selected:
             <span
-              className={`ml-2 font-mono ${terrainSymbols[selectedTerrain].color}`}
+              className={`ml-2 font-mono ${terrainRegistry[selectedTerrain].color}`}
             >
-              {terrainSymbols[selectedTerrain].symbol}
+              {terrainRegistry[selectedTerrain].symbol}
             </span>
             <span className="ml-1">
-              ({terrainSymbols[selectedTerrain].name})
+              ({terrainRegistry[selectedTerrain].name})
             </span>
           </p>
         </div>
@@ -591,7 +644,14 @@ export default function MapCreator() {
         <h2 className="mb-2 text-xl font-semibold">Map Preview</h2>
 
         <div className="overflow-auto">
-          <AreaMap mapData={mapData} roomName={mapName} />
+          <AreaMap
+            mapData={previewMap || mapData}
+            roomName={mapName}
+            legend={true}
+            legendData={legendMap}
+            onCellClick={handleCellClick}
+            onCellHover={(x, y) => handleMouseMove(y, x)}
+          />
         </div>
 
         <div className="mt-4 flex gap-2">

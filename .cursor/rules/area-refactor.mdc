@@ -1,0 +1,89 @@
+---
+description: for refactoring the area data logic
+globs: 
+alwaysApply: false
+---
+### Phase 1: Core Infrastructure
+1. Create new types and interfaces
+   - Define MapData, DecodedMapData interfaces
+   - Create TerrainDefinition interface
+   - Define TILE_RANGES constant
+   - Create utility types for type safety
+
+2. Create Terrain Registry System
+   - Convert existing terrainSymbols to new TerrainDefinition format
+   - Create mapping between string keys and numerical codes
+   - Implement terrain properties (passable, interactive, etc.)
+   - Create validation functions for terrain types
+
+3. Implement Core Encoding/Decoding
+   - Create MapData encoder (string[][] → Uint16Array)
+   - Create MapData decoder (Uint16Array → string[][])
+   - Add validation and error handling
+   - Implement compression utilities (optional)
+
+### Phase 2: Map Manipulation
+4. Create Map Operation Functions
+   - Implement getTile/setTile functions
+   - Create position validation utilities
+   - Implement terrain property checks
+   - Add map dimension utilities
+
+5. Build Map Data Helpers
+   - Create map initialization functions
+   - Implement map modification utilities
+   - Add map validation functions
+   - Create map conversion utilities
+
+### Phase 3: Component Updates
+6. Update AreaMap Component
+   - Add support for MapData format
+   - Maintain backward compatibility
+   - Implement efficient rendering
+   - Add new prop types
+
+7. Update Map Creator
+   - Convert to use new terrain system
+   - Update drawing tools for binary format
+   - Add new terrain properties UI
+   - Implement export in new format
+
+### Phase 4: Movement System
+8. Update Movement Logic
+   - Convert collision detection to new format
+   - Implement terrain property checking
+   - Update movement validation
+   - Add new movement rules based on terrain
+
+### Phase 5: Integration
+9. Create Migration Tools
+   - Build converter for existing maps
+   - Add version checking
+   - Implement fallback handling
+   - Create validation tools
+
+10. Update Related Components
+    - Modify test page implementation
+    - Update any dependent components
+    - Add new feature implementations
+    - Implement performance optimizations
+
+### Phase 6: Testing & Documentation
+11. Implement Testing Suite
+    - Add unit tests for new functions
+    - Create integration tests
+    - Add performance benchmarks
+    - Implement validation tests
+
+12. Create Documentation
+    - Document new data structure
+    - Create usage examples
+    - Add migration guides
+    - Document new features
+
+### Phase 7: Deployment
+13. Staged Rollout
+    - Implement feature flags
+    - Add monitoring
+    - Create rollback procedures
+    - Monitor performance metrics
