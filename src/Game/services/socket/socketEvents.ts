@@ -1,0 +1,8 @@
+export const SOCKET_EVENTS = {
+  // Character related events
+  CHARACTER: {
+    SELECT: 'CHARACTER_SELECT',
+    SELECT_SUCCESS: 'CHARACTER_SELECT_SUCCESS',
+    SELECT_ERROR: 'CHARACTER_SELECT_ERROR',
+  },
+} as const;
