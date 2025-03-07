@@ -3,7 +3,7 @@
  * as returned from the authentication API
  */
 export interface PlayerData {
-  id: string;
+  _id: string;
   username: string;
   email: string;
   accountStatus?: string;
