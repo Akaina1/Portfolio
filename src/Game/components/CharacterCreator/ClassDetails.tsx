@@ -1,6 +1,7 @@
 import React from 'react';
 import AttributeDisplay from './AttributeDisplay';
 import { ClassDetailsProps } from '@/Game/types/ClassDetails.types';
+import { RESOURCE_TYPE } from '@/Game/types/CharacterResponse.types';
 
 /**
  * ClassDetails Component
@@ -114,48 +115,25 @@ const ClassDetails: React.FC<ClassDetailsProps> = ({
           <div className="mb-3 flex flex-col">
             <div className="flex items-center justify-between">
               <span className="text-base font-medium text-gray-700 dark:text-gray-300">
-                {formatResourceType(characterClass.primaryResource.type)}
+                {formatResourceType(
+                  characterClass.resourceSystem.primaryResourceType
+                )}
               </span>
               <span className="font-medium text-gray-600 dark:text-gray-400">
-                Base: {characterClass.primaryResource.baseValue}
+                Base: {characterClass.resourceSystem.baseResourceValue}
               </span>
             </div>
             <div className="mt-3 space-y-1 text-sm text-gray-600 dark:text-gray-400">
               <p>
                 <span className="font-medium">Growth:</span>{' '}
-                {characterClass.primaryResource.growthPerLevel} per level
+                {characterClass.resourceSystem.resourceGrowthPerLevel} per level
               </p>
               <p>
                 <span className="font-medium">Regeneration:</span>{' '}
-                {characterClass.primaryResource.regenBase} per tick
+                {characterClass.resourceSystem.resourceRegenBase} per tick
               </p>
             </div>
           </div>
-
-          {characterClass.secondaryResource && (
-            <div className="mt-5 border-t border-gray-200 pt-5 dark:border-gray-700">
-              <div className="mb-3 flex flex-col">
-                <div className="flex items-center justify-between">
-                  <span className="text-base font-medium text-gray-700 dark:text-gray-300">
-                    {formatResourceType(characterClass.secondaryResource.type)}
-                  </span>
-                  <span className="font-medium text-gray-600 dark:text-gray-400">
-                    Base: {characterClass.secondaryResource.baseValue}
-                  </span>
-                </div>
-                <div className="mt-3 space-y-1 text-sm text-gray-600 dark:text-gray-400">
-                  <p>
-                    <span className="font-medium">Growth:</span>{' '}
-                    {characterClass.secondaryResource.growthPerLevel} per level
-                  </p>
-                  <p>
-                    <span className="font-medium">Regeneration:</span>{' '}
-                    {characterClass.secondaryResource.regenBase} per tick
-                  </p>
-                </div>
-              </div>
-            </div>
-          )}
         </div>
       </div>
 
@@ -245,25 +223,20 @@ const formatAttributeName = (name: string): string => {
 
 /**
  * Format resource type for display
+ * Converts RESOURCE_TYPE enum values to properly formatted display strings
+ * @param type - The resource type from RESOURCE_TYPE enum
+ * @returns Formatted resource name for display
  */
-const formatResourceType = (type: string): string => {
-  const resourceNames: Record<string, string> = {
-    mana: 'Mana',
-    rage: 'Rage',
-    energy: 'Energy',
-    focus: 'Focus',
-    fury: 'Fury',
-    chi: 'Chi',
-    runicPower: 'Runic Power',
-    soulShards: 'Soul Shards',
-    astralPower: 'Astral Power',
-    maelstrom: 'Maelstrom',
-    insanity: 'Insanity',
-    holyPower: 'Holy Power',
-    default: 'Resource',
+const formatResourceType = (type: keyof typeof RESOURCE_TYPE): string => {
+  const resourceNames: Record<keyof typeof RESOURCE_TYPE, string> = {
+    MANA: 'Mana',
+    RAGE: 'Rage',
+    ENERGY: 'Energy',
+    FOCUS: 'Focus',
+    SPIRIT: 'Spirit',
   };
 
-  return resourceNames[type] || resourceNames.default;
+  return resourceNames[type] || 'Resource';
 };
 
 /**
