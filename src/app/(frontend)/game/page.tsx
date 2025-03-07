@@ -52,7 +52,7 @@ const GamePage: React.FC = () => {
   const setShouldConnect = useSocketStore((state) => state.setShouldConnect);
 
   // Add this at the top with other state declarations
-  const devMode = true; // Set this to false when you need normal authentication
+  const devMode = false; // Set this to false when you need normal authentication
 
   // Simulate loading effect
   useEffect(() => {
@@ -227,10 +227,13 @@ const GamePage: React.FC = () => {
     }
   }, [isAuthenticatedPlayer, viewState, setViewState]);
 
-  // Add this effect to enable socket connection only when entering game view
+  // Update this effect to enable socket connection for both game and character selection views
   useEffect(() => {
-    if (viewState === 'game' && isAuthenticatedPlayer) {
-      // Only enable socket connection when entering game view
+    if (
+      (viewState === 'game' || viewState === 'characterSelection') &&
+      isAuthenticatedPlayer
+    ) {
+      // Enable socket connection for both game and character selection views
       setShouldConnect(true);
     } else {
       // Disable socket connection for other views
@@ -261,6 +264,30 @@ const GamePage: React.FC = () => {
         if (!isAuthenticatedPlayer) {
           setViewState('auth');
           return <AuthView />;
+        }
+
+        // Add socket connection check for character selection
+        if (!isConnected || !isAuthenticated) {
+          return (
+            <div className="flex h-screen w-full flex-col items-center justify-center">
+              <h2 className="mb-4 text-2xl font-bold">
+                Connecting to game server...
+              </h2>
+              {connectionError && (
+                <div className="mt-4 rounded border border-red-400 bg-red-100 px-4 py-3 text-red-700">
+                  {connectionError}
+                </div>
+              )}
+              <div className="mt-4">
+                <button
+                  className="rounded bg-purple-600 px-4 py-2 text-white hover:bg-purple-700"
+                  onClick={() => window.location.reload()}
+                >
+                  Retry Connection
+                </button>
+              </div>
+            </div>
+          );
         }
         return <CharacterSelection />;
 
