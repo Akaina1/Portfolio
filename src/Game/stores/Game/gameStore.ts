@@ -16,7 +16,7 @@ export const useGameStore = create<GameState>((set) => ({
   // Core state setters
   setViewState: (viewState) => set({ viewState }),
   setConnected: (isConnected) => set({ isConnected }),
-  setCharacter: (character) => set({ character }),
+  setCharacter: (character) => set({ character }), // sets the selected character
 
   // Helper methods for view state transitions
   goToAuth: () => set({ viewState: 'auth' }),

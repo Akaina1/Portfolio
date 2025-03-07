@@ -164,7 +164,7 @@ export const usePlayerStore = create<PlayerState>()(
 
           // Update player data with profile information
           const playerData: PlayerData = {
-            id: profileData.userId,
+            _id: profileData.userId,
             username: profileData.username,
             email: profileData.email,
             accountStatus: profileData.accountStatus,
@@ -196,7 +196,7 @@ export const usePlayerStore = create<PlayerState>()(
 
         console.log(
           'checkForCharacters called with player:',
-          player ? `ID: ${player.id}` : 'No player'
+          player ? `ID: ${player._id}` : 'No player'
         );
 
         try {
@@ -243,19 +243,19 @@ export const usePlayerStore = create<PlayerState>()(
           'handlePostLogin called with token:',
           token ? `${token.substring(0, 10)}...` : 'No token',
           'and player:',
-          player ? `ID: ${player.id}` : 'No player'
+          player ? `ID: ${player._id}` : 'No player'
         );
 
         try {
           // Ensure we have complete player data with ID
-          if (!player || !player.id) {
+          if (!player || !player._id) {
             console.log(
               'Player data missing or incomplete, fetching profile...'
             );
             const profileData = await getProfile();
 
             // If we still don't have player data, we can't proceed
-            if (!profileData || !profileData.id) {
+            if (!profileData || !profileData._id) {
               console.error('Failed to get player profile data');
               throw new Error('Player data unavailable');
             }
@@ -267,7 +267,7 @@ export const usePlayerStore = create<PlayerState>()(
             throw new Error('Authentication token required');
           }
 
-          console.log('Checking for characters with player ID:', player?.id);
+          console.log('Checking for characters with player ID:', player?._id);
 
           // Check if player has characters
           const hasCharacters = await checkForCharacters();

@@ -30,13 +30,17 @@ export const useSocketStore = create<SocketStore>((set, get) => {
   const actions: SocketActions = {
     // Connect to the socket server with JWT token
     connect: () => {
-      // Don't reconnect if already connected
       const state = getState();
+      console.log('Socket connect called:', {
+        hasExistingSocket: !!state.socket,
+        isConnected: state.isConnected,
+      });
+
       if (state.socket && state.isConnected) return;
 
-      // Get the JWT token
       const token = getAuthToken();
       if (!token) {
+        console.error('No auth token available for socket connection');
         set({
           connectionError:
             'Authentication token required for socket connection',
