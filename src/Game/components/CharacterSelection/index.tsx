@@ -29,6 +29,7 @@ const CharacterSelection: React.FC = () => {
   );
   const [characterList, setCharacterList] = useState<CharacterDisplay[]>([]);
   const [isSelecting, setIsSelecting] = useState(false);
+  const [isStartingGame, setIsStartingGame] = useState(false);
 
   // Create a ref to store the socket service instance
   const socketServiceRef = React.useRef<SocketService | null>(null);
@@ -91,9 +92,57 @@ const CharacterSelection: React.FC = () => {
   }, [fetchPlayerCharacters]); // Remove playerCharacters dependency
 
   // Handle character selection
-  const handleSelectCharacter = (characterId: string) => {
-    // Just update the UI state first
-    setSelectedCharacterId(characterId);
+  const handleSelectCharacter = async (characterId: string) => {
+    if (!socket || !playerId) {
+      setError('Unable to select character: Missing required information');
+      return;
+    }
+
+    try {
+      setIsSelecting(true);
+      setError(null);
+
+      // Create socket service instance if it doesn't exist
+      if (!socketServiceRef.current) {
+        socketServiceRef.current = new SocketService(socket);
+      }
+
+      // First, select the character via socket
+      const response = await socketServiceRef.current.character.selectCharacter(
+        {
+          playerId,
+          characterId,
+        }
+      );
+
+      if (response.success) {
+        // Find the selected character in our list
+        const selectedCharacter = characterList.find(
+          (char) => char.id === characterId
+        );
+
+        if (!selectedCharacter) {
+          throw new Error('Selected character not found in list');
+        }
+
+        // Set the character in the game store
+        setCharacter({
+          id: characterId,
+          name: selectedCharacter.name,
+        });
+
+        // Update local UI state
+        setSelectedCharacterId(characterId);
+      }
+    } catch (err) {
+      console.error('Error selecting character:', err);
+      setError(
+        err instanceof Error ? err.message : 'Failed to select character'
+      );
+      setSelectedCharacterId(null); // Reset selection on error
+    } finally {
+      setIsSelecting(false);
+    }
   };
 
   // Handle play button click - this is where we'll add the socket logic
@@ -104,51 +153,22 @@ const CharacterSelection: React.FC = () => {
     }
 
     try {
-      setIsSelecting(true);
+      setIsStartingGame(true);
       setError(null);
 
-      // Create socket service instance and store in ref
-      socketServiceRef.current = new SocketService(socket);
-
-      console.log('Attempting to select character:', {
-        characterId: selectedCharacterId,
+      // Start the game
+      await socketServiceRef.current?.game.startGame({
         playerId,
+        characterId: selectedCharacterId,
       });
 
-      // Call character selection handler
-      const response = await socketServiceRef.current.character.selectCharacter(
-        {
-          playerId,
-          characterId: selectedCharacterId,
-        }
-      );
-
-      console.log('Selection response:', response);
-
-      if (response.success) {
-        // Find the selected character in our list
-        const selectedCharacter = characterList.find(
-          (char) => char.id === selectedCharacterId
-        );
-
-        if (!selectedCharacter) {
-          throw new Error('Selected character not found in list');
-        }
-
-        // Set character in game store
-        setCharacter({
-          id: selectedCharacterId,
-          name: selectedCharacter.name,
-        });
-
-        // Navigate to the game view
-        goToGame();
-      }
+      // Navigate to game view
+      goToGame();
     } catch (err) {
       console.error('Error starting game:', err);
       setError(err instanceof Error ? err.message : 'Failed to start game');
     } finally {
-      setIsSelecting(false);
+      setIsStartingGame(false);
     }
   };
 
@@ -200,6 +220,13 @@ const CharacterSelection: React.FC = () => {
         </div>
       )}
 
+      {/* Loading indicator when selecting */}
+      {isSelecting && selectedCharacterId === character.id && (
+        <div className="absolute inset-0 flex items-center justify-center bg-black/20">
+          <div className="h-8 w-8 animate-spin rounded-full border-4 border-blue-500 border-t-transparent"></div>
+        </div>
+      )}
+
       {/* Character info */}
       <div className="flex-grow p-4">
         <h3 className="text-lg font-bold text-gray-800 dark:text-gray-100">
@@ -219,15 +246,68 @@ const CharacterSelection: React.FC = () => {
           </p>
         )}
       </div>
-
-      {/* Add loading indicator when selecting */}
-      {isSelecting && selectedCharacterId === character.id && (
-        <div className="absolute inset-0 flex items-center justify-center bg-black/20">
-          <div className="h-8 w-8 animate-spin rounded-full border-4 border-blue-500 border-t-transparent"></div>
-        </div>
-      )}
     </div>
   );
+
+  // Update the character details section to only show play button if character is in store
+  const renderCharacterDetails = () => {
+    const selectedCharacter = characterList.find(
+      (c) => c.id === selectedCharacterId
+    );
+    const characterInStore = useGameStore.getState().character;
+
+    if (!selectedCharacter) return null;
+
+    return (
+      <div className="sticky top-4 space-y-6">
+        <div className="rounded-button border border-gray-200 bg-black/5 p-6 shadow-sm">
+          <h2 className="mb-4 text-xl font-semibold text-gray-800 dark:text-gray-100">
+            Selected Character
+          </h2>
+          <div className="space-y-4">
+            <div className="flex items-center space-x-4">
+              <div>
+                <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100">
+                  {selectedCharacter.name}
+                </h3>
+                <p className="text-sm text-gray-600 dark:text-gray-400">
+                  Level {selectedCharacter.level} {selectedCharacter.className}
+                </p>
+              </div>
+            </div>
+            {selectedCharacter.lastPlayed && (
+              <div className="rounded-md bg-gray-50 p-3 text-sm text-gray-600 dark:bg-gray-800 dark:text-gray-300">
+                <span className="font-medium">Last played:</span>{' '}
+                {selectedCharacter.lastPlayed}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Only show play button if character is in store */}
+        {characterInStore && characterInStore.id === selectedCharacterId && (
+          <button
+            onClick={handlePlayCharacter}
+            disabled={isStartingGame}
+            className={`w-full rounded-button ${
+              isStartingGame
+                ? 'cursor-not-allowed bg-green-400'
+                : 'bg-green-600 hover:bg-green-700'
+            } py-3 text-center text-white shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2`}
+          >
+            {isStartingGame ? (
+              <div className="flex items-center justify-center">
+                <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
+                Starting Game...
+              </div>
+            ) : (
+              'Play Now'
+            )}
+          </button>
+        )}
+      </div>
+    );
+  };
 
   // Loading state
   if (isLoading) {
@@ -332,76 +412,14 @@ const CharacterSelection: React.FC = () => {
 
           {/* Character details and play button */}
           <div className="md:col-span-1">
-            <div className="sticky top-4 space-y-6">
-              {selectedCharacterId ? (
-                <>
-                  <div className="rounded-button border border-gray-200 bg-black/5 p-6 shadow-sm">
-                    <h2 className="mb-4 text-xl font-semibold text-gray-800 dark:text-gray-100">
-                      Selected Character
-                    </h2>
+            {renderCharacterDetails()}
 
-                    {(() => {
-                      const character = characterList.find(
-                        (c) => c.id === selectedCharacterId
-                      );
-                      if (!character) return null;
-
-                      return (
-                        <div className="space-y-4">
-                          <div className="flex items-center space-x-4">
-                            <div>
-                              <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100">
-                                {character.name}
-                              </h3>
-                              <p className="text-sm text-gray-600 dark:text-gray-400">
-                                Level {character.level} {character.className}
-                              </p>
-                            </div>
-                          </div>
-
-                          {character.lastPlayed && (
-                            <div className="rounded-md bg-gray-50 p-3 text-sm text-gray-600 dark:bg-gray-800 dark:text-gray-300">
-                              <span className="font-medium">Last played:</span>{' '}
-                              {character.lastPlayed}
-                            </div>
-                          )}
-                        </div>
-                      );
-                    })()}
-                  </div>
-
-                  <button
-                    onClick={handlePlayCharacter}
-                    disabled={isSelecting}
-                    className={`w-full rounded-button ${
-                      isSelecting
-                        ? 'cursor-not-allowed bg-green-400'
-                        : 'bg-green-600 hover:bg-green-700'
-                    } py-3 text-center text-white shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2`}
-                  >
-                    {isSelecting ? (
-                      <div className="flex items-center justify-center">
-                        <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
-                        Starting Game...
-                      </div>
-                    ) : (
-                      'Play Now'
-                    )}
-                  </button>
-                </>
-              ) : (
-                <div className="rounded-button border border-gray-200 bg-gray-50 p-6 text-center">
-                  <p className="text-gray-600">Select a character to play</p>
-                </div>
-              )}
-
-              <Link
-                href="/game/characters/create"
-                className="block w-full rounded-button border border-blue-500 bg-white py-3 text-center text-blue-600 shadow-sm hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-              >
-                Create New Character
-              </Link>
-            </div>
+            <Link
+              href="/game/characters/create"
+              className="block w-full rounded-button border border-blue-500 bg-white py-3 text-center text-blue-600 shadow-sm hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+            >
+              Create New Character
+            </Link>
           </div>
         </div>
       )}
