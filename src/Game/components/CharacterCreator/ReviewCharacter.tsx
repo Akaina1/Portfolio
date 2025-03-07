@@ -182,40 +182,23 @@ const ReviewCharacter: React.FC<ReviewCharacterProps> = ({
               <div>
                 <div className="mb-1 flex items-center justify-between">
                   <span className="font-medium text-gray-700 dark:text-gray-300">
-                    {formatResourceType(characterClass.primaryResource.type)}
+                    {formatResourceType(
+                      characterClass.resourceSystem.primaryResourceType
+                    )}
                   </span>
                   <span className="text-sm text-gray-600 dark:text-gray-400">
-                    Base: {characterClass.primaryResource.baseValue}
+                    Base: {characterClass.resourceSystem.baseResourceValue}
                   </span>
                 </div>
                 <div className="h-2 w-full overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700">
                   <div
-                    className={`h-full rounded-full ${getResourceColor(characterClass.primaryResource.type)}`}
+                    className={`h-full rounded-full ${getResourceColor(
+                      characterClass.resourceSystem.primaryResourceType
+                    )}`}
                     style={{ width: '100%' }}
                   />
                 </div>
               </div>
-
-              {characterClass.secondaryResource && (
-                <div>
-                  <div className="mb-1 flex items-center justify-between">
-                    <span className="font-medium text-gray-700 dark:text-gray-300">
-                      {formatResourceType(
-                        characterClass.secondaryResource.type
-                      )}
-                    </span>
-                    <span className="text-sm text-gray-600 dark:text-gray-400">
-                      Base: {characterClass.secondaryResource.baseValue}
-                    </span>
-                  </div>
-                  <div className="h-2 w-full overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700">
-                    <div
-                      className={`h-full rounded-full ${getResourceColor(characterClass.secondaryResource.type)}`}
-                      style={{ width: '100%' }}
-                    />
-                  </div>
-                </div>
-              )}
             </div>
           </div>
         </div>
