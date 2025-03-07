@@ -76,7 +76,7 @@ const authService = {
       }
 
       playerStore.setPlayer({
-        id: response.player.id,
+        _id: response.player.id,
         username: response.player.username,
         email: response.player.email,
       });
@@ -137,7 +137,7 @@ const authService = {
       // Update player store with profile data
       const playerStore = usePlayerStore.getState();
       playerStore.setPlayer({
-        id: profile.userId,
+        _id: profile.userId,
         username: profile.username,
         email: profile.email,
         accountStatus: profile.accountStatus,

@@ -91,9 +91,9 @@ export async function apiRequest<T, D = Record<string, unknown>>(
 
     // Don't add player ID as a header - backend should extract it from the JWT token
     const player = usePlayerStore.getState().player;
-    if (player && player.id) {
+    if (player && player._id) {
       console.log(
-        `Player ID in store: ${player.id} (will be extracted from JWT by backend)`
+        `Player ID in store: ${player._id} (will be extracted from JWT by backend)`
       );
     } else {
       console.warn('Player ID not available in store');
