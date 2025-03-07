@@ -1,9 +1,11 @@
 import { Socket } from 'socket.io-client';
 import { setupCharacterHandlers } from './handlers/characterHandler';
+import { setupGameHandlers } from './handlers/gameHandler';
 
 export class SocketService {
   private socket: Socket;
   private characterHandlers;
+  private gameHandlers;
 
   constructor(socket: Socket) {
     if (!socket) {
@@ -16,10 +18,15 @@ export class SocketService {
 
     this.socket = socket;
     this.characterHandlers = setupCharacterHandlers(socket);
+    this.gameHandlers = setupGameHandlers(socket);
   }
 
   get character() {
     return this.characterHandlers;
+  }
+
+  get game() {
+    return this.gameHandlers;
   }
 
   /**
@@ -27,6 +34,7 @@ export class SocketService {
    */
   cleanup() {
     this.characterHandlers.cleanup();
+    this.gameHandlers.cleanup();
   }
 
   // Add more handler setups as needed
