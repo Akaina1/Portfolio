@@ -1,6 +1,6 @@
 // src/utils/placeholderGenerator.ts
 import { MapPoint } from '../types/MapPoint.type';
-import { LocationData } from '../components/GameInterface/LocationCard';
+import { LocationData } from '../types/LocationData.types';
 
 // Define difficulty levels with corresponding colors
 export const DIFFICULTY_LEVELS = {

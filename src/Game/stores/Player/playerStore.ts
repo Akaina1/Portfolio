@@ -96,6 +96,7 @@ export const usePlayerStore = create<PlayerState>()(
       /**
        * Register a new player account
        */
+      //TODO: this does not belong here we already have a register method in authService
       register: async (username, email, password) => {
         set({ isLoading: true, error: null });
 
