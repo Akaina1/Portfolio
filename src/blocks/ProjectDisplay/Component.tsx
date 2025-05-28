@@ -180,7 +180,7 @@ const ProjectSquare: React.FC<{
 }> = ({ project, hoverColor }) => {
   return (
     <Link
-      href={project.slug ? `/projects/${project.slug}` : '#'}
+      href={project.slug ? `/projects#${project.slug}` : ''}
       className={cn(
         'relative block h-full w-full overflow-hidden rounded-xl transition-transform duration-300',
         'hover:scale-95'
@@ -192,6 +192,7 @@ const ProjectSquare: React.FC<{
         <Media
           resource={project.displayImage}
           imgClassName="h-full w-full object-cover"
+          className="h-full"
         />
       )}
 

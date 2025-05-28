@@ -9,6 +9,273 @@ import { X } from 'lucide-react';
 import type { Project, ProjectCardsBlockType } from '@/payload-types';
 import { cn } from '@/utilities/cn';
 
+/**
+ * Creates a URL-safe slug from a project title
+ * @param title - The project title to convert to a slug
+ * @returns A URL-safe slug string
+ */
+const createSlug = (title: string): string => {
+  return title
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/(^-|-$)/g, '');
+};
+
+/**
+ * Finds a project by its slug from an array of projects
+ * @param projects - Array of projects to search through
+ * @param slug - The slug to match against project titles
+ * @returns The matching project or null if not found
+ */
+const findProjectBySlug = (
+  projects: Project[],
+  slug: string
+): Project | null => {
+  return (
+    projects.find((project) => createSlug(project.title || '') === slug) || null
+  );
+};
+
+/**
+ * Enhanced utility function to format description text with code highlighting and proper structure
+ * Handles numbered lists, bullet points, manual headings (###), and regular paragraphs with code formatting
+ * @param description - The raw description text to format
+ * @returns Formatted React nodes with proper structure and styling
+ */
+const formatDescription = (description: string): React.ReactNode => {
+  // Split by double newlines to get paragraphs
+  const paragraphs = description.split('\n\n');
+
+  return paragraphs.map((paragraph, index) => {
+    // Check if this paragraph contains numbered list items
+    if (paragraph.match(/^\d+\./m)) {
+      const lines = paragraph.split('\n');
+      const elements: React.ReactNode[] = [];
+      let currentListItems: string[] = [];
+
+      lines.forEach((line, lineIndex) => {
+        if (line.match(/^\d+\./)) {
+          // If we have accumulated list items, render them first
+          if (currentListItems.length > 0) {
+            elements.push(
+              <ul
+                key={`ul-${index}-${lineIndex}`}
+                className="mb-4 ml-6 list-disc space-y-2"
+              >
+                {currentListItems.map((item, itemIndex) => (
+                  <li
+                    key={itemIndex}
+                    className="text-gray-700 dark:text-gray-300"
+                  >
+                    {formatTextWithCode(item)}
+                  </li>
+                ))}
+              </ul>
+            );
+            currentListItems = [];
+          }
+
+          // Add the numbered item as a heading
+          elements.push(
+            <h4
+              key={`h4-${index}-${lineIndex}`}
+              className="mb-3 mt-6 text-lg font-semibold text-gray-900 dark:text-white"
+            >
+              {formatTextWithCode(line)}
+            </h4>
+          );
+        } else if (line.trim().match(/^###\s+/)) {
+          // Manual heading with ###
+          const headingText = line.replace(/^###\s+/, '');
+          elements.push(
+            <h3
+              key={`h3-${index}-${lineIndex}`}
+              className="mb-4 mt-6 text-xl font-bold text-gray-900 dark:text-white"
+            >
+              {formatTextWithCode(headingText)}
+            </h3>
+          );
+        } else if (line.trim().match(/^\s*\*/)) {
+          // Collect bullet points - remove the * and any leading whitespace
+          const cleanedItem = line.replace(/^\s*\*\s*/, '');
+          currentListItems.push(cleanedItem);
+        } else if (line.trim()) {
+          // Regular text line
+          elements.push(
+            <p
+              key={`p-${index}-${lineIndex}`}
+              className="mb-3 leading-relaxed text-gray-700 dark:text-gray-300"
+            >
+              {formatTextWithCode(line)}
+            </p>
+          );
+        }
+      });
+
+      // Handle any remaining list items
+      if (currentListItems.length > 0) {
+        elements.push(
+          <ul
+            key={`ul-final-${index}`}
+            className="mb-4 ml-6 list-disc space-y-2"
+          >
+            {currentListItems.map((item, itemIndex) => (
+              <li
+                key={itemIndex}
+                className="leading-relaxed text-gray-700 dark:text-gray-300"
+              >
+                {formatTextWithCode(item)}
+              </li>
+            ))}
+          </ul>
+        );
+      }
+
+      return (
+        <div key={`formatted-${index}`} className="mb-6">
+          {elements}
+        </div>
+      );
+    } else {
+      // Check if this paragraph is a standalone list (starts with *) or contains headings
+      const lines = paragraph.split('\n');
+      const isListParagraph = lines.some((line) => line.trim().match(/^\s*\*/));
+      const hasHeadings = lines.some((line) => line.trim().match(/^###\s+/));
+
+      if (isListParagraph || hasHeadings) {
+        const listItems: string[] = [];
+        const otherElements: React.ReactNode[] = [];
+
+        lines.forEach((line, lineIndex) => {
+          if (line.trim().match(/^###\s+/)) {
+            // This is a manual heading
+            const headingText = line.replace(/^###\s+/, '');
+            otherElements.push(
+              <h3
+                key={`h3-${index}-${lineIndex}`}
+                className="mb-4 mt-6 text-xl font-bold text-gray-900 dark:text-white"
+              >
+                {formatTextWithCode(headingText)}
+              </h3>
+            );
+          } else if (line.trim().match(/^\s*\*/)) {
+            // This is a bullet point
+            const cleanedItem = line.replace(/^\s*\*\s*/, '');
+            listItems.push(cleanedItem);
+          } else if (line.trim()) {
+            // This is regular text
+            otherElements.push(
+              <p
+                key={`p-${index}-${lineIndex}`}
+                className="mb-4 leading-relaxed text-gray-700 dark:text-gray-300"
+              >
+                {formatTextWithCode(line)}
+              </p>
+            );
+          }
+        });
+
+        return (
+          <div key={`mixed-${index}`} className="mb-6">
+            {otherElements}
+            {listItems.length > 0 && (
+              <ul className="mb-4 ml-6 list-disc space-y-2">
+                {listItems.map((item, itemIndex) => (
+                  <li
+                    key={itemIndex}
+                    className="leading-relaxed text-gray-700 dark:text-gray-300"
+                  >
+                    {formatTextWithCode(item)}
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        );
+      } else {
+        // Regular paragraph - split by single newlines and render as separate paragraphs
+        const lines = paragraph.split('\n').filter((line) => line.trim());
+        return lines.map((line, lineIndex) => {
+          // Check if this line is a heading
+          if (line.trim().match(/^###\s+/)) {
+            const headingText = line.replace(/^###\s+/, '');
+            return (
+              <h3
+                key={`h3-standalone-${index}-${lineIndex}`}
+                className="mb-4 mt-6 text-xl font-bold text-gray-900 dark:text-white"
+              >
+                {formatTextWithCode(headingText)}
+              </h3>
+            );
+          } else {
+            return (
+              <p
+                key={`${index}-${lineIndex}`}
+                className="mb-4 leading-relaxed text-gray-700 dark:text-gray-300"
+              >
+                {formatTextWithCode(line)}
+              </p>
+            );
+          }
+        });
+      }
+    }
+  });
+};
+
+/**
+ * Helper function to format text with code highlighting using backticks
+ * @param text - The text string to format
+ * @returns React nodes with code segments properly highlighted
+ */
+const formatTextWithCode = (text: string): React.ReactNode => {
+  // Split text by backticks to find code segments
+  const parts = text.split(/(`[^`]+`)/g);
+
+  return parts.map((part, index) => {
+    if (part.startsWith('`') && part.endsWith('`')) {
+      // This is a code segment
+      const codeText = part.slice(1, -1); // Remove backticks
+      return (
+        <code
+          key={index}
+          className="mx-1 rounded bg-gray-100 px-2 py-1 font-mono text-sm text-gray-800 dark:bg-gray-700 dark:text-gray-200"
+        >
+          {codeText}
+        </code>
+      );
+    }
+    return part;
+  });
+};
+
+/**
+ * Simplified formatting function for preview text in project cards
+ * Only handles code highlighting and basic text, strips complex formatting
+ * @param description - The raw description text to format
+ * @returns Formatted React nodes suitable for preview display
+ */
+const formatPreviewDescription = (description: string): React.ReactNode => {
+  // Take only the first few sentences for preview and remove complex formatting
+  const cleanText = description
+    .split('\n\n')[0] // Get first paragraph
+    .replace(/^\d+\.\s*/gm, '') // Remove numbered list markers
+    .replace(/^###\s*/gm, '') // Remove heading markers
+    .replace(/^\s*\*\s*/gm, '') // Remove bullet points
+    .replace(/\n/g, ' ') // Replace line breaks with spaces
+    .trim();
+
+  // Apply code formatting to the cleaned text
+  return formatTextWithCode(cleanText);
+};
+
+/**
+ * ProjectCardsBlock component that displays a grid of project cards with expandable details
+ * Features caching, URL hash navigation, and smooth animations
+ * @param props - Component props
+ * @param props.limit - Maximum number of projects to display (default: 6)
+ * @returns JSX element containing the project cards section
+ */
 export const ProjectCardsBlock: React.FC<ProjectCardsBlockType> = ({
   limit = 6,
 }) => {
@@ -73,9 +340,39 @@ export const ProjectCardsBlock: React.FC<ProjectCardsBlockType> = ({
     fetchProjects();
   }, [limit]);
 
+  // New useEffect to handle URL hash changes and initial load
+  useEffect(() => {
+    const handleHashChange = () => {
+      const hash = window.location.hash.slice(1); // Remove the '#' character
+      if (hash && projects.length > 0) {
+        const project = findProjectBySlug(projects, hash);
+        if (project && project !== expandedProject) {
+          setExpandedProject(project);
+        }
+      } else if (!hash && expandedProject) {
+        setExpandedProject(null);
+      }
+    };
+
+    // Handle initial load
+    handleHashChange();
+
+    // Listen for hash changes
+    window.addEventListener('hashchange', handleHashChange);
+
+    return () => {
+      window.removeEventListener('hashchange', handleHashChange);
+    };
+  }, [projects, expandedProject]);
+
   const handleCardClick = (project: Project) => {
     if (isAnimating) return;
     setIsAnimating(true);
+
+    // Update URL hash with project slug
+    const slug = createSlug(project.title || '');
+    window.history.pushState(null, '', `#${slug}`);
+
     setExpandedProject(project);
     setTimeout(() => setIsAnimating(false), 500); // Match animation duration
   };
@@ -83,6 +380,10 @@ export const ProjectCardsBlock: React.FC<ProjectCardsBlockType> = ({
   const handleCloseExpanded = () => {
     if (isAnimating) return;
     setIsAnimating(true);
+
+    // Remove hash from URL
+    window.history.pushState(null, '', window.location.pathname);
+
     setExpandedProject(null);
     setTimeout(() => setIsAnimating(false), 500); // Match animation duration
   };
@@ -107,12 +408,13 @@ export const ProjectCardsBlock: React.FC<ProjectCardsBlockType> = ({
           <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
         </div>
       ) : projects.length > 0 ? (
-        <div className="relative min-h-[800px] lg:min-h-[400px]">
+        <>
           {expandedProject ? (
             <div
               className={cn(
-                'absolute inset-0 flex flex-col overflow-hidden rounded-xl bg-white shadow-xl dark:bg-gray-800',
-                'animate-fade-up animate-duration-500 animate-once animate-ease-in-out'
+                'flex w-full flex-col overflow-hidden rounded-xl bg-white shadow-xl dark:bg-gray-800',
+                'animate-fade-up animate-duration-500 animate-once animate-ease-in-out',
+                'min-h-[600px]' // Minimum height but allows expansion
               )}
             >
               <button
@@ -133,16 +435,16 @@ export const ProjectCardsBlock: React.FC<ProjectCardsBlockType> = ({
                 </div>
               )}
 
-              <div className="flex flex-1 flex-col px-4 pt-6">
-                <div className="flex-1 overflow-y-auto lg:mb-6">
+              <div className="flex flex-1 flex-col px-6 pb-6 pt-6">
+                <div className="w-full">
                   {expandedProject.description && (
-                    <p className="text-gray-700 dark:text-gray-300">
-                      {expandedProject.description}
-                    </p>
+                    <div className="max-w-none">
+                      {formatDescription(expandedProject.description)}
+                    </div>
                   )}
                 </div>
 
-                <div className="mb-4 mt-auto flex flex-wrap gap-3">
+                <div className="mt-8 flex flex-wrap gap-3 border-t border-gray-200 pt-6 dark:border-gray-600">
                   {expandedProject.liveLink && (
                     <Link
                       href={expandedProject.liveLink}
@@ -172,17 +474,19 @@ export const ProjectCardsBlock: React.FC<ProjectCardsBlockType> = ({
               </div>
             </div>
           ) : (
-            <div className="grid animate-fade grid-cols-1 gap-6 animate-duration-500 animate-once animate-ease-in-out md:grid-cols-2 lg:grid-cols-3">
-              {projects.map((project) => (
-                <ProjectCard
-                  key={project.id}
-                  project={project}
-                  onClick={() => handleCardClick(project)}
-                />
-              ))}
+            <div className="relative min-h-[800px] lg:min-h-[400px]">
+              <div className="grid animate-fade grid-cols-1 gap-6 animate-duration-500 animate-once animate-ease-in-out md:grid-cols-2 lg:grid-cols-3">
+                {projects.map((project) => (
+                  <ProjectCard
+                    key={project.id}
+                    project={project}
+                    onClick={() => handleCardClick(project)}
+                  />
+                ))}
+              </div>
             </div>
           )}
-        </div>
+        </>
       ) : (
         <div className="py-12 text-center text-gray-500">
           No projects found.
@@ -192,6 +496,13 @@ export const ProjectCardsBlock: React.FC<ProjectCardsBlockType> = ({
   );
 };
 
+/**
+ * Individual project card component that displays project information in a card format
+ * @param props - Component props
+ * @param props.project - The project data to display
+ * @param props.onClick - Callback function when the card is clicked
+ * @returns JSX element containing the project card
+ */
 const ProjectCard: React.FC<{
   project: Project;
   onClick: () => void;
@@ -217,9 +528,9 @@ const ProjectCard: React.FC<{
         </h3>
 
         {project.description && (
-          <p className="mb-4 line-clamp-3 flex-1 text-gray-700 dark:text-gray-300">
-            {project.description}
-          </p>
+          <div className="mb-4 line-clamp-3 flex-1 text-gray-700 dark:text-gray-300">
+            {formatPreviewDescription(project.description)}
+          </div>
         )}
 
         <div className="mt-auto flex gap-3">

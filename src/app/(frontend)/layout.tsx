@@ -15,7 +15,6 @@ import { draftMode } from 'next/headers';
 
 import './globals.css';
 import { getServerSideURL } from '@/utilities/getURL';
-import { GameInterfaceProvider } from '@/Game/providers/GameInterfaceProvider';
 
 export default async function RootLayout({
   children,
@@ -44,7 +43,7 @@ export default async function RootLayout({
           />
 
           <Header />
-          <GameInterfaceProvider>{children}</GameInterfaceProvider>
+          {children}
           <Footer />
         </Providers>
       </body>

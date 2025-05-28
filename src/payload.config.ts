@@ -1,5 +1,6 @@
 // storage-adapter-import-placeholder
 import { mongooseAdapter } from '@payloadcms/db-mongodb';
+import { resendAdapter } from '@payloadcms/email-resend';
 
 import sharp from 'sharp'; // sharp-import
 import path from 'path';
@@ -66,4 +67,9 @@ export default buildConfig({
   typescript: {
     outputFile: path.resolve(dirname, 'payload-types.ts'),
   },
+  email: resendAdapter({
+    defaultFromAddress: 'onboarding@resend.dev',
+    defaultFromName: 'Contact Form Response',
+    apiKey: process.env.RESEND_API_KEY || '',
+  }),
 });

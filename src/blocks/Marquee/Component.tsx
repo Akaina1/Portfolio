@@ -75,7 +75,7 @@ export const MarqueeBlock: React.FC<MarqueeBlockType> = ({ images }) => {
           alt={logo.alt}
           width={logo.width}
           height={logo.height}
-          className={`marquee__item marquee__item--${index + 1} object-contain`}
+          className={`marquee__item marquee__item--${index + 1} ml-10 object-contain`}
           style={
             {
               // Set custom properties for each logo
