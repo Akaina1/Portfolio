@@ -1,4 +1,5 @@
-import { payloadCloudPlugin } from '@payloadcms/payload-cloud';
+//import { payloadCloudPlugin } from '@payloadcms/payload-cloud';
+import { vercelBlobStorage } from '@payloadcms/storage-vercel-blob';
 import { formBuilderPlugin } from '@payloadcms/plugin-form-builder';
 import { nestedDocsPlugin } from '@payloadcms/plugin-nested-docs';
 import { redirectsPlugin } from '@payloadcms/plugin-redirects';
@@ -80,5 +81,10 @@ export const plugins = [
       },
     },
   }),
-  payloadCloudPlugin(),
+  vercelBlobStorage({
+    collections: {
+      media: true,
+    },
+    token: process.env.BLOB_READ_WRITE_TOKEN,
+  }),
 ];
