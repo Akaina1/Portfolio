@@ -92,10 +92,10 @@ export const HeaderClient: React.FC<HeaderClientProps> = ({ data }) => {
           {/* Profile icon with hover animation */}
           <div className="flex h-8 w-8 items-center justify-center rounded-full md:hidden lg:flex">
             <Image
-              src="/profile.png"
+              src="/media/profile.png"
               alt="Profile"
-              width={32}
-              height={32}
+              width={300}
+              height={300}
               className="sm:hover:scale-130 h-6 w-6 rounded-full object-cover transition-transform duration-300 ease-in-out hover:scale-125 sm:h-8 sm:w-8"
               style={
                 {
