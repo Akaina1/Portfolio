@@ -37,17 +37,24 @@ export const ImageMedia: React.FC<MediaProps> = (props) => {
   if (!src && resource && typeof resource === 'object') {
     const {
       alt: altFromResource,
-      filename: fullFilename,
+      filename: __fullFilename,
       height: fullHeight,
       url,
       width: fullWidth,
     } = resource;
 
-    width = fullWidth!;
-    height = fullHeight!;
-    alt = altFromResource || '';
+    // Only construct src if url exists and is not empty
+    if (url && url.trim() !== '') {
+      width = fullWidth!;
+      height = fullHeight!;
+      alt = altFromResource || '';
+      src = `${getClientSideURL()}${url}`;
+    }
+  }
 
-    src = `${getClientSideURL()}${url}`;
+  // Don't render anything if we don't have a valid src
+  if (!src || (typeof src === 'string' && src.trim() === '')) {
+    return null;
   }
 
   const loading = loadingFromProps || (!priority ? 'lazy' : undefined);
