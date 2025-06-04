@@ -9,8 +9,8 @@ const defaultOpenGraph: Metadata['openGraph'] = {
       url: `${getServerSideURL()}/website-template-OG.webp`,
     },
   ],
-  siteName: 'ADost.dev',
-  title: 'ADost.dev',
+  siteName: 'aarondost.dev',
+  title: 'aarondost.dev',
 };
 
 export const mergeOpenGraph = (
