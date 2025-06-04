@@ -3,13 +3,16 @@ import { useHeaderTheme } from '@/providers/HeaderTheme';
 import { useTheme } from '@/providers/Theme';
 import React, { useEffect, useState } from 'react';
 
-import type { Header } from '@/payload-types';
+import type { Header, Footer } from '@/payload-types';
 
 import { HeaderNav } from './Nav';
 import Image from 'next/image';
+import { ThemeSelector } from '@/providers/Theme/ThemeSelector';
+import { CMSLink } from '@/components/Link';
 
 interface HeaderClientProps {
   data: Header;
+  footerNavItems?: Footer['navItems']; // Use proper type from Footer
 }
 
 /**
@@ -25,7 +28,10 @@ const MOBILE_PROFILE_HOVER_SCALE = 5;
 const MOBILE_PROFILE_HOVER_Y_OFFSET = -80; // Moves up on mobile (negative value)
 const MOBILE_PROFILE_HOVER_X_OFFSET = 40; // Moves right on mobile
 
-export const HeaderClient: React.FC<HeaderClientProps> = ({ data }) => {
+export const HeaderClient: React.FC<HeaderClientProps> = ({
+  data,
+  footerNavItems = [],
+}) => {
   /* Storing the value in a useState to avoid hydration errors */
   const [theme, setTheme] = useState<string | null>(null);
   const [isMobile, setIsMobile] = useState<boolean>(false);
@@ -110,7 +116,23 @@ export const HeaderClient: React.FC<HeaderClientProps> = ({ data }) => {
             />
           </div>
 
-          {/* HeaderNav - on mobile it appears after profile icon */}
+          {/* Mobile-only footer navigation and theme selector - CENTER */}
+          <div className="flex items-center gap-3 md:hidden lg:hidden">
+            <ThemeSelector />
+            {footerNavItems && footerNavItems.length > 0 && (
+              <nav className="flex gap-2">
+                {footerNavItems.map(({ link }, i) => (
+                  <CMSLink
+                    className="text-sm text-black hover:text-gray-600 dark:text-white dark:hover:text-gray-300"
+                    key={i}
+                    {...link}
+                  />
+                ))}
+              </nav>
+            )}
+          </div>
+
+          {/* HeaderNav - ALWAYS on the right side on mobile, order-last keeps it there */}
           <div className="order-last lg:order-first">
             <HeaderNav data={data} />
           </div>
