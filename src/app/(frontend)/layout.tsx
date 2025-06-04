@@ -53,6 +53,16 @@ export default async function RootLayout({
 
 export const metadata: Metadata = {
   metadataBase: new URL(getServerSideURL()),
+  // REMOVE THIS WHEN WE GO LIVE:
+  robots: {
+    index: false,
+    follow: false,
+    googleBot: {
+      index: false,
+      follow: false,
+    },
+  },
+  // END REMOVE THIS WHEN WE GO LIVE
   openGraph: mergeOpenGraph(),
   twitter: {
     card: 'summary_large_image',
