@@ -6,4 +6,5 @@ node_modules
 .next
 .vercel
 
+public/robots.txt
 public/sitemap*.xml
