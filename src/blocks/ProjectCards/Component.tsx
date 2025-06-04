@@ -288,7 +288,7 @@ export const ProjectCardsBlock: React.FC<ProjectCardsBlockType> = ({
     // Cache duration in milliseconds: 30 seconds for development, 1 hour for production
     const CACHE_DURATION =
       process.env.NODE_ENV === 'production'
-        ? 60 * 60 * 1000 // 1 hour in milliseconds
+        ? 30 * 1000 // 30 seconds in milliseconds - update to 1 hour in production
         : 30 * 1000; // 30 seconds in milliseconds
 
     // Cache key for localStorage
