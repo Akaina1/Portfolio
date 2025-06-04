@@ -160,7 +160,7 @@ export const FormBlock: React.FC<
           enableGutter={false}
         />
       )}
-      <div className="rounded-[0.8rem] border border-border p-4 lg:p-6">
+      <div className="rounded-[0.8rem] border-2 border-border bg-slate-400 p-4 lg:p-6 dark:bg-slate-background">
         <FormProvider {...formMethods}>
           {!isLoading && hasSubmitted && confirmationType === 'message' && (
             <RichText data={confirmationMessage} />
