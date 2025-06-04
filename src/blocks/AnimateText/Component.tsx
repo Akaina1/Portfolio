@@ -31,9 +31,7 @@ export const AnimateText: React.FC<AnimateTextBlock> = ({
   animation,
   placement,
 }) => {
-  // Ensure animation is valid
   if (!animation || !(animation in AnimationComponents)) {
-    // Fallback to regular text if animation is invalid
     return (
       <div className={`animate-text-fallback container ${placement}`}>
         <span>{text}</span>
@@ -41,7 +39,6 @@ export const AnimateText: React.FC<AnimateTextBlock> = ({
     );
   }
 
-  // Dynamically load the appropriate animation component
   const AnimationComponent = AnimationComponents[animation];
 
   return (

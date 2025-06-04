@@ -43,11 +43,9 @@ const findProjectBySlug = (
  * @returns Formatted React nodes with proper structure and styling
  */
 const formatDescription = (description: string): React.ReactNode => {
-  // Split by double newlines to get paragraphs
   const paragraphs = description.split('\n\n');
 
   return paragraphs.map((paragraph, index) => {
-    // Check if this paragraph contains numbered list items
     if (paragraph.match(/^\d+\./m)) {
       const lines = paragraph.split('\n');
       const elements: React.ReactNode[] = [];
@@ -55,7 +53,6 @@ const formatDescription = (description: string): React.ReactNode => {
 
       lines.forEach((line, lineIndex) => {
         if (line.match(/^\d+\./)) {
-          // If we have accumulated list items, render them first
           if (currentListItems.length > 0) {
             elements.push(
               <ul
@@ -75,7 +72,6 @@ const formatDescription = (description: string): React.ReactNode => {
             currentListItems = [];
           }
 
-          // Add the numbered item as a heading
           elements.push(
             <h4
               key={`h4-${index}-${lineIndex}`}
@@ -85,7 +81,6 @@ const formatDescription = (description: string): React.ReactNode => {
             </h4>
           );
         } else if (line.trim().match(/^###\s+/)) {
-          // Manual heading with ###
           const headingText = line.replace(/^###\s+/, '');
           elements.push(
             <h3
@@ -96,11 +91,9 @@ const formatDescription = (description: string): React.ReactNode => {
             </h3>
           );
         } else if (line.trim().match(/^\s*\*/)) {
-          // Collect bullet points - remove the * and any leading whitespace
           const cleanedItem = line.replace(/^\s*\*\s*/, '');
           currentListItems.push(cleanedItem);
         } else if (line.trim()) {
-          // Regular text line
           elements.push(
             <p
               key={`p-${index}-${lineIndex}`}
@@ -112,7 +105,6 @@ const formatDescription = (description: string): React.ReactNode => {
         }
       });
 
-      // Handle any remaining list items
       if (currentListItems.length > 0) {
         elements.push(
           <ul
@@ -137,7 +129,6 @@ const formatDescription = (description: string): React.ReactNode => {
         </div>
       );
     } else {
-      // Check if this paragraph is a standalone list (starts with *) or contains headings
       const lines = paragraph.split('\n');
       const isListParagraph = lines.some((line) => line.trim().match(/^\s*\*/));
       const hasHeadings = lines.some((line) => line.trim().match(/^###\s+/));
@@ -148,7 +139,6 @@ const formatDescription = (description: string): React.ReactNode => {
 
         lines.forEach((line, lineIndex) => {
           if (line.trim().match(/^###\s+/)) {
-            // This is a manual heading
             const headingText = line.replace(/^###\s+/, '');
             otherElements.push(
               <h3
@@ -159,11 +149,9 @@ const formatDescription = (description: string): React.ReactNode => {
               </h3>
             );
           } else if (line.trim().match(/^\s*\*/)) {
-            // This is a bullet point
             const cleanedItem = line.replace(/^\s*\*\s*/, '');
             listItems.push(cleanedItem);
           } else if (line.trim()) {
-            // This is regular text
             otherElements.push(
               <p
                 key={`p-${index}-${lineIndex}`}
@@ -193,10 +181,8 @@ const formatDescription = (description: string): React.ReactNode => {
           </div>
         );
       } else {
-        // Regular paragraph - split by single newlines and render as separate paragraphs
         const lines = paragraph.split('\n').filter((line) => line.trim());
         return lines.map((line, lineIndex) => {
-          // Check if this line is a heading
           if (line.trim().match(/^###\s+/)) {
             const headingText = line.replace(/^###\s+/, '');
             return (
@@ -229,13 +215,11 @@ const formatDescription = (description: string): React.ReactNode => {
  * @returns React nodes with code segments properly highlighted
  */
 const formatTextWithCode = (text: string): React.ReactNode => {
-  // Split text by backticks to find code segments
   const parts = text.split(/(`[^`]+`)/g);
 
   return parts.map((part, index) => {
     if (part.startsWith('`') && part.endsWith('`')) {
-      // This is a code segment
-      const codeText = part.slice(1, -1); // Remove backticks
+      const codeText = part.slice(1, -1);
       return (
         <code
           key={index}
@@ -265,7 +249,6 @@ const formatPreviewDescription = (description: string): React.ReactNode => {
     .replace(/\n/g, ' ') // Replace line breaks with spaces
     .trim();
 
-  // Apply code formatting to the cleaned text
   return formatTextWithCode(cleanText);
 };
 
@@ -285,18 +268,13 @@ export const ProjectCardsBlock: React.FC<ProjectCardsBlockType> = ({
   const [isAnimating, setIsAnimating] = useState(false);
 
   useEffect(() => {
-    // Cache duration in milliseconds: 30 seconds for development, 1 hour for production
     const CACHE_DURATION =
-      process.env.NODE_ENV === 'production'
-        ? 30 * 1000 // 30 seconds in milliseconds - update to 1 hour in production
-        : 30 * 1000; // 30 seconds in milliseconds
+      process.env.NODE_ENV === 'production' ? 60 * 60 * 1000 : 30 * 1000;
 
-    // Cache key for localStorage
     const CACHE_KEY = `projects-cache-${limit}`;
 
     const fetchProjects = async () => {
       try {
-        // Check if we have cached data
         const cachedData = localStorage.getItem(CACHE_KEY);
 
         if (cachedData) {
@@ -304,14 +282,12 @@ export const ProjectCardsBlock: React.FC<ProjectCardsBlockType> = ({
           const isExpired = Date.now() - timestamp > CACHE_DURATION;
 
           if (!isExpired) {
-            // Use cached data if not expired
             setProjects(data);
             setLoading(false);
             return;
           }
         }
 
-        // Fetch fresh data if no cache or cache expired
         const response = await fetch(
           `/api/projects?limit=${limit}&sort=createdAt`
         );
@@ -322,10 +298,8 @@ export const ProjectCardsBlock: React.FC<ProjectCardsBlockType> = ({
 
         const responseData = await response.json();
 
-        // Extract the docs array from Payload's paginated response
         const allProjects = responseData.docs || [];
 
-        // Separate "Other Projects" from regular projects
         const otherProjectsCard = allProjects.find(
           (project) => project.title === 'Other Projects'
         );
@@ -333,12 +307,10 @@ export const ProjectCardsBlock: React.FC<ProjectCardsBlockType> = ({
           (project) => project.title !== 'Other Projects'
         );
 
-        // Combine them with "Other Projects" at the end
         const sortedProjects = otherProjectsCard
           ? [...regularProjects, otherProjectsCard]
           : regularProjects;
 
-        // Save to cache with timestamp
         localStorage.setItem(
           CACHE_KEY,
           JSON.stringify({
@@ -358,10 +330,9 @@ export const ProjectCardsBlock: React.FC<ProjectCardsBlockType> = ({
     fetchProjects();
   }, [limit]);
 
-  // New useEffect to handle URL hash changes and initial load
   useEffect(() => {
     const handleHashChange = () => {
-      const hash = window.location.hash.slice(1); // Remove the '#' character
+      const hash = window.location.hash.slice(1);
       if (hash && projects.length > 0) {
         const project = findProjectBySlug(projects, hash);
         if (project && project !== expandedProject) {
@@ -372,10 +343,8 @@ export const ProjectCardsBlock: React.FC<ProjectCardsBlockType> = ({
       }
     };
 
-    // Handle initial load
     handleHashChange();
 
-    // Listen for hash changes
     window.addEventListener('hashchange', handleHashChange);
 
     return () => {
@@ -387,23 +356,21 @@ export const ProjectCardsBlock: React.FC<ProjectCardsBlockType> = ({
     if (isAnimating) return;
     setIsAnimating(true);
 
-    // Update URL hash with project slug
     const slug = createSlug(project.title || '');
     window.history.pushState(null, '', `#${slug}`);
 
     setExpandedProject(project);
-    setTimeout(() => setIsAnimating(false), 500); // Match animation duration
+    setTimeout(() => setIsAnimating(false), 500);
   };
 
   const handleCloseExpanded = () => {
     if (isAnimating) return;
     setIsAnimating(true);
 
-    // Remove hash from URL
     window.history.pushState(null, '', window.location.pathname);
 
     setExpandedProject(null);
-    setTimeout(() => setIsAnimating(false), 500); // Match animation duration
+    setTimeout(() => setIsAnimating(false), 500);
   };
 
   return (
@@ -432,7 +399,7 @@ export const ProjectCardsBlock: React.FC<ProjectCardsBlockType> = ({
               className={cn(
                 'flex w-full flex-col overflow-hidden rounded-xl bg-white shadow-xl dark:bg-gray-800',
                 'animate-fade-up animate-duration-500 animate-once animate-ease-in-out',
-                'min-h-[600px]' // Minimum height but allows expansion
+                'min-h-[600px]'
               )}
             >
               <button
