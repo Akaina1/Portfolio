@@ -312,24 +312,42 @@ export const ProjectCardsBlock: React.FC<ProjectCardsBlockType> = ({
         }
 
         // Fetch fresh data if no cache or cache expired
-        const response = await fetch(`/api/projects?limit=${limit}`);
+        const response = await fetch(
+          `/api/projects?limit=${limit}&sort=createdAt`
+        );
 
         if (!response.ok) {
           throw new Error('Failed to fetch projects');
         }
 
-        const data = await response.json();
+        const responseData = await response.json();
+
+        // Extract the docs array from Payload's paginated response
+        const allProjects = responseData.docs || [];
+
+        // Separate "Other Projects" from regular projects
+        const otherProjectsCard = allProjects.find(
+          (project) => project.title === 'Other Projects'
+        );
+        const regularProjects = allProjects.filter(
+          (project) => project.title !== 'Other Projects'
+        );
+
+        // Combine them with "Other Projects" at the end
+        const sortedProjects = otherProjectsCard
+          ? [...regularProjects, otherProjectsCard]
+          : regularProjects;
 
         // Save to cache with timestamp
         localStorage.setItem(
           CACHE_KEY,
           JSON.stringify({
-            data,
+            data: sortedProjects,
             timestamp: Date.now(),
           })
         );
 
-        setProjects(data as Project[]);
+        setProjects(sortedProjects);
       } catch (error) {
         console.error('Error fetching projects:', error);
       } finally {
@@ -389,7 +407,7 @@ export const ProjectCardsBlock: React.FC<ProjectCardsBlockType> = ({
   };
 
   return (
-    <section className="container w-full rounded-xl bg-white/50 p-4 shadow-lg shadow-black/35 md:p-10 lg:mt-4 dark:bg-white/5">
+    <section className="container mb-6 w-full rounded-xl bg-white/50 p-4 shadow-lg shadow-black/35 md:p-10 lg:mt-4 dark:bg-white/5">
       <h1
         className={cn(
           'text-center text-5xl font-bold text-black dark:text-white',
