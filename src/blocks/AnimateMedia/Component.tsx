@@ -44,7 +44,7 @@ export const AnimateMedia: React.FC<Props> = (props) => {
   }, [hasBeenVisible]);
 
   return (
-    <div className="relative w-full">
+    <div className="relative w-full overflow-hidden">
       <div
         ref={ref}
         className={cn(
