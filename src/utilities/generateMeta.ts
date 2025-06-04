@@ -27,8 +27,8 @@ export const generateMeta = async (args: {
   const ogImage = getImageURL(doc?.meta?.image);
 
   const title = doc?.meta?.title
-    ? doc?.meta?.title + ' | ADost.Dev'
-    : 'ADost.Dev';
+    ? doc?.meta?.title + ' | ADost.dev'
+    : 'ADost.dev';
 
   return {
     description: doc?.meta?.description,

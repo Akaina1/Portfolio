@@ -18,7 +18,7 @@ import { Page, Post } from '@/payload-types';
 import { getServerSideURL } from '@/utilities/getURL';
 
 const generateTitle: GenerateTitle<Post | Page> = ({ doc }) => {
-  return doc?.title ? `${doc.title} | ADost.Dev` : 'ADost.Dev';
+  return doc?.title ? `${doc.title} | ADost.dev` : 'ADost.dev';
 };
 
 const generateURL: GenerateURL<Post | Page> = ({ doc }) => {
