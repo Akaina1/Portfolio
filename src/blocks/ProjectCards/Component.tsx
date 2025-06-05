@@ -267,27 +267,10 @@ export const ProjectCardsBlock: React.FC<ProjectCardsBlockType> = ({
   const [expandedProject, setExpandedProject] = useState<Project | null>(null);
   const [isAnimating, setIsAnimating] = useState(false);
 
+  // Simplified effect for fetching projects AND handling initial hash
   useEffect(() => {
-    const CACHE_DURATION =
-      process.env.NODE_ENV === 'production' ? 60 * 60 * 1000 : 30 * 1000;
-
-    const CACHE_KEY = `projects-cache-${limit}`;
-
-    const fetchProjects = async () => {
+    const fetchProjectsAndHandleHash = async () => {
       try {
-        const cachedData = localStorage.getItem(CACHE_KEY);
-
-        if (cachedData) {
-          const { data, timestamp } = JSON.parse(cachedData);
-          const isExpired = Date.now() - timestamp > CACHE_DURATION;
-
-          if (!isExpired) {
-            setProjects(data);
-            setLoading(false);
-            return;
-          }
-        }
-
         const response = await fetch(
           `/api/projects?limit=${limit}&sort=createdAt`
         );
@@ -297,7 +280,6 @@ export const ProjectCardsBlock: React.FC<ProjectCardsBlockType> = ({
         }
 
         const responseData = await response.json();
-
         const allProjects = responseData.docs || [];
 
         const otherProjectsCard = allProjects.find(
@@ -307,19 +289,24 @@ export const ProjectCardsBlock: React.FC<ProjectCardsBlockType> = ({
           (project) => project.title !== 'Other Projects'
         );
 
-        const sortedProjects = otherProjectsCard
+        const projectsData = otherProjectsCard
           ? [...regularProjects, otherProjectsCard]
           : regularProjects;
 
-        localStorage.setItem(
-          CACHE_KEY,
-          JSON.stringify({
-            data: sortedProjects,
-            timestamp: Date.now(),
-          })
-        );
+        // Set projects first
+        setProjects(projectsData);
 
-        setProjects(sortedProjects);
+        // Then handle initial hash (if any)
+        const hash = window.location.hash.slice(1);
+        if (hash && projectsData.length > 0) {
+          const project = findProjectBySlug(projectsData, hash);
+          if (project) {
+            setExpandedProject(project);
+          } else {
+            // Invalid hash, clear it
+            window.history.replaceState(null, '', window.location.pathname);
+          }
+        }
       } catch (error) {
         console.error('Error fetching projects:', error);
       } finally {
@@ -327,30 +314,37 @@ export const ProjectCardsBlock: React.FC<ProjectCardsBlockType> = ({
       }
     };
 
-    fetchProjects();
+    fetchProjectsAndHandleHash();
   }, [limit]);
 
+  // Separate effect ONLY for hash change events (not initial load)
   useEffect(() => {
     const handleHashChange = () => {
       const hash = window.location.hash.slice(1);
-      if (hash && projects.length > 0) {
-        const project = findProjectBySlug(projects, hash);
-        if (project && project !== expandedProject) {
-          setExpandedProject(project);
-        }
-      } else if (!hash && expandedProject) {
+
+      if (!hash) {
         setExpandedProject(null);
+        return;
+      }
+
+      if (projects.length > 0) {
+        const project = findProjectBySlug(projects, hash);
+        if (project) {
+          setExpandedProject(project);
+        } else {
+          // Invalid hash, clear it
+          window.history.replaceState(null, '', window.location.pathname);
+          setExpandedProject(null);
+        }
       }
     };
-
-    handleHashChange();
 
     window.addEventListener('hashchange', handleHashChange);
 
     return () => {
       window.removeEventListener('hashchange', handleHashChange);
     };
-  }, [projects, expandedProject]);
+  }, [projects]);
 
   const handleCardClick = (project: Project) => {
     if (isAnimating) return;
@@ -373,6 +367,17 @@ export const ProjectCardsBlock: React.FC<ProjectCardsBlockType> = ({
     setTimeout(() => setIsAnimating(false), 500);
   };
 
+  // Single loading check
+  if (loading) {
+    return (
+      <section className="container mb-6 w-full rounded-xl bg-white/50 p-4 shadow-lg shadow-black/35 md:p-10 lg:mt-4 dark:bg-white/5">
+        <div className="flex justify-center py-12">
+          <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
+        </div>
+      </section>
+    );
+  }
+
   return (
     <section className="container mb-6 w-full rounded-xl bg-white/50 p-4 shadow-lg shadow-black/35 md:p-10 lg:mt-4 dark:bg-white/5">
       <h1
@@ -388,11 +393,7 @@ export const ProjectCardsBlock: React.FC<ProjectCardsBlockType> = ({
       {/* Divider Line */}
       <AnimatedDivider className="mb-4 mt-4" />
 
-      {loading ? (
-        <div className="flex justify-center py-12">
-          <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
-        </div>
-      ) : projects.length > 0 ? (
+      {projects.length > 0 ? (
         <>
           {expandedProject ? (
             <div
